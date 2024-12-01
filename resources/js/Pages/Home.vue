@@ -4,7 +4,6 @@
 
 <template>
     <Head :title="`| ${$page.component}`"/>
-    <div>
-       {{ $page.props.user }}
-    </div>
+    
+    <h1>Home Page</h1>
 </template>
