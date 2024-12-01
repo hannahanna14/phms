@@ -1,7 +1,13 @@
 <script setup>
+    import AdminLayout from '../Layouts/AdminLayout.vue';
+    
+    // To override layout 
+    defineOptions({layout: AdminLayout});
+
     defineProps({
         user: String
     })
+
 </script>
 
 <template>
