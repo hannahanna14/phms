@@ -3,10 +3,8 @@
 </script>
 
 <template>
-    <Head title="| Home"/>
+    <Head :title="`| ${$page.component}`"/>
     <div>
-        <h1 class="text-3xl font-bold underline">
-            Hello world!
-        </h1>
+       {{ $page.props.user }}
     </div>
 </template>
