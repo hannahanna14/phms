@@ -1,6 +1,5 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
-import { router } from '@inertiajs/vue3'
 import TextInput from '../../Components/TextInput.vue';
 
 
@@ -30,7 +29,7 @@ const submit = () => {
             <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password"/>
             <TextInput name="Confirm Password" type="password" v-model="form.password_confirmation" :message="form.errors.password_confirmation"/>
             <div>
-                <p class="text-slate-600 mb-2">Already a user? <Link href="#" class="text-link">Login</Link></p>
+                <p class="text-slate-600 mb-2">Already a user? <Link :href="route('login')" class="text-link">Login</Link></p>
                 <button class="primary-btn" :disabled="form.processing">Register</button>
             </div>
         </form>
