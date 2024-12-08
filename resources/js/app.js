@@ -3,9 +3,12 @@ import './bootstrap';
 import { createApp, h } from 'vue'
 import { createInertiaApp, Head, Link } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+
+// PrimeVue
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
-import Button from "primevue/button"
+import 'primeicons/primeicons.css'
+
 import MainLayout from './Layouts/MainLayout.vue'
 
 createInertiaApp({
@@ -22,12 +25,16 @@ createInertiaApp({
       .use(ZiggyVue)
       .use(PrimeVue, {
         theme: {
-            preset: Aura
+            preset: Aura,
+            options: {
+              prefix: 'msu-hris',
+              darkModeSelector: 'light',
+              cssLayer: false
+            }
         }
       })
       .component('Head', Head)
       .component('Link', Link)
-      .component('Button', Button)
       .mount(el)
   },
   progress: {
