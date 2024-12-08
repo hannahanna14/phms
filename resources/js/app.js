@@ -3,6 +3,9 @@ import './bootstrap';
 import { createApp, h } from 'vue'
 import { createInertiaApp, Head, Link } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import PrimeVue from 'primevue/config';
+import Aura from '@primevue/themes/aura';
+import Button from "primevue/button"
 import MainLayout from './Layouts/MainLayout.vue'
 
 createInertiaApp({
@@ -17,8 +20,14 @@ createInertiaApp({
     createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(ZiggyVue)
+      .use(PrimeVue, {
+        theme: {
+            preset: Aura
+        }
+      })
       .component('Head', Head)
       .component('Link', Link)
+      .component('Button', Button)
       .mount(el)
   },
   progress: {
