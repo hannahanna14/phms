@@ -25,8 +25,7 @@
         <!-- Records Box -->
         <div class="white-container">
             <div class="flex justify-between items-center mb-4">
-                <label>Name</label>
-                <label>Date</label>
+                <h2 class="text-lg font-semibold">Health Examination Records</h2>
                 <Button icon="pi pi-plus" class="p-button-text" @click="$inertia.visit(route('health-examination.create', student.id))" />
             </div>
 
@@ -38,18 +37,39 @@
                     <span>Health Examination</span>
                     <span>{{ formatDate(exam.examination_date) }}</span>
                     <div class="flex gap-2">
-                        <Button icon="pi pi-pencil" class="p-button-text p-button-sm" />
-                        <Button icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" />
+                        <Button 
+                            icon="pi pi-pencil" 
+                            class="p-button-text p-button-sm"
+                            @click="$inertia.visit(route('health-examination.edit', exam.id))" 
+                        />
+                        <Button 
+                            icon="pi pi-trash" 
+                            class="p-button-text p-button-sm p-button-danger"
+                            @click="confirmDelete(exam)" 
+                        />
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <Dialog v-model:visible="deleteDialog" modal header="Confirm Deletion" :style="{ width: '350px' }">
+        <div class="confirmation-content">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem; color: var(--red-500)" />
+            <span>Are you sure you want to delete this health examination record?</span>
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteDialog = false" />
+            <Button label="Yes" icon="pi pi-check" class="p-button-danger" @click="deleteExamination" :loading="deleting" />
+        </template>
+    </Dialog>
 </template>
 
 <script setup>
 import { Head } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 
 defineProps({
     student: {
@@ -63,8 +83,31 @@ defineProps({
     }
 })
 
+const deleteDialog = ref(false)
+const deleting = ref(false)
+const examToDelete = ref(null)
+
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString()
+}
+
+const confirmDelete = (exam) => {
+    examToDelete.value = exam
+    deleteDialog.value = true
+}
+
+const deleteExamination = () => {
+    deleting.value = true
+    router.delete(route('health-examination.destroy', examToDelete.value.id), {
+        onSuccess: () => {
+            deleteDialog.value = false
+            deleting.value = false
+            examToDelete.value = null
+        },
+        onError: () => {
+            deleting.value = false
+        }
+    })
 }
 </script>
 
@@ -115,5 +158,12 @@ label {
 
 .p-button-sm {
     padding: 0.25rem !important;
+}
+
+.confirmation-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1rem 0;
 }
 </style>
