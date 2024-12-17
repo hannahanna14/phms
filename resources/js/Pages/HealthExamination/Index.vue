@@ -27,7 +27,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="student in filteredStudents" :key="student.id">
+                        <tr 
+                            v-for="student in filteredStudents" 
+                            :key="student.id"
+                            @click="showStudent(student)"
+                            class="cursor-pointer"
+                        >
                             <td>{{ student.full_name }}</td>
                             <td>{{ student.age }}</td>
                             <td>{{ student.sex }}</td>
@@ -41,7 +46,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 
 const props = defineProps({
     students: {
@@ -57,6 +62,10 @@ const filteredStudents = computed(() => {
         student.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
 })
+
+const showStudent = (student) => {
+    router.visit(`/health-examination/${student.id}`)
+}
 </script>
 
 <style scoped>

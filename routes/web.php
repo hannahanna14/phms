@@ -14,5 +14,7 @@ Route::inertia('/login', 'Auth/Login')->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 // Health Examination Routes
-Route::get('/health-examination', [StudentController::class, 'index'])->name('health.examination');
-Route::post('/health-examination', [StudentController::class, 'storeHealthExamination'])->name('health.examination.store');
+Route::get('/health-examination', [StudentController::class, 'index'])->name('health-examination.index');
+Route::get('/health-examination/{student}', [StudentController::class, 'show'])->name('health-examination.show');
+Route::get('/health-examination/{student}/create', [StudentController::class, 'create'])->name('health-examination.create');
+Route::post('/health-examination', [StudentController::class, 'store'])->name('health-examination.store');

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\HealthExamination;
 
 class Student extends Model
 {
@@ -11,4 +13,9 @@ class Student extends Model
         'age',
         'sex'
     ];
+
+    public function healthExaminations(): HasMany
+    {
+        return $this->hasMany(HealthExamination::class);
+    }
 }
