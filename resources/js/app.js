@@ -4,30 +4,39 @@ import { createApp, h } from 'vue'
 import { createInertiaApp, Head, Link } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
+
 // PrimeVue
 import PrimeVue from 'primevue/config';
+import Chart from 'primevue/chart';
 import Aura from '@primevue/themes/aura';
 import 'primeicons/primeicons.css'
 
 import MainLayout from './Layouts/MainLayout.vue'
 
 createInertiaApp({
-  title: (title) => `HRIS ${title}`,
+  title: (title) => `MedPort ${title}`,
   resolve: name => {
     const pages = import.meta.glob('./Pages/**/*.vue', { eager: true })
     let page = pages[`./Pages/${name}.vue`];
-    page.default.layout = page.default.layout || MainLayout;
+    if (!page) {
+        console.error(`Page ${name} not found in './Pages/'`);
+    }
+    // Don't apply MainLayout to auth pages
+    if (!name.startsWith('Auth/')) {
+        page.default.layout = page.default.layout || MainLayout;
+    }
     return page;
   },
   setup({ el, App, props, plugin }) {
-    createApp({ render: () => h(App, props) })
-      .use(plugin)
+    const app = createApp({ render: () => h(App, props) });
+    
+    app.use(plugin)
       .use(ZiggyVue)
       .use(PrimeVue, {
         theme: {
             preset: Aura,
             options: {
-              prefix: 'msu-hris',
+              prefix: 'msu-phms',
               darkModeSelector: 'light',
               cssLayer: false
             }
@@ -35,6 +44,7 @@ createInertiaApp({
       })
       .component('Head', Head)
       .component('Link', Link)
+      .component('Chart', Chart)
       .mount(el)
   },
   progress: {
