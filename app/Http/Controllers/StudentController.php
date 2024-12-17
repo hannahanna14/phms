@@ -20,7 +20,7 @@ class StudentController extends Controller
     {
         return Inertia::render('HealthExamination/Show', [
             'student' => $student,
-            'examinations' => $student->healthExaminations
+            'examinations' => $student->healthExaminations()->with('student')->orderBy('examination_date', 'desc')->get()
         ]);
     }
 

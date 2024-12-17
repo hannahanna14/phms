@@ -30,8 +30,18 @@
                 <Button icon="pi pi-plus" class="p-button-text" @click="$inertia.visit(route('health-examination.create', student.id))" />
             </div>
 
-            <div class="text-center py-8 text-gray-500">
+            <div v-if="!examinations || examinations.length === 0" class="text-center py-8 text-gray-500">
                 No records found
+            </div>
+            <div v-else>
+                <div v-for="exam in examinations" :key="exam.id" class="flex justify-between items-center py-2 border-b">
+                    <span>Health Examination</span>
+                    <span>{{ formatDate(exam.examination_date) }}</span>
+                    <div class="flex gap-2">
+                        <Button icon="pi pi-pencil" class="p-button-text p-button-sm" />
+                        <Button icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -45,8 +55,17 @@ defineProps({
     student: {
         type: Object,
         required: true
+    },
+    examinations: {
+        type: Array,
+        required: true,
+        default: () => []
     }
 })
+
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString()
+}
 </script>
 
 <style scoped>
@@ -92,5 +111,9 @@ defineProps({
 label {
     font-size: 0.875rem;
     color: #666;
+}
+
+.p-button-sm {
+    padding: 0.25rem !important;
 }
 </style>
