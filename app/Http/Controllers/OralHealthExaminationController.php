@@ -9,11 +9,26 @@ use Inertia\Inertia;
 
 class OralHealthExaminationController extends Controller
 {
+    public function index()
+    {
+        $students = Student::select('id', 'full_name', 'age', 'sex')
+            ->orderBy('full_name')
+            ->get();
+            
+        return Inertia::render('OralHealth/Index', [
+            'students' => $students
+        ]);
+    }
+
     public function show(Student $student)
     {
-        return Inertia::render('OralHealthExamination/Show', [
+        $examinations = $student->oralHealthExaminations()
+            ->orderBy('examination_date', 'desc')
+            ->get();
+            
+        return Inertia::render('OralHealth/Show', [
             'student' => $student,
-            'examinations' => $student->oralHealthExaminations
+            'examinations' => $examinations
         ]);
     }
 

@@ -21,40 +21,12 @@ const sideBarItems = ref([
     {
         label: 'Oral Health Examination',
         icon: 'pi pi-file',
-        //route: '/oral_health_examination'
-       // items: [
-       //     {
-        //        label: 'New',
-       //         icon: 'pi pi-plus',
-       //     },
-       //     {
-       //         label: 'Open',
-      //          icon: 'pi pi-folder-open',
-      //          shortcut: '⌘+O'
-      //      },
-      //      {
-       //         label: 'Print',
-        //        icon: 'pi pi-print',
-      //          shortcut: '⌘+P'
-       //     }
-       // ]
+        route: '/oral-health-examination'
     },
     {
         label: 'Incident',
         icon: 'pi pi-file-edit',
-       // route: '/incident'
-        //items: [
-         //   {
-         //       label: 'Copy',
-          //      icon: 'pi pi-copy',
-          //      shortcut: '⌘+C'
-          //  },
-         //   {
-        //        label: 'Delete',
-         //       icon: 'pi pi-times',
-          //      shortcut: '⌘+D'
-           // }
-       // ]
+        route: '/incident'
     },
     {
         label: 'Manage User',
