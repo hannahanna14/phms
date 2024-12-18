@@ -217,7 +217,10 @@ const submit = () => {
     color: #374151;
 }
 
-:deep(.p-inputtext),
+:deep(.p-inputtext) {
+    width: 100%;
+}
+
 :deep(.p-dropdown) {
     width: 100%;
 }

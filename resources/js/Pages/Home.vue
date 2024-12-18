@@ -69,7 +69,7 @@ const visible = ref(false);
       </header>
 
       <section>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <!-- Card 1 -->
           <div class="bg-white shadow rounded p-6">
             <h2 class="text-lg font-semibold mb-2">Number of Student(2024-2025)</h2>
@@ -87,8 +87,9 @@ const visible = ref(false);
           </div>
         </div>
 
-        <div class="bg-white shadow rounded p-6">
-            <Chart type="bar" :data="chartData" :options="chartOptions" class="w-full" style="height: 400px;" />
+        <div class="bg-white shadow rounded p-6 w-full">
+            <h3 class="text-lg font-semibold mb-4">Student Nutritional Status Distribution</h3>
+            <Chart type="bar" :data="chartData" :options="chartOptions" class="w-full h-[400px]" />
         </div>
 
       </section>

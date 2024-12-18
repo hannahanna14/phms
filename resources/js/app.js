@@ -10,6 +10,7 @@ import PrimeVue from 'primevue/config';
 import Chart from 'primevue/chart';
 import Aura from '@primevue/themes/aura';
 import 'primeicons/primeicons.css'
+import Tooltip from 'primevue/tooltip';
 
 import MainLayout from './Layouts/MainLayout.vue'
 
@@ -45,6 +46,7 @@ createInertiaApp({
       .component('Head', Head)
       .component('Link', Link)
       .component('Chart', Chart)
+      .directive('tooltip', Tooltip)
       .mount(el)
   },
   progress: {

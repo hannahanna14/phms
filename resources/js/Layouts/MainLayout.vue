@@ -30,8 +30,8 @@ const sideBarItems = ref([
     },
     {
         label: 'Manage User',
-        icon: 'pi pi-search',
-        shortcut: '⌘+S'
+        icon: 'pi pi-users',
+        route: '/users'
     },
     //{
     //    label: 'Share',
@@ -126,8 +126,10 @@ const menuBarItems = ref([]);  // Empty menu items since we're using sidebar
                     </Menubar>
                 </header>
 
-                <div class="md:mt-12 md:ml-60 px-4 py-4">
-                    <slot />
+                <div class="md:mt-12">
+                    <div class="flex-1 max-w-5xl mx-auto px-4">
+                        <slot></slot>
+                    </div>
                 </div>
             </main>
 

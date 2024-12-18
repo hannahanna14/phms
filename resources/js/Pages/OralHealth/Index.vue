@@ -23,6 +23,7 @@
                             <th>Full Name</th>
                             <th>Age</th>
                             <th>Sex</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,6 +35,14 @@
                             <td>{{ student.full_name }}</td>
                             <td>{{ student.age }}</td>
                             <td>{{ student.sex }}</td>
+                            <td>
+                                <button 
+                                    @click="showStudentOralHealthExamination(student)"
+                                    class="text-blue-600 hover:text-blue-800 hover:underline text-sm"
+                                >
+                                    View Details
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -44,7 +53,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 
 const props = defineProps({
@@ -63,6 +72,10 @@ const filteredStudents = computed(() => {
         student.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
 })
+
+const showStudentOralHealthExamination = (student) => {
+    router.visit(route('oral-health-examination.show', student.id))
+}
 </script>
 
 <style scoped>

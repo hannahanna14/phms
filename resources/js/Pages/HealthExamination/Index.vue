@@ -116,4 +116,8 @@ const showStudent = (student) => {
 .student-table tr:hover {
     background-color: #f5f5f5;
 }
+
+.cursor-pointer:hover {
+    background-color: #f0f0f0;
+}
 </style>

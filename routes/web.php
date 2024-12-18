@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\OralHealthExaminationController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,4 +31,14 @@ Route::get('/oral-health-examination/{student}', [OralHealthExaminationControlle
 
 // Incident Routes
 Route::get('/incident', [IncidentController::class, 'index'])->name('incident.index');
+Route::get('/incident/{student}', [IncidentController::class, 'show'])->name('incident.show');
+
+// User Management Routes
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+Route::post('/users', [UserController::class, 'store'])->name('users.store');
+Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+Route::get('/users/{user}/show', [UserController::class, 'show'])->name('users.show');
 Route::get('/incident/{student}', [IncidentController::class, 'show'])->name('incident.show');
