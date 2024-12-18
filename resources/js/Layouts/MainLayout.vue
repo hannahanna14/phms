@@ -1,6 +1,18 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+
+const user = computed(() => {
+    const authUser = page.props.auth?.user;
+    console.log('Auth user:', authUser);
+    return {
+        full_name: authUser?.full_name || authUser?.name || 'Guest',
+        role: authUser?.role || 'Not Logged In'
+    };
+});
 
 // Ref
 const toggleMenu = ref(false);
@@ -118,8 +130,8 @@ const menuBarItems = ref([]);  // Empty menu items since we're using sidebar
                             <button v-ripple class="relative overflow-hidden w-full border-0 bg-transparent flex items-start justify-center pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200">
                                 <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" shape="circle" />
                                 <span class="inline-flex flex-col items-start">
-                                    <span class="font-bold text-xs">Amy Elsner</span>
-                                    <span class="text-xs">Admin</span>
+                                    <span class="font-bold text-xs">{{ user.full_name }}</span>
+                                    <span class="text-xs">{{ user.role }}</span>
                                 </span>
                             </button>
                         </template>

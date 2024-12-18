@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import NaawanLogo from '../../assets/logo.png';
 
 const form = useForm({
-    email: '',
+    username: '',
     password: ''
 });
 
@@ -33,11 +33,11 @@ const submit = () => {
                     <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
                     <input 
                         type="text"
-                        v-model="form.email"
+                        v-model="form.username"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Username"
                     >
-                    <div v-if="form.errors.email" class="text-red-500 text-sm mt-1">{{ form.errors.email }}</div>
+                    <div v-if="form.errors.username" class="text-red-500 text-sm mt-1">{{ form.errors.username }}</div>
                 </div>
 
                 <!-- Password Field -->

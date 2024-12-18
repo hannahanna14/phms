@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\OralHealthExaminationController;
 use App\Http\Controllers\StudentController;
@@ -14,7 +15,9 @@ Route::inertia('/register', 'Auth/Register')->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::inertia('/login', 'Auth/Login')->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+    ->middleware('guest')
+    ->name('login');
 
 // Health Examination Routes
 Route::get('/health-examination', [StudentController::class, 'index'])->name('health-examination.index');
