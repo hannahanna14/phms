@@ -3,8 +3,22 @@
     <div class="health-examination-form">
         <div class="white-container">
             <h2 class="text-lg font-semibold mb-4">Student Health Examination</h2>
-            
+
             <form @submit.prevent="submit" class="space-y-6">
+                <div class="form-group">
+                    <label>Grade Level</label>
+                    <select v-model="form.grade_level" class="form-select">
+                        <option :value="props.student.grade_level">{{ props.student.grade_level }}</option>
+                        <option value="Kinder 1">Kinder 1</option>
+                        <option value="Kinder 2">Kinder 2</option>
+                        <option value="Grade 1">Grade 1</option>
+                        <option value="Grade 2">Grade 2</option>
+                        <option value="Grade 3">Grade 3</option>
+                        <option value="Grade 4">Grade 4</option>
+                        <option value="Grade 5">Grade 5</option>
+                        <option value="Grade 6">Grade 6</option>
+                    </select>
+                </div>
                 <!-- Vital Signs -->
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
@@ -203,9 +217,8 @@ const form = useForm({
 const submit = () => {
     form.post(route('health-examination.store'), {
         preserveScroll: true,
-        onSuccess: () => {
-            // Redirect back to student details
-            $inertia.visit(route('health-examination.show', student.id))
+        onSuccess: (response) => {
+            router.push({ name: 'HealthExam.Show', params: { id: response.data.id } });
         }
     })
 }

@@ -3,7 +3,7 @@ import './bootstrap';
 import { createApp, h } from 'vue'
 import { createInertiaApp, Head, Link } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 
 // PrimeVue
 import PrimeVue from 'primevue/config';
@@ -16,6 +16,7 @@ import MainLayout from './Layouts/MainLayout.vue'
 
 createInertiaApp({
   title: (title) => `MedPort ${title}`,
+  resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   resolve: name => {
     const pages = import.meta.glob('./Pages/**/*.vue', { eager: true })
     let page = pages[`./Pages/${name}.vue`];

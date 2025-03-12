@@ -1,9 +1,13 @@
 <?php
 
+//new
 use App\Http\Controllers\AuthController;
+
+//old
 use App\Http\Controllers\AuthenticatedSessionController;
-use App\Http\Controllers\IncidentController;
-use App\Http\Controllers\OralHealthExaminationController;
+use App\Http\Controllers\PupilHealthController;
+//use App\Http\Controllers\IncidentController;
+//use App\Http\Controllers\OralHealthExaminationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -19,29 +23,42 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest')
     ->name('login');
 
-// Health Examination Routes
-Route::get('/health-examination', [StudentController::class, 'index'])->name('health-examination.index');
-Route::get('/health-examination/{student}', [StudentController::class, 'show'])->name('health-examination.show');
-Route::get('/health-examination/{student}/create', [StudentController::class, 'create'])->name('health-examination.create');
-Route::post('/health-examination', [StudentController::class, 'store'])->name('health-examination.store');
-Route::get('/health-examination/{healthExamination}/edit', [StudentController::class, 'edit'])->name('health-examination.edit');
-Route::put('/health-examination/{healthExamination}', [StudentController::class, 'update'])->name('health-examination.update');
-Route::delete('/health-examination/{healthExamination}', [StudentController::class, 'destroy'])->name('health-examination.destroy');
+// Authenticated Routes Group
+Route::middleware(['auth'])->group(function () {
+    //Dashboard
+    Route::get('/', [StudentController::class, 'dashboard'])->name('dashboard');
 
-// Oral Health Examination Routes
-Route::get('/oral-health-examination', [OralHealthExaminationController::class, 'index'])->name('oral-health-examination.index');
-Route::get('/oral-health-examination/{student}', [OralHealthExaminationController::class, 'show'])->name('oral-health-examination.show');
+    // Logout Route
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
 
-// Incident Routes
-Route::get('/incident', [IncidentController::class, 'index'])->name('incident.index');
-Route::get('/incident/{student}', [IncidentController::class, 'show'])->name('incident.show');
+    //Pupil Health Routes
+    Route::inertia('/pupil-health', 'Pupil Health/Index')->name('pupil-health');
+    Route::get('/pupil-health', [StudentController::class, 'pupilHealth'])->name('pupil-health.index');
+    Route::get('/pupil-health/record-type', [PupilHealthController::class, 'recordType'])->name('pupil-health.record-type');
 
-// User Management Routes
-Route::get('/users', [UserController::class, 'index'])->name('users.index');
-Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-Route::post('/users', [UserController::class, 'store'])->name('users.store');
-Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-Route::get('/users/{user}/show', [UserController::class, 'show'])->name('users.show');
-Route::get('/incident/{student}', [IncidentController::class, 'show'])->name('incident.show');
+    //Generate Record Routes
+    Route::get('/generate-record', [StudentController::class, 'generateRecord'])->name('generate-record');
+
+    //Pupil Health Examination Routes
+    Route::get('/pupil-health/health-exam/create', [PupilHealthController::class, 'createHealthExam'])
+        ->name('healthexamination.create');
+    Route::post('/pupil-health/health-exam', [PupilHealthController::class, 'storeHealthExam'])
+        ->name('health-examination.store');
+    Route::get('/pupil-health/health-exam/{student}', [PupilHealthController::class, 'showHealthExam'])
+        ->name('pupil-health.health-exam.show');
+
+    Route::get('/pupil-health/oral-health/{student}', [PupilHealthController::class, 'showOralHealth'])
+        ->name('pupil-health.oral-health.show');
+    Route::get('/pupil-health/incident/{student}', [StudentController::class, 'showIncident'])
+        ->name('pupil-health.incident');
+
+    // User Management Routes
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::get('/users/{user}/show', [UserController::class, 'show'])->name('users.show');
+});

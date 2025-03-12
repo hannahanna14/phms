@@ -13,6 +13,9 @@ return new class extends Migration
             $table->string('full_name');
             $table->integer('age');
             $table->enum('sex', ['Male', 'Female']);
+            $table->string('lrn')->nullable()->unique(); // Learner Reference Number
+            $table->string('grade_level')->nullable();
+            $table->string('school_year')->nullable();
             $table->timestamps();
         });
     }

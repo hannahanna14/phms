@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OralHealthExamination extends Model
+class Incident extends Model
 {
     protected $fillable = [
         'student_id',
-        'examination_date',
+        'incident_date',
+        'description',
         // Add other relevant fields
     ];
 
