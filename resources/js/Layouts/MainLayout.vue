@@ -161,7 +161,12 @@ const sideBarItems = ref([
         route: '/pupil-health'
     },
     {
-        label: 'Generate Record',
+        label: 'Health Report',
+        icon: 'pi pi-file',
+        route: '/generate-record'
+    },
+    {
+        label: 'Oral Health Report',
         icon: 'pi pi-file',
         route: '/generate-record'
     }

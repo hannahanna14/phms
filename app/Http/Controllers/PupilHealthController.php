@@ -24,7 +24,7 @@ class PupilHealthController extends Controller
             'health_examination' => $healthExamination
         ]);
 
-        return Inertia::render('HealthExam/Show', [
+        return Inertia::render('HealthExamination/Show', [
             'student' => $student,
             'healthExamination' => $healthExamination
         ]);
@@ -33,6 +33,6 @@ class PupilHealthController extends Controller
     public function createHealthExam()
     {
         // Return a view for creating a new health examination
-        return Inertia::render('HealthExam/Create');
+        return Inertia::render('HealthExamination/Create');
     }
 }

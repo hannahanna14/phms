@@ -41,11 +41,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/generate-record', [StudentController::class, 'generateRecord'])->name('generate-record');
 
     //Pupil Health Examination Routes
-    Route::get('/pupil-health/health-exam/create', [PupilHealthController::class, 'createHealthExam'])
-        ->name('healthexamination.create');
-    Route::post('/pupil-health/health-exam', [PupilHealthController::class, 'storeHealthExam'])
+    Route::get('/pupil-health/health-examination/create', [PupilHealthController::class, 'createHealthExam'])
+        ->name('health-examination.create');
+    Route::post('/pupil-health/health-examination', [PupilHealthController::class, 'storeHealthExam'])
         ->name('health-examination.store');
-    Route::get('/pupil-health/health-exam/{student}', [PupilHealthController::class, 'showHealthExam'])
+    Route::get('/pupil-health/health-examination/{student}', [PupilHealthController::class, 'showHealthExam'])
         ->name('pupil-health.health-exam.show');
 
     Route::get('/pupil-health/oral-health/{student}', [PupilHealthController::class, 'showOralHealth'])

@@ -1,265 +1,190 @@
 <template>
-    <Head title="Add Health Examination" />
-    <div class="health-examination-form">
-        <div class="white-container">
-            <h2 class="text-lg font-semibold mb-4">Student Health Examination</h2>
-
-            <form @submit.prevent="submit" class="space-y-6">
-                <div class="form-group">
-                    <label>Grade Level</label>
-                    <select v-model="form.grade_level" class="form-select">
-                        <option :value="props.student.grade_level">{{ props.student.grade_level }}</option>
-                        <option value="Kinder 1">Kinder 1</option>
-                        <option value="Kinder 2">Kinder 2</option>
-                        <option value="Grade 1">Grade 1</option>
-                        <option value="Grade 2">Grade 2</option>
-                        <option value="Grade 3">Grade 3</option>
-                        <option value="Grade 4">Grade 4</option>
-                        <option value="Grade 5">Grade 5</option>
-                        <option value="Grade 6">Grade 6</option>
-                    </select>
+    <div class="bg-[#f4f4f4] min-h-screen flex items-start justify-center p-4">
+        <Card class="w-full max-w-3xl shadow-xl">
+            <template #title>
+                <div class="text-center">
+                    <h2 class="text-lg font-bold">Pupil Health Examination</h2>
+                    <p class="text-sm text-gray-500">Naawan Central School</p>
+                    <hr class="my-2" />
                 </div>
-                <!-- Vital Signs -->
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="form-group">
-                        <label>Temperature/BP</label>
-                        <input v-model="form.temperature" type="text" class="form-input" />
+            </template>
+            <template #content>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- HEIGHT FIELD -->
+                    <div>
+                        <label class="text-sm font-semibold">Height (cm)</label>
+                        <InputText
+                            v-model="form.height"
+                            class="w-full"
+                            :class="{ 'p-invalid border-2 border-red-500': heightError }"
+                            @input="validateHeight"
+                            type="number"
+                            min="50"
+                            max="200"
+                        />
+                        <small v-if="heightError" class="text-red-500">{{ heightError }}</small>
                     </div>
-                    <div class="form-group">
-                        <label>Heart Rate</label>
-                        <input v-model="form.heart_rate" type="text" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label>Height(cm)</label>
-                        <input v-model="form.height" type="text" class="form-input" />
-                    </div>
-                    <div class="form-group">
-                        <label>Weight(kg)</label>
-                        <input v-model="form.weight" type="text" class="form-input" />
-                    </div>
-                </div>
 
-                <!-- Nutritional Status -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label>Nutritional Status(BMI)</label>
-                        <select v-model="form.nutritional_status_bmi" class="form-select">
-                            <option value="Normal Weight">Normal Weight</option>
-                            <option value="Wasted/Underweight">Wasted/Underweight</option>
-                            <option value="Severly Wasted/Underwt">Severly Wasted/Underwt</option>
-                            <option value="Overweight">Overweight</option>
-                            <option value="Obese">Obese</option>
-                        </select>
+                    <!-- WEIGHT FIELD -->
+                    <div>
+                        <label class="text-sm font-semibold">Weight (kg)</label>
+                        <InputText
+                            v-model="form.weight"
+                            class="w-full"
+                            :class="{ 'p-invalid border-2 border-red-500': weightError }"
+                            @input="validateWeight"
+                            type="number"
+                            min="10"
+                            max="200"
+                        />
+                        <small v-if="weightError" class="text-red-500">{{ weightError }}</small>
                     </div>
-                    <div class="form-group">
-                        <label>Nutritional Status(Height for Age)</label>
-                        <select v-model="form.nutritional_status_height" class="form-select">
-                            <option value="Normal Height">Normal Height</option>
-                            <option value="Stunted">Stunted</option>
-                            <option value="Severly Stunted">Severly Stunted</option>
-                            <option value="Tall">Tall</option>
-                        </select>
-                    </div>
-                </div>
 
-                <!-- Screenings -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label>Vision Screening</label>
-                        <select v-model="form.vision_screening" class="form-select">
-                            <option value="Passed">Passed</option>
-                            <option value="Failed">Failed</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Auditory Screening</label>
-                        <select v-model="form.auditory_screening" class="form-select">
-                            <option value="Passed">Passed</option>
-                            <option value="Failed">Failed</option>
-                        </select>
-                    </div>
-                </div>
 
-                <!-- Physical Assessment -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="form-group">
-                        <label>Skin</label>
-                        <select v-model="form.skin" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Redness of Skin">Redness of Skin</option>
-                            <option value="White Spots">White Spots</option>
-                            <option value="Flaky Skin">Flaky Skin</option>
-                        </select>
+                    <!-- TEMPERATURE FIELD -->
+                    <div>
+                        <label class="text-sm font-semibold">Temperature/BP</label>
+                        <InputText v-model="form.temperature" class="w-full" type="number" />
                     </div>
-                    <div class="form-group">
-                        <label>Scalp</label>
-                        <select v-model="form.scalp" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Presence of Lice">Presence of Lice</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Eye</label>
-                        <select v-model="form.eye" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Eye Redness">Eye Redness</option>
-                            <option value="Pale Conjunctiva">Pale Conjunctiva</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="form-group">
-                        <label>Ear</label>
-                        <select v-model="form.ear" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Ear discharge">Ear discharge</option>
-                        </select>
+                    <!-- HEART RATE FIELD -->
+                    <div>
+                        <label class="text-sm font-semibold">Heart Rate</label>
+                        <InputText v-model="form.heartRate" class="w-full" type="number" />
                     </div>
-                    <div class="form-group">
-                        <label>Nose</label>
-                        <select v-model="form.nose" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Mucus discharge">Mucus discharge</option>
-                            <option value="Nose Bleeding">Nose Bleeding</option>
-                        </select>
+
+                    <!-- NUTRITIONAL STATUS FIELDS -->
+                    <div>
+                        <label class="text-sm font-semibold">Nutritional Status (BMI)</label>
+                        <InputText v-model="form.nutritionalStatusBMI" class="w-full" disabled />
                     </div>
-                    <div class="form-group">
-                        <label>Mouth</label>
-                        <select v-model="form.mouth" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Enlarged tonsil">Enlarged tonsil</option>
-                            <option value="Inflamed pharynx">Inflamed pharynx</option>
-                        </select>
+                    <div>
+                        <label class="text-sm font-semibold">Nutritional Status (Height for Age)</label>
+                        <InputText v-model="form.nutritionalStatusHeight" class="w-full" disabled />
+                    </div>
+
+                    <!-- DROPDOWNS -->
+                    <div>
+                        <label class="text-sm font-semibold">Vision Screening</label>
+                        <Dropdown v-model="form.visionScreening" :options="visionOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Auditory Screening</label>
+                        <Dropdown v-model="form.auditoryScreening" :options="auditoryOptions" class="w-full" />
+                    </div>
+
+                    <!-- MULTISELECT FIELDS -->
+                    <div>
+                        <label class="text-sm font-semibold">Skin/Scalp</label>
+                        <MultiSelect v-model="form.skinScalp" :options="scalpOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Eyes/Ears/Nose</label>
+                        <MultiSelect v-model="form.eyesEarsNose" :options="eyesEarsNoseOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Mouth/Throat/Neck</label>
+                        <MultiSelect v-model="form.mouthThroatNeck" :options="mouthThroatNeckOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Lungs/Heart</label>
+                        <MultiSelect v-model="form.lungsHeart" :options="lungsHeartOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Abdomen</label>
+                        <MultiSelect v-model="form.abdomen" :options="abdomenOptions" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Deformities</label>
+                        <MultiSelect v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
+                    </div>
+
+                    <!-- CHECKBOXES -->
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.ironSupplementation" :binary="true" />
+                        <label>Iron Supplementation</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.dewormed" :binary="true" />
+                        <label>Dewormed</label>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold">Immunization</label>
+                        <InputText v-model="form.immunization" class="w-full" />
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.sbfpBeneficiary" :binary="true" />
+                        <label>SBFP Beneficiary</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.fourPsBeneficiary" :binary="true" />
+                        <label>4Ps Beneficiary</label>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="form-group">
-                        <label>Lungs/Heart</label>
-                        <select v-model="form.lungs_heart" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Rales">Rales</option>
-                            <option value="Wheeze">Wheeze</option>
-                            <option value="Murmur">Murmur</option>
-                            <option value="Irregular heart rate">Irregular heart rate</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Abdomen</label>
-                        <select v-model="form.abdomen" class="form-select">
-                            <option value="Normal">Normal</option>
-                            <option value="Distended">Distended</option>
-                            <option value="Tenderness">Tenderness</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Deformities</label>
-                        <select v-model="form.deformities" class="form-select">
-                            <option value="None">None</option>
-                            <option value="Acquired">Acquired</option>
-                            <option value="Congenital">Congenital</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Remarks</label>
-                    <textarea v-model="form.remarks" class="form-textarea"></textarea>
-                </div>
-
+            </template>
+            <template #footer>
                 <div class="flex justify-end gap-2">
-                    <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(route('health-examination.show', student.id))" />
-                    <Button type="submit" label="Add" />
+                    <Button label="Cancel" class="p-button-secondary" />
+                    <Button label="Add" class="p-button-primary" @click="submitForm" />
                 </div>
-            </form>
-        </div>
+            </template>
+        </Card>
     </div>
 </template>
 
-<script setup>
-import { Head } from '@inertiajs/vue3'
-import { useForm } from '@inertiajs/vue3'
-import Button from 'primevue/button'
+<script>
+import { ref, watch } from "vue";
+import Card from "primevue/card";
+import InputText from "primevue/inputtext";
+import MultiSelect from "primevue/multiselect";
+import Dropdown from "primevue/dropdown";
+import Checkbox from "primevue/checkbox";
+import Button from "primevue/button";
 
-const props = defineProps({
-    student: {
-        type: Object,
-        required: true
+export default {
+    components: { Card, InputText, MultiSelect, Dropdown, Checkbox, Button },
+    setup() {
+        const form = ref({
+            height: "",
+            weight: "",
+            nutritionalStatusBMI: "",
+            nutritionalStatusHeight: "",
+        });
+
+        const heightError = ref("");
+        const weightError = ref("");
+
+        const validateHeight = () => {
+            if (!form.value.height || form.value.height < 50 || form.value.height > 200) {
+                heightError.value = "Height must be between 50 cm and 200 cm.";
+            } else {
+                heightError.value = "";
+            }
+        };
+
+        const validateWeight = () => {
+            if (!form.value.weight || form.value.weight < 10 || form.value.weight > 200) {
+                weightError.value = "Weight must be between 10 kg and 200 kg.";
+            } else {
+                weightError.value = "";
+            }
+        };
+
+        watch([() => form.value.height, () => form.value.weight], () => {
+            validateHeight();
+            validateWeight();
+
+            const heightMeters = form.value.height / 100;
+            if (heightMeters > 0 && form.value.weight > 0) {
+                const bmi = (form.value.weight / (heightMeters ** 2)).toFixed(2);
+                form.value.nutritionalStatusBMI = bmi < 18.5 ? "Underweight" : bmi < 24.9 ? "Normal" : bmi < 29.9 ? "Overweight" : "Obese";
+            } else {
+                form.value.nutritionalStatusBMI = "";
+            }
+            form.value.nutritionalStatusHeight = form.value.height < 120 ? "Short Stature" : "Normal";
+        });
+
+        return { form, heightError, weightError, validateHeight, validateWeight };
     }
-})
-
-const form = useForm({
-    student_id: props.student.id,
-    examination_date: new Date().toISOString().split('T')[0],
-    temperature: '',
-    heart_rate: '',
-    height: '',
-    weight: '',
-    nutritional_status_bmi: 'Normal Weight',
-    nutritional_status_height: 'Normal Height',
-    vision_screening: 'Passed',
-    auditory_screening: 'Passed',
-    skin: 'Normal',
-    scalp: 'Normal',
-    eye: 'Normal',
-    ear: 'Normal',
-    nose: 'Normal',
-    mouth: 'Normal',
-    neck: 'Normal',
-    throat: 'Normal',
-    lungs_heart: 'Normal',
-    abdomen: 'Normal',
-    deformities: 'None',
-    remarks: ''
-})
-
-const submit = () => {
-    form.post(route('health-examination.store'), {
-        preserveScroll: true,
-        onSuccess: (response) => {
-            router.push({ name: 'HealthExam.Show', params: { id: response.data.id } });
-        }
-    })
-}
+};
 </script>
-
-<style scoped>
-.health-examination-form {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-.white-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.form-group label {
-    font-size: 0.875rem;
-    color: #666;
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-}
-
-.form-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-</style>
