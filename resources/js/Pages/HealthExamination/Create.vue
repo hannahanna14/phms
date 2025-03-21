@@ -1,6 +1,6 @@
 <template>
     <div class="bg-[#f4f4f4] min-h-screen flex items-start justify-center p-4">
-        <Card class="w-full max-w-3xl shadow-xl">
+        <Card class="w-full max-w-5xl shadow-xl">
             <template #title>
                 <div class="text-center">
                     <h2 class="text-lg font-bold">Pupil Health Examination</h2>
@@ -99,6 +99,17 @@
                         <MultiSelect v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
                     </div>
 
+                    <div>
+                        <label class="text-sm font-semibold">Immunization</label>
+                        <InputText v-model="form.immunization" class="w-full" />
+                    </div>
+
+                    <!-- SINGLE "OTHER'S, SPECIFY" FIELD -->
+                    <div>
+                        <label class="text-sm font-semibold">Other's, specify</label>
+                        <InputText v-model="form.otherSpecify" class="w-full mt-1" placeholder="Specify other conditions" />
+                    </div>
+
                     <!-- CHECKBOXES -->
                     <div class="flex items-center gap-2">
                         <Checkbox v-model="form.ironSupplementation" :binary="true" />
@@ -108,10 +119,7 @@
                         <Checkbox v-model="form.dewormed" :binary="true" />
                         <label>Dewormed</label>
                     </div>
-                    <div>
-                        <label class="text-sm font-semibold">Immunization</label>
-                        <InputText v-model="form.immunization" class="w-full" />
-                    </div>
+
                     <div class="flex items-center gap-2">
                         <Checkbox v-model="form.sbfpBeneficiary" :binary="true" />
                         <label>SBFP Beneficiary</label>
@@ -120,9 +128,11 @@
                         <Checkbox v-model="form.fourPsBeneficiary" :binary="true" />
                         <label>4Ps Beneficiary</label>
                     </div>
+
                 </div>
             </template>
             <template #footer>
+                <hr class="my-2" />
                 <div class="flex justify-end gap-2">
                     <Button label="Cancel" class="p-button-secondary" />
                     <Button label="Add" class="p-button-primary" @click="submitForm" />
@@ -149,7 +159,24 @@ export default {
             weight: "",
             nutritionalStatusBMI: "",
             nutritionalStatusHeight: "",
+            visionScreening: null,
+            auditoryScreening: null,
+            skinScalp: [],
+            eyesEarsNose: [],
+            mouthThroatNeck: [],
+            lungsHeart: [],
+            abdomen: [],
+            deformities: [],
         });
+
+        const visionOptions = ["Passed", "Failed"];
+        const auditoryOptions = ["Passed", "Failed"];
+        const scalpOptions = ["Presence of Lice", "Redness of Skin", "White Spots", "Flaky Skin", "Impetigo/Boil", "Hematoma", "Bruises/Injuries", "Itchiness", "Skin Lesions", "Acne/Pimple"];
+        const eyesEarsNoseOptions = ["Normal", "Stye", "Eye Redness", "Ocular Misalignment", "Pale Conjunctiva", "Ear Discharge", "Impacted Cerumen", "Mucus Discharge", "Nose Bleeding (Epistaxis)", "Eye Discharge", "Matted Eyelashes"];
+        const mouthThroatNeckOptions = ["Normal", "Enlarged Tonsil", "Presence of Lesions", "Inflamed Pharynx", "Enlarged Lymph Nodes", "Others"];
+        const lungsHeartOptions = ["Normal", "Rales", "Wheeze", "Murmur", "Irregular Heart Rate", "Others"];
+        const abdomenOptions = ["Normal", "Distended", "Abdominal Pain", "Tenderness", "Dysmenorrhea", "Others"];
+        const deformitiesOptions = ["Acquired", "Congenital"];
 
         const heightError = ref("");
         const weightError = ref("");
@@ -184,7 +211,26 @@ export default {
             form.value.nutritionalStatusHeight = form.value.height < 120 ? "Short Stature" : "Normal";
         });
 
-        return { form, heightError, weightError, validateHeight, validateWeight };
+        const submitForm = () => {
+            console.log("Form Submitted", form.value);
+        };
+
+        return {
+            form,
+            visionOptions,
+            auditoryOptions,
+            scalpOptions,
+            eyesEarsNoseOptions,
+            mouthThroatNeckOptions,
+            lungsHeartOptions,
+            abdomenOptions,
+            deformitiesOptions,
+            submitForm,
+            heightError,
+            weightError,
+            validateHeight,
+            validateWeight
+        };
     }
 };
 </script>
