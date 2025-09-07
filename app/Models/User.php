@@ -30,4 +30,21 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function healthExaminations()
+    {
+        return $this->hasMany(HealthExamination::class);
+    }
+
+    public function assignedStudents()
+    {
+        return $this->hasMany(StudentTeacherAssignment::class, 'teacher_id');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'student_teacher_assignments', 'teacher_id', 'student_id')
+                    ->withPivot('grade_level', 'section', 'school_year')
+                    ->withTimestamps();
+    }
 }

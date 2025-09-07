@@ -66,11 +66,11 @@
                     <!-- DROPDOWNS -->
                     <div>
                         <label class="text-sm font-semibold">Vision Screening</label>
-                        <Dropdown v-model="form.visionScreening" :options="visionOptions" class="w-full" />
+                        <Select v-model="form.visionScreening" :options="visionOptions" class="w-full" />
                     </div>
                     <div>
                         <label class="text-sm font-semibold">Auditory Screening</label>
-                        <Dropdown v-model="form.auditoryScreening" :options="auditoryOptions" class="w-full" />
+                        <Select v-model="form.auditoryScreening" :options="auditoryOptions" class="w-full" />
                     </div>
 
                     <!-- MULTISELECT FIELDS -->
@@ -112,20 +112,20 @@
 
                     <!-- CHECKBOXES -->
                     <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.ironSupplementation" :binary="true" />
+                        <Checkbox v-model="form.iron_supplementation" :binary="true" />
                         <label>Iron Supplementation</label>
                     </div>
                     <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.dewormed" :binary="true" />
+                        <Checkbox v-model="form.deworming_status" :binary="true" />
                         <label>Dewormed</label>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.sbfpBeneficiary" :binary="true" />
+                        <Checkbox v-model="form.sbfp_beneficiary" :binary="true" />
                         <label>SBFP Beneficiary</label>
                     </div>
                     <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.fourPsBeneficiary" :binary="true" />
+                        <Checkbox v-model="form.four_ps_beneficiary" :binary="true" />
                         <label>4Ps Beneficiary</label>
                     </div>
 
@@ -134,7 +134,8 @@
             <template #footer>
                 <hr class="my-2" />
                 <div class="flex justify-end gap-2">
-                    <Button label="Cancel" class="p-button-secondary" />
+                    <Button label="Cancel"  @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${gradeLevel.value}`)"
+                            severity="secondary" class="p-button-secondary" />
                     <Button label="Add" class="p-button-primary" @click="submitForm" />
                 </div>
             </template>
@@ -144,29 +145,57 @@
 
 <script>
 import { ref, watch } from "vue";
+import { useForm, usePage } from "@inertiajs/vue3";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
-import Dropdown from "primevue/dropdown";
+import Select from "primevue/select";
 import Checkbox from "primevue/checkbox";
 import Button from "primevue/button";
 
 export default {
-    components: { Card, InputText, MultiSelect, Dropdown, Checkbox, Button },
+    components: { Card, InputText, MultiSelect, Select, Checkbox, Button },
     setup() {
-        const form = ref({
+        const form = useForm({
             height: "",
             weight: "",
-            nutritionalStatusBMI: "",
-            nutritionalStatusHeight: "",
-            visionScreening: null,
-            auditoryScreening: null,
+            nutritional_status_bmi: "",
+            nutritional_status_height: "",
+            vision_screening: null,
+            auditory_screening: null,
+            skin: "",
+            scalp: "",
+            eye: "",
+            ear: "",
+            nose: "",
+            mouth: "",
+            throat: "",
+            neck: "",
+            lungs_heart: "",
+            abdomen: "",
+            deformities: "",
+            deworming_status: false,
+            iron_supplementation: false,
+            sbfp_beneficiary: false,
+            four_ps_beneficiary: false,
+            temperature: "",
+            heart_rate: "",
+            remarks: "",
+            immunization: "",
+            other_specify: "",
+            student_id: usePage().props.student.id,
+            grade_level: usePage().props.grade_level || '6',
+            examination_date: new Date().toISOString().split('T')[0],
+            school_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+            // Frontend display fields (not sent to backend)
             skinScalp: [],
             eyesEarsNose: [],
             mouthThroatNeck: [],
             lungsHeart: [],
-            abdomen: [],
-            deformities: [],
+            nutritionalStatusBMI: "",
+            nutritionalStatusHeight: "",
+            heartRate: "",
+            otherSpecify: ""
         });
 
         const visionOptions = ["Passed", "Failed"];
@@ -182,7 +211,7 @@ export default {
         const weightError = ref("");
 
         const validateHeight = () => {
-            if (!form.value.height || form.value.height < 50 || form.value.height > 200) {
+            if (!form.height || form.height < 50 || form.height > 200) {
                 heightError.value = "Height must be between 50 cm and 200 cm.";
             } else {
                 heightError.value = "";
@@ -190,29 +219,93 @@ export default {
         };
 
         const validateWeight = () => {
-            if (!form.value.weight || form.value.weight < 10 || form.value.weight > 200) {
+            if (!form.weight || form.weight < 10 || form.weight > 200) {
                 weightError.value = "Weight must be between 10 kg and 200 kg.";
             } else {
                 weightError.value = "";
             }
         };
 
-        watch([() => form.value.height, () => form.value.weight], () => {
+        watch([() => form.height, () => form.weight], () => {
             validateHeight();
             validateWeight();
 
-            const heightMeters = form.value.height / 100;
-            if (heightMeters > 0 && form.value.weight > 0) {
-                const bmi = (form.value.weight / (heightMeters ** 2)).toFixed(2);
-                form.value.nutritionalStatusBMI = bmi < 18.5 ? "Underweight" : bmi < 24.9 ? "Normal" : bmi < 29.9 ? "Overweight" : "Obese";
+            const heightMeters = form.height / 100;
+            if (heightMeters > 0 && form.weight > 0) {
+                const bmi = (form.weight / (heightMeters ** 2)).toFixed(2);
+                const bmiStatus = bmi < 18.5 ? "Underweight" : bmi < 24.9 ? "Normal" : bmi < 29.9 ? "Overweight" : "Obese";
+                form.nutritional_status_bmi = bmiStatus;
+                form.nutritionalStatusBMI = bmiStatus; // For display
             } else {
-                form.value.nutritionalStatusBMI = "";
+                form.nutritional_status_bmi = "";
+                form.nutritionalStatusBMI = "";
             }
-            form.value.nutritionalStatusHeight = form.value.height < 120 ? "Short Stature" : "Normal";
+            const heightStatus = form.height < 120 ? "Short Stature" : "Normal";
+            form.nutritional_status_height = heightStatus;
+            form.nutritionalStatusHeight = heightStatus; // For display
         });
 
+        const page = usePage();
+        const studentId = page.props.student?.id;
+        const gradeLevel = page.props.grade_level;
+
+        console.log('Student ID:', studentId, 'Grade Level:', gradeLevel, 'Student:', page.props.student);
+
         const submitForm = () => {
-            console.log("Form Submitted", form.value);
+            // Convert multiselect arrays to individual fields
+            if (form.skinScalp && Array.isArray(form.skinScalp)) {
+                form.skin = form.skinScalp.filter(item => ['Presence of Lice', 'Redness of Skin', 'White Spots', 'Flaky Skin', 'Impetigo/Boil', 'Hematoma', 'Bruises/Injuries', 'Itchiness', 'Skin Lesions', 'Acne/Pimple'].includes(item)).join(', ');
+                form.scalp = form.skinScalp.filter(item => ['Presence of Lice', 'Redness of Skin', 'White Spots', 'Flaky Skin'].includes(item)).join(', ');
+            }
+
+            if (form.eyesEarsNose && Array.isArray(form.eyesEarsNose)) {
+                form.eye = form.eyesEarsNose.filter(item => ['Stye', 'Eye Redness', 'Ocular Misalignment', 'Pale Conjunctiva', 'Eye Discharge', 'Matted Eyelashes'].includes(item)).join(', ');
+                form.ear = form.eyesEarsNose.filter(item => ['Ear Discharge', 'Impacted Cerumen'].includes(item)).join(', ');
+                form.nose = form.eyesEarsNose.filter(item => ['Mucus Discharge', 'Nose Bleeding (Epistaxis)'].includes(item)).join(', ');
+            }
+
+            if (form.mouthThroatNeck && Array.isArray(form.mouthThroatNeck)) {
+                form.mouth = form.mouthThroatNeck.filter(item => ['Enlarged Tonsil', 'Presence of Lesions'].includes(item)).join(', ');
+                form.throat = form.mouthThroatNeck.filter(item => ['Inflamed Pharynx'].includes(item)).join(', ');
+                form.neck = form.mouthThroatNeck.filter(item => ['Enlarged Lymph Nodes'].includes(item)).join(', ');
+            }
+
+            if (form.lungsHeart && Array.isArray(form.lungsHeart)) {
+                form.lungs_heart = form.lungsHeart.join(', ');
+            }
+
+            if (form.abdomen && Array.isArray(form.abdomen)) {
+                form.abdomen = form.abdomen.join(', ');
+            }
+
+            if (form.deformities && Array.isArray(form.deformities)) {
+                form.deformities = form.deformities.join(', ');
+            }
+
+            // Map frontend field names to backend field names
+            form.heart_rate = form.heartRate || form.heart_rate;
+            form.other_specify = form.otherSpecify || form.other_specify;
+            form.nutritional_status_bmi = form.nutritionalStatusBMI || form.nutritional_status_bmi;
+            form.nutritional_status_height = form.nutritionalStatusHeight || form.nutritional_status_height;
+
+            // Convert boolean checkboxes to Yes/No strings
+            form.deworming_status = form.deworming_status ? 'Yes' : 'No';
+            form.iron_supplementation = form.iron_supplementation ? 'Yes' : 'No';
+
+            console.log('Submitting form data:', form);
+
+            // Submit the form data using the correct route name
+            form.post(route('health-examination.store'), {
+                onSuccess: () => {
+                    // The server will handle the redirect with the success message
+                    console.log('Form submitted successfully, waiting for redirect...');
+                },
+                onError: (errors) => {
+                    console.error('Form submission errors:', errors);
+                },
+                preserveScroll: true,
+                preserveState: true
+            });
         };
 
         return {

@@ -9,8 +9,27 @@ class OralHealthExamination extends Model
 {
     protected $fillable = [
         'student_id',
+        'grade_level',
+        'school_year',
         'examination_date',
-        // Add other relevant fields
+        'permanent_index_dft',
+        'permanent_teeth_decayed',
+        'permanent_teeth_filled',
+        'permanent_total_dft',
+        'permanent_for_extraction',
+        'permanent_for_filling',
+        'temporary_index_dft',
+        'temporary_teeth_decayed',
+        'temporary_teeth_filled',
+        'temporary_total_dft',
+        'temporary_for_extraction',
+        'temporary_for_filling',
+        'tooth_symbols',
+    ];
+
+    protected $casts = [
+        'tooth_symbols' => 'array',
+        'examination_date' => 'date',
     ];
 
     public function student(): BelongsTo

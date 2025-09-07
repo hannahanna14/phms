@@ -16,12 +16,12 @@ import MainLayout from './Layouts/MainLayout.vue'
 
 createInertiaApp({
   title: (title) => `MedPort ${title}`,
-  resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
   resolve: (name) => {
     const pages = import.meta.glob('./Pages/**/*.vue', { eager: true })
     let page = pages[`./Pages/${name}.vue`];
     if (!page) {
         console.error(`Page ${name} not found in './Pages/'`);
+        return null;
     }
     // Don't apply MainLayout to auth pages
     if (!name.startsWith('Auth/')) {

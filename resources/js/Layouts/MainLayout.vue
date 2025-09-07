@@ -162,13 +162,13 @@ const sideBarItems = ref([
     },
     {
         label: 'Health Report',
-        icon: 'pi pi-file',
-        route: '/generate-record'
+        icon: 'pi pi-chart-bar',
+        route: '/health-report'
     },
     {
         label: 'Oral Health Report',
-        icon: 'pi pi-file',
-        route: '/generate-record'
+        icon: 'pi pi-teeth',
+        route: '/oral-health-report'
     }
 ])
 </script>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -77,7 +77,7 @@ const viewHealthExam = (student) => {
         <div class="grid grid-cols-12 gap-4 mb-6">
             <div class="col-span-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                <Dropdown
+                <Select
                     v-model="gradeLevel"
                     :options="gradeLevels"
                     placeholder="Select Grade"
@@ -86,7 +86,7 @@ const viewHealthExam = (student) => {
             </div>
             <div class="col-span-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
-                <Dropdown
+                <Select
                     v-model="schoolYear"
                     :options="schoolYears"
                     placeholder="Select Year"
@@ -131,7 +131,7 @@ const viewHealthExam = (student) => {
             <Column field="school_year" header="School Year"></Column>
             <Column field="health_record" header="Health Record">
                 <template #body="slotProps">
-                    <Dropdown
+                    <Select
                         v-model="slotProps.data.health_record"
                         :options="['Health Examination', 'Oral Health Examination', 'Incident']"
                         class="w-60" placeholder="Select Record Type"

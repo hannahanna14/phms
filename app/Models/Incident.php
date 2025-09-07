@@ -9,9 +9,12 @@ class Incident extends Model
 {
     protected $fillable = [
         'student_id',
-        'incident_date',
-        'description',
-        // Add other relevant fields
+        'date',
+        'complaint',
+        'actions_taken',
+        'status',
+        'grade_level',
+        'school_year'
     ];
 
     public function student(): BelongsTo

@@ -6,20 +6,24 @@ use App\Models\Student;
 use App\Models\HealthExamination;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HealthExaminationSeeder extends Seeder
 {
     public function run()
     {
+        // Truncate health-related tables once before creating records
+        DB::table('health_examinations')->truncate();
+        DB::table('oral_health_examinations')->truncate();
+        DB::table('incidents')->truncate();
+
         $students = Student::all();
 
         foreach ($students as $student) {
-            // Truncate health-related tables
-        DB::table('health_examinations')->truncate();
-        DB::table('oral_healths')->truncate();
-        DB::table('incidents')->truncate();
             HealthExamination::create([
                 'student_id' => $student->id,
+                'grade_level' => $student->grade_level,
+                'school_year' => $student->school_year,
                 'examination_date' => Carbon::now(),
                 'temperature' => 36.5,
                 'heart_rate' => '72 bpm',
@@ -41,7 +45,7 @@ class HealthExaminationSeeder extends Seeder
                 'abdomen' => 'Soft',
                 'deformities' => 'None',
                 'remarks' => 'Routine health check',
-                
+
                 // New columns
                 'deworming_status' => $student->id % 2 === 0 ? 'dewormed' : 'not_dewormed',
                 'iron_supplementation' => $student->id % 3 === 0 ? 'positive' : 'negative'

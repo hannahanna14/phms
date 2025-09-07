@@ -47,7 +47,7 @@
                     <!-- Role -->
                     <div class="field">
                         <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-                        <Dropdown
+                        <Select
                             id="role"
                             v-model="form.role"
                             :options="roles"
@@ -81,7 +81,7 @@ import { Head, useForm } from '@inertiajs/vue3'
 import MainLayout from '@/Layouts/MainLayout.vue'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Button from 'primevue/button'
 
 onMounted(() => {

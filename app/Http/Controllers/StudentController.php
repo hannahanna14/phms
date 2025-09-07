@@ -174,20 +174,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function generateRecord()
-    {
-        $students = Student::select(
-            'id', 
-            'full_name as name', 
-            'lrn', 
-            'grade_level', 
-            'school_year'
-        )->get();
-
-        return Inertia::render('Generate Record/Index', [
-            'students' => $students
-        ]);
-    }
+    // Removed generateRecord method - replaced by HealthReportController
 
     public function showHealthExam(Student $student)
     {
@@ -220,15 +207,70 @@ class StudentController extends Controller
         ]);
     }
 
-    public function showIncident(Student $student)
+    public function showIncident(Student $student, Request $request)
     {
+        $grade = $request->query('grade', $student->grade_level);
+        
+        // Get school year based on grade level
+        $schoolYear = $this->getSchoolYearForGrade($grade);
+        
         $incidents = Incident::where('student_id', $student->id)
+            ->where('grade_level', $grade)
+            ->where('school_year', $schoolYear)
             ->latest()
             ->get();
 
         return Inertia::render('Pupil Health/Incident/Show', [
             'student' => $student,
-            'incidents' => $incidents
+            'incidents' => $incidents,
+            'currentGrade' => $grade,
+            'currentSchoolYear' => $schoolYear
         ]);
+    }
+
+    public function createIncident(Student $student)
+    {
+        return Inertia::render('Pupil Health/Incident/Create', [
+            'student' => $student
+        ]);
+    }
+
+    public function storeIncident(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'date' => 'required|date',
+            'complaint' => 'required|string',
+            'actions_taken' => 'required|string',
+            'grade_level' => 'required|string',
+            'school_year' => 'required|string'
+        ]);
+
+        // Set default status to pending
+        $validated['status'] = 'pending';
+
+        Incident::create($validated);
+
+        return redirect()->route('pupil-health.incident', [
+            'student' => $validated['student_id'],
+            'grade' => $validated['grade_level']
+        ])->with('success', 'Incident report created successfully.');
+    }
+
+    private function getSchoolYearForGrade($grade)
+    {
+        // Map grade levels to school years
+        $gradeToYear = [
+            'Kinder 1' => '2022-2023',
+            'Kinder 2' => '2023-2024', 
+            'Grade 1' => '2024-2025',
+            'Grade 2' => '2023-2024',
+            'Grade 3' => '2022-2023',
+            'Grade 4' => '2021-2022',
+            'Grade 5' => '2020-2021',
+            'Grade 6' => '2019-2020'
+        ];
+        
+        return $gradeToYear[$grade] ?? '2024-2025';
     }
 }

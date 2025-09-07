@@ -24,9 +24,16 @@ class Student extends Model
         return $this->hasMany(HealthExamination::class);
     }
 
-    public function oralHealthExaminations(): HasMany
+    public function oralHealthExaminations()
     {
         return $this->hasMany(OralHealthExamination::class);
+    }
+
+    public function assignedTeachers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'student_teacher_assignments', 'student_id', 'teacher_id')
+                    ->withPivot('grade_level', 'section', 'school_year')
+                    ->withTimestamps();
     }
 
     public function incidents(): HasMany

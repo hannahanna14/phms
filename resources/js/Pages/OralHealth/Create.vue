@@ -1,137 +1,901 @@
 <template>
     <Head title="Create Oral Health Examination" />
-    <div class="oral-health-examination-create">
-        <div class="container mx-auto px-4 py-8">
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h1 class="text-2xl font-bold mb-6">Oral Health Examination for {{ student.full_name }}</h1>
+    <div class="min-h-screen bg-gray-50 p-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white shadow rounded-lg p-6">
+                <div class="text-center mb-6">
+                    <h1 class="text-xl font-bold text-blue-600">Pupil Oral Health Examination</h1>
+                    <p class="text-gray-600">Naawan Central School</p>
+                    <p class="text-sm text-gray-500">Student: {{ student.full_name }} | Grade: {{ gradeLevel }}</p>
+                </div>
                 
-                <form @submit.prevent="submit" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">Index DFT</label>
-                            <input 
-                                type="number" 
-                                v-model="form.index_dft" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Index DFT"
-                            />
-                            <small v-if="errors.index_dft" class="text-red-500">{{ errors.index_dft }}</small>
+                <!-- Interactive Dental Chart -->
+                <div class="mb-8">
+                    <div class="flex justify-center mb-4">
+                        <div class="chart-selector">
+                            <button 
+                                type="button"
+                                :class="['chart-btn', { active: showPermanent }]"
+                                @click="toggleChartType('permanent')"
+                            >
+                                Permanent Teeth
+                            </button>
+                            <button 
+                                type="button"
+                                :class="['chart-btn', { active: !showPermanent }]"
+                                @click="toggleChartType('primary')"
+                            >
+                                Primary Teeth
+                            </button>
                         </div>
-
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">Number of Teeth Decayed</label>
-                            <input 
-                                type="number" 
-                                v-model="form.number_of_teeth_decayed" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Decayed Teeth"
-                            />
-                            <small v-if="errors.number_of_teeth_decayed" class="text-red-500">{{ errors.number_of_teeth_decayed }}</small>
+                    </div>
+                    
+                    <div class="dental-chart-container">
+                        <div v-show="showPermanent" class="dental-chart compact">
+                            <h3 class="text-center text-lg font-semibold mb-4">Permanent Teeth (32 teeth)</h3>
+                            <div class="teeth-section">
+                                <div class="arch-label">Upper Teeth</div>
+                                <div id="upper-teeth" class="teeth-row upper compact"></div>
+                                <div id="lower-teeth" class="teeth-row lower compact"></div>
+                                <div class="arch-label">Lower Teeth</div>
+                            </div>
                         </div>
-
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">Number of Teeth Filled</label>
-                            <input 
-                                type="number" 
-                                v-model="form.number_of_teeth_filled" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Filled Teeth"
-                            />
-                            <small v-if="errors.number_of_teeth_filled" class="text-red-500">{{ errors.number_of_teeth_filled }}</small>
+                        
+                        <div v-show="!showPermanent" class="dental-chart compact">
+                            <h3 class="text-center text-lg font-semibold mb-4">Primary Teeth (20 teeth)</h3>
+                            <div class="teeth-section">
+                                <div class="arch-label">Upper Primary Teeth</div>
+                                <div id="upper-primary" class="teeth-row upper primary compact"></div>
+                                <div id="lower-primary" class="teeth-row lower primary compact"></div>
+                                <div class="arch-label">Lower Primary Teeth</div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                
+                <form @submit.prevent="submit" class="space-y-6">
+                    <!-- Permanent Teeth Section -->
+                    <div class="border rounded-lg p-6">
+                        <h2 class="text-lg font-semibold text-center mb-6">Permanent Teeth</h2>
+                        
+                        <div class="grid grid-cols-3 gap-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t.</label>
+                                <InputText 
+                                    v-model="form.permanent_index_dft" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_index_dft" class="text-red-500">{{ errors.permanent_index_dft }}</small>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">Total DFT</label>
-                            <input 
-                                type="number" 
-                                v-model="form.total_dft" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Total DFT"
-                            />
-                            <small v-if="errors.total_dft" class="text-red-500">{{ errors.total_dft }}</small>
-                        </div>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed</label>
+                                <InputText 
+                                    v-model="form.permanent_teeth_decayed" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_teeth_decayed" class="text-red-500">{{ errors.permanent_teeth_decayed }}</small>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">For Extraction</label>
-                            <input 
-                                type="number" 
-                                v-model="form.for_extraction" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Teeth for Extraction"
-                            />
-                            <small v-if="errors.for_extraction" class="text-red-500">{{ errors.for_extraction }}</small>
-                        </div>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled</label>
+                                <InputText 
+                                    v-model="form.permanent_teeth_filled" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_teeth_filled" class="text-red-500">{{ errors.permanent_teeth_filled }}</small>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">For Filling</label>
-                            <input 
-                                type="number" 
-                                v-model="form.for_filling" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Enter Teeth for Filling"
-                            />
-                            <small v-if="errors.for_filling" class="text-red-500">{{ errors.for_filling }}</small>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t</label>
+                                <InputText 
+                                    v-model="form.permanent_total_dft" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_total_dft" class="text-red-500">{{ errors.permanent_total_dft }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction</label>
+                                <InputText 
+                                    v-model="form.permanent_for_extraction" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_for_extraction" class="text-red-500">{{ errors.permanent_for_extraction }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Filling</label>
+                                <InputText 
+                                    v-model="form.permanent_for_filling" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.permanent_for_filling" class="text-red-500">{{ errors.permanent_for_filling }}</small>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-end space-x-4 mt-6">
-                        <button 
+                    <!-- Temporary Teeth Section -->
+                    <div class="border rounded-lg p-6">
+                        <h2 class="text-lg font-semibold text-center mb-6">Temporary Teeth</h2>
+                        
+                        <div class="grid grid-cols-3 gap-6">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t.</label>
+                                <InputText 
+                                    v-model="form.temporary_index_dft" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_index_dft" class="text-red-500">{{ errors.temporary_index_dft }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed</label>
+                                <InputText 
+                                    v-model="form.temporary_teeth_decayed" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_teeth_decayed" class="text-red-500">{{ errors.temporary_teeth_decayed }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled</label>
+                                <InputText 
+                                    v-model="form.temporary_teeth_filled" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_teeth_filled" class="text-red-500">{{ errors.temporary_teeth_filled }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t</label>
+                                <InputText 
+                                    v-model="form.temporary_total_dft" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_total_dft" class="text-red-500">{{ errors.temporary_total_dft }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction</label>
+                                <InputText 
+                                    v-model="form.temporary_for_extraction" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_for_extraction" class="text-red-500">{{ errors.temporary_for_extraction }}</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Filling</label>
+                                <InputText 
+                                    v-model="form.temporary_for_filling" 
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                />
+                                <small v-if="errors.temporary_for_filling" class="text-red-500">{{ errors.temporary_for_filling }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-4 mt-8">
+                        <Button 
                             type="button" 
-                            @click="$inertia.visit(route('oral-health-examination.show', student.id))"
-                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-                        >
-                            Cancel
-                        </button>
-                        <button 
+                            @click="$inertia.visit(`/pupil-health/oral-health/${student.id}?grade=${gradeLevel.value}`)"
+                            severity="secondary"
+                            label="Cancel"
+                        />
+                        <Button 
                             type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        >
-                            Save Record
-                        </button>
+                            label="Add"
+                            :loading="form.processing"
+                        />
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panel for Symbol Selection -->
+    <div id="symbol-panel" class="side-panel">
+        <div class="panel-header">
+            <h3 id="selected-tooth-title">Select a tooth</h3>
+            <button id="close-panel" class="close-btn" type="button">&times;</button>
+        </div>
+        
+        <div class="panel-content">
+            <div class="current-symbols-display" id="current-symbols-display">
+                <strong>Current conditions:</strong> <span id="tooth-symbols">None</span>
+            </div>
+            
+            <div class="symbol-categories">
+                <div class="symbol-group">
+                    <h4>Conditions</h4>
+                    <div class="symbol-buttons">
+                        <button class="symbol-btn" data-symbol="X" title="Carious tooth indicated for extraction" type="button">X</button>
+                        <button class="symbol-btn" data-symbol="D" title="Carious tooth indicated for filling" type="button">D</button>
+                        <button class="symbol-btn" data-symbol="RF" title="Root fragment" type="button">RF</button>
+                        <button class="symbol-btn" data-symbol="M" title="Missing tooth" type="button">M</button>
+                    </div>
+                </div>
+                
+                <div class="symbol-group">
+                    <h4>Treatments</h4>
+                    <div class="symbol-buttons">
+                        <button class="symbol-btn" data-symbol="F2" title="Permanent filled tooth with recurrence of decay" type="button">F2</button>
+                        <button class="symbol-btn" data-symbol="√" title="Sound/erupted Permanent tooth" type="button">√</button>
+                        <button class="symbol-btn" data-symbol="PFS" title="Pit and Fissure Sealant" type="button">PFS</button>
+                        <button class="symbol-btn" data-symbol="JC" title="Jacket Crown" type="button">JC</button>
+                    </div>
+                </div>
+                
+                <div class="symbol-group">
+                    <h4>Prosthetics</h4>
+                    <div class="symbol-buttons">
+                        <button class="symbol-btn" data-symbol="P" title="Pontic" type="button">P</button>
+                        <button class="symbol-btn" data-symbol="RPD" title="Removable Partial Denture" type="button">RPD</button>
+                        <button class="symbol-btn" data-symbol="FB" title="Fixed Bridge" type="button">FB</button>
+                        <button class="symbol-btn" data-symbol="CD" title="Complete Denture" type="button">CD</button>
+                    </div>
+                </div>
+                
+                <div class="symbol-group">
+                    <h4>Restorations</h4>
+                    <div class="symbol-buttons">
+                        <button class="symbol-btn" data-symbol="GI" title="Glass Ionomer" type="button">GI</button>
+                        <button class="symbol-btn" data-symbol="CO" title="Composite" type="button">CO</button>
+                        <button class="symbol-btn" data-symbol="AM" title="Amalgam" type="button">AM</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-actions">
+                <button id="clear-tooth-symbols" class="action-btn secondary" type="button">Clear Tooth</button>
+                <button id="confirm-symbols" class="action-btn primary" type="button">Confirm</button>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, usePage } from '@inertiajs/vue3'
+import InputText from 'primevue/inputtext'
+import Button from 'primevue/button'
+import { computed, ref, onMounted, nextTick } from 'vue'
 
 const props = defineProps({
     student: {
         type: Object,
         required: true
+    },
+    errors: {
+        type: Object,
+        default: () => ({})
     }
 })
 
-const form = useForm({
-    student_id: props.student.id,
-    index_dft: null,
-    number_of_teeth_decayed: null,
-    number_of_teeth_filled: null,
-    total_dft: null,
-    for_extraction: null,
-    for_filling: null
+const page = usePage()
+const gradeLevel = computed(() => {
+    return new URLSearchParams(window.location.search).get('grade') || props.student.grade_level
 })
 
+// Dental chart state
+const showPermanent = ref(true)
+let selectedTooth = null
+let toothSymbols = {}
+
+const form = useForm({
+    student_id: props.student.id,
+    grade_level: gradeLevel.value,
+    school_year: props.student.school_year || '2024-2025',
+    examination_date: new Date().toISOString().split('T')[0],
+    original_grade: gradeLevel.value,
+    permanent_index_dft: 0,
+    permanent_teeth_decayed: 0,
+    permanent_teeth_filled: 0,
+    permanent_total_dft: 0,
+    permanent_for_extraction: 0,
+    permanent_for_filling: 0,
+    temporary_index_dft: 0,
+    temporary_teeth_decayed: 0,
+    temporary_teeth_filled: 0,
+    temporary_total_dft: 0,
+    temporary_for_extraction: 0,
+    temporary_for_filling: 0,
+    tooth_symbols: {}
+})
+
+// Determine which teeth to show based on grade level
+const shouldShowPrimaryTeeth = computed(() => {
+    const grade = parseInt(gradeLevel.value) || 0
+    return grade <= 3 // Show primary teeth for Kinder and Grades 1-3
+})
+
+const toggleChartType = (type) => {
+    showPermanent.value = type === 'permanent'
+}
+
+// Dental chart functionality
+onMounted(() => {
+    nextTick(() => {
+        initializeDentalChart()
+    })
+})
+
+const initializeDentalChart = () => {
+    createUpperTeeth()
+    createLowerTeeth()
+    createPrimaryTeeth()
+    addToothSelectionFunctionality()
+    addPanelFunctionality()
+    
+    // Set initial chart based on grade level
+    if (shouldShowPrimaryTeeth.value) {
+        showPermanent.value = false
+    }
+}
+
+const createUpperTeeth = () => {
+    const container = document.getElementById('upper-teeth')
+    if (!container) return
+    
+    const toothNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
+    const toothTypes = ['Wisdom Tooth', 'Molar', 'Molar', 'Premolar', 'Premolar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Premolar', 'Premolar', 'Molar', 'Molar', 'Wisdom Tooth']
+    
+    container.innerHTML = ''
+    for (let i = 0; i < toothNumbers.length; i++) {
+        const tooth = document.createElement('div')
+        tooth.className = 'tooth'
+        tooth.textContent = toothNumbers[i]
+        tooth.setAttribute('data-number', toothNumbers[i])
+        tooth.setAttribute('data-type', toothTypes[i])
+        
+        const curve = Math.sin((i / (toothNumbers.length - 1)) * Math.PI) * 8
+        tooth.style.left = `${i * 35 + 20}px`
+        tooth.style.top = `${15 - curve}px`
+        
+        container.appendChild(tooth)
+    }
+}
+
+const createLowerTeeth = () => {
+    const container = document.getElementById('lower-teeth')
+    if (!container) return
+    
+    const toothNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+    const toothTypes = ['Wisdom Tooth', 'Molar', 'Molar', 'Premolar', 'Premolar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Premolar', 'Premolar', 'Molar', 'Molar', 'Wisdom Tooth']
+    
+    container.innerHTML = ''
+    for (let i = 0; i < toothNumbers.length; i++) {
+        const tooth = document.createElement('div')
+        tooth.className = 'tooth'
+        tooth.textContent = toothNumbers[i]
+        tooth.setAttribute('data-number', toothNumbers[i])
+        tooth.setAttribute('data-type', toothTypes[i])
+        
+        const curve = Math.sin((i / (toothNumbers.length - 1)) * Math.PI) * 8
+        tooth.style.left = `${i * 35 + 20}px`
+        tooth.style.top = `${15 + curve}px`
+        
+        container.appendChild(tooth)
+    }
+}
+
+const createPrimaryTeeth = () => {
+    const upperContainer = document.getElementById('upper-primary')
+    const lowerContainer = document.getElementById('lower-primary')
+    if (!upperContainer || !lowerContainer) return
+    
+    // Upper Primary Teeth
+    const upperNumbers = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65]
+    const upperTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
+    
+    upperContainer.innerHTML = ''
+    for (let i = 0; i < upperNumbers.length; i++) {
+        const tooth = document.createElement('div')
+        tooth.className = 'tooth primary-tooth'
+        tooth.textContent = upperNumbers[i]
+        tooth.setAttribute('data-number', upperNumbers[i])
+        tooth.setAttribute('data-type', upperTypes[i])
+        tooth.setAttribute('data-category', 'Primary')
+        
+        const curve = Math.sin((i / (upperNumbers.length - 1)) * Math.PI) * 6
+        tooth.style.left = `${i * 55 + 30}px`
+        tooth.style.top = `${15 - curve}px`
+        
+        upperContainer.appendChild(tooth)
+    }
+    
+    // Lower Primary Teeth
+    const lowerNumbers = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+    const lowerTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
+    
+    lowerContainer.innerHTML = ''
+    for (let i = 0; i < lowerNumbers.length; i++) {
+        const tooth = document.createElement('div')
+        tooth.className = 'tooth primary-tooth'
+        tooth.textContent = lowerNumbers[i]
+        tooth.setAttribute('data-number', lowerNumbers[i])
+        tooth.setAttribute('data-type', lowerTypes[i])
+        tooth.setAttribute('data-category', 'Primary')
+        
+        const curve = Math.sin((i / (lowerNumbers.length - 1)) * Math.PI) * 6
+        tooth.style.left = `${i * 55 + 30}px`
+        tooth.style.top = `${15 + curve}px`
+        
+        lowerContainer.appendChild(tooth)
+    }
+}
+
+const addToothSelectionFunctionality = () => {
+    const teeth = document.querySelectorAll('.tooth')
+    
+    teeth.forEach(tooth => {
+        tooth.addEventListener('click', function() {
+            if (selectedTooth) {
+                selectedTooth.classList.remove('selected')
+            }
+            
+            selectedTooth = this
+            this.classList.add('selected')
+            
+            openSidePanel()
+            updatePanelContent()
+        })
+    })
+}
+
+const openSidePanel = () => {
+    const panel = document.getElementById('symbol-panel')
+    if (panel) panel.classList.add('open')
+}
+
+const closeSidePanel = () => {
+    const panel = document.getElementById('symbol-panel')
+    if (panel) panel.classList.remove('open')
+    
+    if (selectedTooth) {
+        selectedTooth.classList.remove('selected')
+        selectedTooth = null
+    }
+}
+
+const updatePanelContent = () => {
+    if (!selectedTooth) return
+    
+    const toothNumber = selectedTooth.dataset.number
+    const toothType = selectedTooth.dataset.type
+    const category = selectedTooth.dataset.category || 'Permanent'
+    
+    const titleElement = document.getElementById('selected-tooth-title')
+    if (titleElement) {
+        titleElement.textContent = `${category} Tooth ${toothNumber} (${toothType})`
+    }
+    
+    const currentSymbols = toothSymbols[toothNumber] || []
+    const symbolsDisplay = document.getElementById('tooth-symbols')
+    if (symbolsDisplay) {
+        symbolsDisplay.textContent = currentSymbols.length > 0 ? currentSymbols.join(', ') : 'None'
+    }
+    
+    const symbolBtns = document.querySelectorAll('.symbol-btn')
+    symbolBtns.forEach(btn => {
+        const symbol = btn.dataset.symbol
+        if (currentSymbols.includes(symbol)) {
+            btn.classList.add('selected')
+        } else {
+            btn.classList.remove('selected')
+        }
+    })
+}
+
+const addPanelFunctionality = () => {
+    const closeBtn = document.getElementById('close-panel')
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeSidePanel)
+    }
+    
+    const symbolBtns = document.querySelectorAll('.symbol-btn')
+    symbolBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!selectedTooth) return
+            
+            const symbol = this.dataset.symbol
+            const toothNumber = selectedTooth.dataset.number
+            
+            if (!toothSymbols[toothNumber]) {
+                toothSymbols[toothNumber] = []
+            }
+            
+            const symbolIndex = toothSymbols[toothNumber].indexOf(symbol)
+            if (symbolIndex > -1) {
+                toothSymbols[toothNumber].splice(symbolIndex, 1)
+                this.classList.remove('selected')
+            } else {
+                toothSymbols[toothNumber].push(symbol)
+                this.classList.add('selected')
+            }
+            
+            updateToothSymbolDisplay()
+            updatePanelContent()
+            updateFormData()
+        })
+    })
+    
+    const clearBtn = document.getElementById('clear-tooth-symbols')
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            if (!selectedTooth) return
+            
+            const toothNumber = selectedTooth.dataset.number
+            toothSymbols[toothNumber] = []
+            
+            updateToothSymbolDisplay()
+            updatePanelContent()
+            updateFormData()
+        })
+    }
+    
+    const confirmBtn = document.getElementById('confirm-symbols')
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', closeSidePanel)
+    }
+}
+
+const updateToothSymbolDisplay = () => {
+    if (!selectedTooth) return
+    
+    const toothNumber = selectedTooth.dataset.number
+    const symbols = toothSymbols[toothNumber] || []
+    
+    const existingSymbol = selectedTooth.querySelector('.tooth-symbol')
+    if (existingSymbol) {
+        existingSymbol.remove()
+    }
+    
+    if (symbols.length > 0) {
+        selectedTooth.classList.add('has-symbol')
+        
+        const symbolElement = document.createElement('div')
+        symbolElement.className = 'tooth-symbol'
+        symbolElement.textContent = symbols.length > 1 ? symbols.length : symbols[0]
+        symbolElement.title = symbols.join(', ')
+        
+        selectedTooth.appendChild(symbolElement)
+    } else {
+        selectedTooth.classList.remove('has-symbol')
+    }
+}
+
+const updateFormData = () => {
+    form.tooth_symbols = { ...toothSymbols }
+}
+
 const submit = () => {
+    updateFormData()
+    console.log('Submitting form:', form.data())
+    
     form.post(route('oral-health-examination.store'), {
         preserveScroll: true,
         onSuccess: () => {
-            // Redirect back to student's oral health examination page
-            $inertia.visit(route('oral-health-examination.show', props.student.id))
+            console.log('Form submitted successfully')
+            sessionStorage.setItem(`currentGrade_${props.student.id}`, `Grade ${gradeLevel.value}`)
+        },
+        onError: (errors) => {
+            console.error('Form submission errors:', errors)
         }
     })
 }
 </script>
 
-<style scoped>
-.oral-health-examination-create {
-    background-color: #f5f7f9;
-    min-height: 100vh;
+<style>
+/* Compact Dental Chart Styles for PHMS Integration */
+.dental-chart-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 800px;
 }
 
+.dental-chart.compact {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.teeth-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.teeth-row.compact {
+    position: relative;
+    width: 600px;
+    height: 60px;
+}
+
+.teeth-row.primary.compact {
+    width: 580px;
+}
+
+.arch-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #666;
+    text-align: center;
+}
+
+.tooth {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.tooth:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+.primary-tooth {
+    background: linear-gradient(145deg, #ff9a9e, #fecfef);
+    border: 2px solid #ff6b9d;
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+}
+
+.primary-tooth:hover {
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.4);
+}
+
+.tooth.selected {
+    border: 3px solid #ff4757 !important;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.5) !important;
+    z-index: 10;
+}
+
+.tooth.has-symbol {
+    position: relative;
+}
+
+.tooth-symbol {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    z-index: 5;
+}
+
+/* Chart Selector */
+.chart-selector {
+    display: flex;
+    gap: 8px;
+    background: #e9ecef;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.chart-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #666;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.chart-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.chart-btn.active {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Side Panel Styles */
+.side-panel {
+    position: fixed;
+    top: 60px;
+    right: -350px;
+    width: 350px;
+    height: calc(100vh - 60px);
+    background: white;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.side-panel.open {
+    right: 0;
+}
+
+.panel-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.panel-content {
+    padding: 16px;
+}
+
+.current-symbols-display {
+    background: #f8f9ff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #667eea;
+    font-size: 0.9rem;
+}
+
+.symbol-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.symbol-group h4 {
+    color: #333;
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 4px;
+}
+
+.symbol-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.symbol-btn {
+    padding: 8px 6px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.symbol-btn:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-1px);
+}
+
+.symbol-btn.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn.secondary {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e0e0e0;
+}
+
+.action-btn.secondary:hover {
+    background: #e9ecef;
+    border-color: #ccc;
+}
+
+/* Form Styles */
 .form-group {
     display: flex;
     flex-direction: column;

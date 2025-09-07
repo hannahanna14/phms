@@ -9,8 +9,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('health_examinations', function (Blueprint $table) {
-            $table->enum('deworming_status', ['dewormed', 'not_dewormed'])->nullable();
-            $table->enum('iron_supplementation', ['positive', 'negative'])->nullable();
+            $table->string('deworming_status')->nullable();
+            $table->string('iron_supplementation')->nullable();
+            $table->boolean('sbfp_beneficiary')->default(false);
+            $table->boolean('four_ps_beneficiary')->default(false);
+            $table->string('immunization')->nullable();
+            $table->text('other_specify')->nullable();
         });
     }
 

@@ -9,6 +9,8 @@ class HealthExamination extends Model
 {
     protected $fillable = [
         'student_id',
+        'grade_level',
+        'school_year',
         'examination_date',
         'temperature',
         'heart_rate',
@@ -29,6 +31,12 @@ class HealthExamination extends Model
         'lungs_heart',
         'abdomen',
         'deformities',
+        'deworming_status',
+        'iron_supplementation',
+        'sbfp_beneficiary',
+        'four_ps_beneficiary',
+        'immunization',
+        'other_specify',
         'remarks'
     ];
 

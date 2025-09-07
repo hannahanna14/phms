@@ -5,7 +5,7 @@ import { usePage, Link } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import Tag from 'primevue/tag';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 
 // Destructure page props
 const { student, oralHealth } = usePage().props;
@@ -106,12 +106,12 @@ onMounted(() => {
 
             <!-- Dropdowns -->
             <div class="flex gap-4 mt-4">
-                <Dropdown 
+                <Select 
                     v-model="selectedGrade" 
                     :options="gradeLevels" 
                     class="w-40" 
                 />
-                <Dropdown 
+                <Select 
                     v-model="selectedYear" 
                     :options="schoolYears" 
                     class="w-40" 

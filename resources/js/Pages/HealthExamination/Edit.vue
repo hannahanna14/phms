@@ -33,12 +33,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Nutritional Status(BMI)</label>
-                        <Dropdown v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" />
+                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nutritional_status_bmi">{{ errors.nutritional_status_bmi }}</small>
                     </div>
                     <div class="form-group">
                         <label>Nutritional Status(Height for Age)</label>
-                        <Dropdown v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" />
+                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nutritional_status_height">{{ errors.nutritional_status_height }}</small>
                     </div>
                 </div>
@@ -47,12 +47,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Vision Screening</label>
-                        <Dropdown v-model="form.vision_screening" :options="['Passed', 'Failed']" class="w-full" />
+                        <Select v-model="form.vision_screening" :options="['Passed', 'Failed']" class="w-full" />
                         <small class="text-red-500" v-if="errors.vision_screening">{{ errors.vision_screening }}</small>
                     </div>
                     <div class="form-group">
                         <label>Auditory Screening</label>
-                        <Dropdown v-model="form.auditory_screening" :options="['Passed', 'Failed']" class="w-full" />
+                        <Select v-model="form.auditory_screening" :options="['Passed', 'Failed']" class="w-full" />
                         <small class="text-red-500" v-if="errors.auditory_screening">{{ errors.auditory_screening }}</small>
                     </div>
                 </div>
@@ -61,17 +61,17 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Skin</label>
-                        <Dropdown v-model="form.skin" :options="['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin']" class="w-full" />
+                        <Select v-model="form.skin" :options="['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin']" class="w-full" />
                         <small class="text-red-500" v-if="errors.skin">{{ errors.skin }}</small>
                     </div>
                     <div class="form-group">
                         <label>Scalp</label>
-                        <Dropdown v-model="form.scalp" :options="['Normal', 'Presence of Lice']" class="w-full" />
+                        <Select v-model="form.scalp" :options="['Normal', 'Presence of Lice']" class="w-full" />
                         <small class="text-red-500" v-if="errors.scalp">{{ errors.scalp }}</small>
                     </div>
                     <div class="form-group">
                         <label>Eye</label>
-                        <Dropdown v-model="form.eye" :options="['Normal', 'Eye Redness', 'Pale Conjunctiva']" class="w-full" />
+                        <Select v-model="form.eye" :options="['Normal', 'Eye Redness', 'Pale Conjunctiva']" class="w-full" />
                         <small class="text-red-500" v-if="errors.eye">{{ errors.eye }}</small>
                     </div>
                 </div>
@@ -79,17 +79,17 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Ear</label>
-                        <Dropdown v-model="form.ear" :options="['Normal', 'Ear discharge']" class="w-full" />
+                        <Select v-model="form.ear" :options="['Normal', 'Ear discharge']" class="w-full" />
                         <small class="text-red-500" v-if="errors.ear">{{ errors.ear }}</small>
                     </div>
                     <div class="form-group">
                         <label>Nose</label>
-                        <Dropdown v-model="form.nose" :options="['Normal', 'Mucus discharge', 'Nose Bleeding']" class="w-full" />
+                        <Select v-model="form.nose" :options="['Normal', 'Mucus discharge', 'Nose Bleeding']" class="w-full" />
                         <small class="text-red-500" v-if="errors.nose">{{ errors.nose }}</small>
                     </div>
                     <div class="form-group">
                         <label>Mouth</label>
-                        <Dropdown v-model="form.mouth" :options="['Normal', 'Enlarged tonsil', 'Inflamed pharynx']" class="w-full" />
+                        <Select v-model="form.mouth" :options="['Normal', 'Enlarged tonsil', 'Inflamed pharynx']" class="w-full" />
                         <small class="text-red-500" v-if="errors.mouth">{{ errors.mouth }}</small>
                     </div>
                 </div>
@@ -97,17 +97,17 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Lungs/Heart</label>
-                        <Dropdown v-model="form.lungs_heart" :options="['Normal', 'Rales', 'Wheeze', 'Murmur', 'Irregular heart rate']" class="w-full" />
+                        <Select v-model="form.lungs_heart" :options="['Normal', 'Rales', 'Wheeze', 'Murmur', 'Irregular heart rate']" class="w-full" />
                         <small class="text-red-500" v-if="errors.lungs_heart">{{ errors.lungs_heart }}</small>
                     </div>
                     <div class="form-group">
                         <label>Abdomen</label>
-                        <Dropdown v-model="form.abdomen" :options="['Normal', 'Distended', 'Tenderness']" class="w-full" />
+                        <Select v-model="form.abdomen" :options="['Normal', 'Distended', 'Tenderness']" class="w-full" />
                         <small class="text-red-500" v-if="errors.abdomen">{{ errors.abdomen }}</small>
                     </div>
                     <div class="form-group">
                         <label>Deformities</label>
-                        <Dropdown v-model="form.deformities" :options="['None', 'Acquired', 'Congenital']" class="w-full" />
+                        <Select v-model="form.deformities" :options="['None', 'Acquired', 'Congenital']" class="w-full" />
                         <small class="text-red-500" v-if="errors.deformities">{{ errors.deformities }}</small>
                     </div>
                 </div>
@@ -132,7 +132,7 @@ import { Head, useForm } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 
 const props = defineProps({
     student: {
