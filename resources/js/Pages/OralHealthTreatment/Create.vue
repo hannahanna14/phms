@@ -26,7 +26,7 @@
             <!-- Treatment Form -->
             <Card>
                 <template #content>
-                    <form @submit.prevent="submitForm" class="space-y-6">
+                    <form @submit.prevent="submit" class="space-y-6">
                         <!-- Date -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -141,7 +141,7 @@ const { student } = usePage().props;
 const getGradeContext = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const urlGrade = urlParams.get('grade');
-    const sessionGrade = sessionStorage.getItem('selectedGrade');
+    const sessionGrade = sessionStorage.getItem(`currentGrade_${student.id}`);
     return urlGrade || sessionGrade || student.grade_level;
 };
 
@@ -158,8 +158,13 @@ const getSchoolYearForGrade = (grade) => {
     return gradeToYear[grade] || '2024-2025';
 };
 
-const selectedGrade = getGradeContext();
-const schoolYear = getSchoolYearForGrade(selectedGrade);
+const selectedGrade = ref(getGradeContext());
+const schoolYear = getSchoolYearForGrade(selectedGrade.value);
+
+console.log('=== ORAL HEALTH TREATMENT CREATE FORM INIT ===');
+console.log('Initial selected grade:', selectedGrade.value);
+console.log('Initial grade level for form:', selectedGrade.value.replace('Grade ', ''));
+console.log('School year:', schoolYear);
 
 const form = useForm({
     student_id: student.id,
@@ -169,18 +174,39 @@ const form = useForm({
     treatment: '',
     remarks: '',
     status: 'pending',
-    grade_level: selectedGrade,
+    grade_level: selectedGrade.value.replace('Grade ', ''), // Store as "4" not "Grade 4"
     school_year: schoolYear
 });
 
-const submitForm = () => {
-    console.log('Oral Health Treatment Form Data:', form.data());
+const submit = () => {
+    // Get the current grade from sessionStorage to ensure we have the latest value
+    const currentGrade = sessionStorage.getItem(`currentGrade_${student.id}`) || selectedGrade.value;
+    const gradeLevel = currentGrade.replace('Grade ', '');
+    
+    // Ensure grade_level is not empty or null
+    if (!gradeLevel || gradeLevel === 'undefined' || gradeLevel === 'null' || gradeLevel.trim() === '') {
+        console.error('Grade level is invalid:', gradeLevel);
+        console.error('Current grade from session:', currentGrade);
+        console.error('Selected grade ref:', selectedGrade.value);
+        alert('Error: Invalid grade level. Please refresh and try again.');
+        return;
+    }
+    
+    form.grade_level = gradeLevel;
+    
+    console.log('=== ORAL HEALTH TREATMENT FORM SUBMISSION DEBUG ===');
+    console.log('Current Grade from session:', currentGrade);
+    console.log('Selected Grade ref:', selectedGrade.value);
+    console.log('Final Grade Level being saved:', form.grade_level);
+    console.log('Grade Level type:', typeof form.grade_level);
+    console.log('Complete Form Data:', form.data());
+    console.log('==========================================');
 
     form.post(route('oral-health-treatment.store'), {
         onSuccess: () => {
             console.log('Oral health treatment created successfully');
-            // Redirect back to student oral health page with grade context
-            window.location.href = `/pupil-health/oral-health/${student.id}?grade=${selectedGrade}`;
+            // Use Inertia redirect instead of window.location to prevent full page reload
+            // The backend redirect will handle this properly
         },
         onError: (errors) => {
             console.error('Oral health treatment submission errors:', errors);

@@ -306,7 +306,8 @@ const fetchOralTreatmentRecords = async () => {
                 'Accept': 'application/json'
             }
         });
-        oralTreatmentRecords.value = response.data;
+        // Handle the response format that matches the controller's return structure
+        oralTreatmentRecords.value = response.data.data || response.data || [];
     } catch (error) {
         console.error('Error fetching oral treatment records:', error);
         oralTreatmentRecords.value = [];
