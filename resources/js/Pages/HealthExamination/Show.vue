@@ -31,6 +31,16 @@ const getInitialGrade = () => {
         return formattedGrade;
     }
     
+    // Check flash data from redirects
+    const page = usePage();
+    const flashGrade = page.props.flash?.grade;
+    if (flashGrade) {
+        console.log('Using grade from flash:', flashGrade);
+        const formattedGrade = isNaN(flashGrade) ? flashGrade : `Grade ${flashGrade}`;
+        sessionStorage.setItem(`currentGrade_${student.id}`, formattedGrade);
+        return formattedGrade;
+    }
+    
     // Then check prop
     if (propSelectedGrade) {
         console.log('Using grade from prop:', propSelectedGrade);
@@ -100,7 +110,10 @@ const fetchRecordByGrade = async (gradeLevel) => {
 
 const fetchTreatmentRecords = async () => {
     try {
-        const response = await axios.get(`/api/health-treatment/student/${student.id}?grade=${selectedGrade.value}`, {
+        const response = await axios.get(`/api/health-treatment/student/${student.id}`, {
+            params: {
+                grade: selectedGrade.value
+            },
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -114,11 +127,10 @@ const fetchTreatmentRecords = async () => {
     }
 };
 
-const changeGrade = (grade) => {
-    selectedGrade.value = grade;
-    console.log('Grade changed to:', grade);
-    sessionStorage.setItem(`currentGrade_${student.id}`, grade);
-    fetchRecordByGrade(grade);
+const onGradeChange = () => {
+    console.log('Grade changed to:', selectedGrade.value);
+    sessionStorage.setItem(`currentGrade_${student.id}`, selectedGrade.value);
+    fetchRecordByGrade(selectedGrade.value);
     fetchTreatmentRecords();
 };
 
@@ -165,21 +177,20 @@ const changeGrade = (grade) => {
 
                     <!-- Grade Selection -->
                     <div class="flex gap-2">
-                        <button 
-                            v-for="grade in gradeLevels" 
-                            :key="grade"
-                            @click="changeGrade(grade)"
-                            :class="['px-3 py-1 text-xs rounded', selectedGrade === grade ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']"
-                        >
-                            {{ grade }}
-                        </button>
+                        <Select 
+                            v-model="selectedGrade" 
+                            :options="gradeLevels" 
+                            placeholder="Select Grade"
+                            class="w-32 text-sm"
+                            @change="onGradeChange"
+                        />
                     </div>
 
                     <!-- Health Treatment Card -->
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
                             <span>Health Treatment</span>
-                            <Button icon="pi pi-plus" class="p-button-text text-white text-xs" @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create`)" />
+                            <Button icon="pi pi-plus" class="p-button-text text-white text-xs" @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" />
                         </div>
                         <div class="p-3">
                             <table class="w-full text-xs">

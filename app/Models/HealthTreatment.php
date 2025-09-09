@@ -17,6 +17,8 @@ class HealthTreatment extends Model
         'treatment',
         'status',
         'remarks',
+        'grade_level',
+        'school_year',
     ];
 
     protected $casts = [
