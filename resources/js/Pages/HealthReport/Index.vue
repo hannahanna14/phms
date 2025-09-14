@@ -16,24 +16,24 @@
                     <i class="pi pi-users mr-2 text-blue-600"></i>
                     Student Selection
                 </h2>
-                
+
                 <!-- Student Search Section -->
                 <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         <i class="pi pi-search mr-1"></i>
                         Search Students
                     </label>
-                    <InputText 
+                    <InputText
                         v-model="searchQuery"
                         placeholder="Type to search students by name or LRN..."
                         class="w-full mb-3"
                         @input="onStudentSearch"
                     />
-                    
+
                     <!-- Search Results -->
                     <div v-if="studentOptions.length > 0 && searchQuery" class="bg-white border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
-                        <div 
-                            v-for="student in studentOptions" 
+                        <div
+                            v-for="student in studentOptions"
                             :key="student.id"
                             @click="addStudent(student)"
                             class="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
@@ -42,7 +42,7 @@
                             <div class="text-sm text-gray-500">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</div>
                         </div>
                     </div>
-                    
+
                     <small class="text-blue-600 mt-1 block">
                         <i class="pi pi-info-circle mr-1"></i>
                         Click on a student from search results to add them to your selection.
@@ -56,14 +56,14 @@
                         Selected Students ({{ selectedStudents.length }})
                     </h3>
                     <div class="space-y-2 max-h-60 overflow-y-auto">
-                        <div 
-                            v-for="student in selectedStudents" 
+                        <div
+                            v-for="student in selectedStudents"
                             :key="student.id"
                             class="bg-white border border-green-200 rounded-lg p-3 shadow-sm"
                         >
                             <div class="flex items-center">
-                                <Checkbox 
-                                    v-model="student.checked" 
+                                <Checkbox
+                                    v-model="student.checked"
                                     :binary="true"
                                     @change="toggleStudent(student)"
                                     class="mr-3"
@@ -72,8 +72,8 @@
                                     <h4 class="font-medium text-gray-900">{{ student.name }}</h4>
                                     <p class="text-sm text-gray-600">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</p>
                                 </div>
-                                <Button 
-                                    icon="pi pi-times" 
+                                <Button
+                                    icon="pi pi-times"
                                     size="small"
                                     text
                                     severity="danger"
@@ -89,15 +89,15 @@
                             Report will be generated only for checked students.
                         </div>
                         <div class="space-x-2">
-                            <Button 
-                                label="Select All" 
+                            <Button
+                                label="Select All"
                                 size="small"
                                 outlined
                                 @click="selectAllStudents"
                                 class="text-xs"
                             />
-                            <Button 
-                                label="Clear All" 
+                            <Button
+                                label="Clear All"
                                 size="small"
                                 outlined
                                 severity="danger"
@@ -115,16 +115,16 @@
                     <i class="pi pi-cog mr-2 text-gray-600"></i>
                     Report Configuration
                 </h2>
-                
+
                 <!-- Student Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Grade and Section Selection -->
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Grade Level</label>
-                            <Select 
-                                v-model="selectedGrade" 
-                                :options="gradeLevels" 
+                            <Select
+                                v-model="selectedGrade"
+                                :options="gradeLevels"
                                 placeholder="Select a grade level"
                                 class="w-full"
                                 :disabled="selectedStudents.length > 0"
@@ -133,8 +133,8 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Section (Optional)</label>
-                            <Select 
-                                v-model="section" 
+                            <Select
+                                v-model="section"
                                 :options="sectionOptions"
                                 placeholder="Select Section"
                                 class="w-full"
@@ -147,8 +147,8 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Gender Filter</label>
-                            <Select 
-                                v-model="genderFilter" 
+                            <Select
+                                v-model="genderFilter"
                                 :options="genderOptions"
                                 placeholder="Select Gender"
                                 class="w-full"
@@ -159,16 +159,16 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <InputNumber 
-                                    v-model="minAge" 
+                                <InputNumber
+                                    v-model="minAge"
                                     placeholder="Min Age"
                                     :min="5"
                                     :max="18"
                                     class="w-full"
                                     :disabled="selectedStudents.length > 0"
                                 />
-                                <InputNumber 
-                                    v-model="maxAge" 
+                                <InputNumber
+                                    v-model="maxAge"
                                     placeholder="Max Age"
                                     :min="5"
                                     :max="18"
@@ -180,8 +180,8 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                            <Select 
-                                v-model="sortBy" 
+                            <Select
+                                v-model="sortBy"
                                 :options="sortOptions"
                                 placeholder="Select Sort Order"
                                 class="w-full"
@@ -194,8 +194,8 @@
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Health Examination Fields</label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <Button 
-                            v-for="field in healthExamFields" 
+                        <Button
+                            v-for="field in healthExamFields"
                             :key="field.value"
                             :label="field.label"
                             :outlined="!selectedHealthFields.includes(field.value)"
@@ -204,8 +204,8 @@
                             @click="toggleHealthField(field.value)"
                             :class="[
                                 'text-xs transition-all duration-200',
-                                selectedHealthFields.includes(field.value) 
-                                    ? '!bg-green-600 !border-green-600 !text-white' 
+                                selectedHealthFields.includes(field.value)
+                                    ? '!bg-green-600 !border-green-600 !text-white'
                                     : '!bg-white !border-gray-300 !text-gray-700 hover:!bg-gray-50'
                             ]"
                         />
@@ -214,16 +214,16 @@
 
                 <!-- Generate Button -->
                 <div class="mt-6 flex gap-3">
-                    <Button 
-                        label="Generate Report" 
+                    <Button
+                        label="Generate Report"
                         icon="pi pi-file-pdf"
                         @click="generateReport"
                         :loading="loading"
                         :disabled="((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
                         class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                     />
-                    <Button 
-                        label="Preview" 
+                    <Button
+                        label="Preview"
                         icon="pi pi-eye"
                         @click="previewReport"
                         :loading="loading"
@@ -231,9 +231,9 @@
                         outlined
                         severity="secondary"
                     />
-                    <Button 
+                    <Button
                         v-if="reportData.length > 0"
-                        label="Print Report" 
+                        label="Print Report"
                         icon="pi pi-print"
                         @click="printReport"
                         outlined
@@ -251,13 +251,10 @@ import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import MultiSelect from 'primevue/multiselect';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Tag from 'primevue/tag';
+
 import axios from 'axios';
 
 const props = defineProps({
@@ -292,7 +289,7 @@ const maxAge = ref(null);
 const sortBy = ref('Name (A-Z)');
 const sortOptions = [
     'Name (A-Z)',
-    'Name (Z-A)', 
+    'Name (Z-A)',
     'Age (Youngest First)',
     'Age (Oldest First)'
 ];
@@ -354,14 +351,14 @@ const toggleHealthField = (fieldValue) => {
 // Student search functionality
 const onStudentSearch = async () => {
     const query = searchQuery.value;
-    
+
     if (!query || query.length < 1) {
         studentOptions.value = [];
         return;
     }
-    
+
     searchLoading.value = true;
-    
+
     try {
         const response = await axios.get('/api/students/search', {
             params: { query },
@@ -370,7 +367,7 @@ const onStudentSearch = async () => {
                 'Accept': 'application/json'
             }
         });
-        
+
         studentOptions.value = response.data;
     } catch (error) {
         console.error('Error searching students:', error);
@@ -420,18 +417,18 @@ const clearAllStudents = () => {
 const previewReport = async () => {
     // Get only checked students
     const checkedStudents = selectedStudents.value ? selectedStudents.value.filter(student => student && student.checked) : [];
-    
+
     console.log('Selected students:', selectedStudents.value);
     console.log('Checked students:', checkedStudents);
     console.log('Selected grade:', selectedGrade.value);
-    
+
     if (!selectedGrade.value && checkedStudents.length === 0) {
         alert('Please select a grade level or check at least one student');
         return;
     }
 
     loading.value = true;
-    
+
     try {
         const reportData = {
             grade_level: checkedStudents.length > 0 ? 'All' : selectedGrade.value.replace('Grade ', ''),
@@ -451,9 +448,9 @@ const previewReport = async () => {
                 section: s.section
             }))
         };
-        
+
         console.log('Sending report data:', reportData);
-        
+
         // Use Inertia to navigate to results page
         await router.post('/api/health-report/generate', reportData);
     } catch (error) {
@@ -473,7 +470,7 @@ const generateReport = async () => {
 const printReport = () => {
     const printWindow = window.open('', '_blank');
     const printContent = generatePrintHTML();
-    
+
     printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.print();
@@ -484,15 +481,15 @@ const generatePrintHTML = () => {
         const fieldObj = availableFields.find(f => f.value === field);
         return fieldObj ? fieldObj.label : field;
     });
-    
+
     const healthHeaders = [];
     if (includeHealthExam.value) healthHeaders.push('Health Exam');
     if (includeHealthTreatment.value) healthHeaders.push('Treatments');
     if (includeOralHealth.value) healthHeaders.push('Oral Health');
     if (includeIncidents.value) healthHeaders.push('Incidents');
-    
+
     const allHeaders = [...headerFields, ...healthHeaders];
-    
+
     let html = `
         <!DOCTYPE html>
         <html>
@@ -542,7 +539,7 @@ const generatePrintHTML = () => {
         </body>
         </html>
     `;
-    
+
     return html;
 };
 
