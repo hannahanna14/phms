@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 use App\Models\Student;
-use App\Models\HealthExamination;
 use App\Models\HealthTreatment;
 use App\Models\OralHealthTreatment;
 use App\Models\Incident;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\HealthExamination;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use PDF;
 
 class HealthReportController extends Controller
@@ -72,45 +73,65 @@ class HealthReportController extends Controller
             'min_age' => 'nullable|integer',
             'max_age' => 'nullable|integer',
             'sort_by' => 'nullable|string',
+            'selected_students' => 'nullable|array',
         ]);
 
         $gradeLevel = $request->grade_level;
         $schoolYear = $request->school_year;
         $selectedFields = $request->fields;
 
-        // Get students for the selected grade
-        $user = auth()->user();
-        
-        // Filter students based on user role
-        if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
-            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-            $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+        // Check if specific students are selected
+        if ($request->selected_students && count($request->selected_students) > 0) {
+            // Extract student IDs from the student objects
+            $studentIds = collect($request->selected_students)->pluck('id')->toArray();
+            
+            // Use selected students
+            $user = auth()->user();
+            
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $studentIds)
+                    ->whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::whereIn('id', $studentIds);
+            }
         } else {
-            // Admins can see all students
-            $studentsQuery = Student::query();
-        }
-        
-        // Apply grade level filter (skip if "All" is selected)
-        if ($gradeLevel !== 'All') {
-            $studentsQuery->where('grade_level', $gradeLevel);
-        }
-        
-        if ($request->section) {
-            $studentsQuery->where('section', $request->section);
-        }
+            // Use filter-based approach
+            $user = auth()->user();
+            
+            // Filter students based on user role
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::query();
+            }
+            
+            // Apply grade level filter (skip if "All" is selected)
+            if ($gradeLevel !== 'All') {
+                $studentsQuery->where('grade_level', $gradeLevel);
+            }
+            
+            if ($request->section) {
+                $studentsQuery->where('section', $request->section);
+            }
 
-        // Apply gender filter
-        if ($request->gender_filter && $request->gender_filter !== 'All') {
-            $studentsQuery->where('sex', $request->gender_filter);
-        }
+            // Apply gender filter
+            if ($request->gender_filter && $request->gender_filter !== 'All') {
+                $studentsQuery->where('sex', $request->gender_filter);
+            }
 
-        // Apply age range filter
-        if ($request->min_age) {
-            $studentsQuery->where('age', '>=', $request->min_age);
-        }
-        if ($request->max_age) {
-            $studentsQuery->where('age', '<=', $request->max_age);
+            // Apply age range filter
+            if ($request->min_age) {
+                $studentsQuery->where('age', '>=', $request->min_age);
+            }
+            if ($request->max_age) {
+                $studentsQuery->where('age', '<=', $request->max_age);
+            }
         }
         
         // Apply sorting based on user selection
@@ -169,7 +190,25 @@ class HealthReportController extends Controller
                     ->latest()
                     ->first();
                 
-                $studentData['health_exam'] = $healthExam;
+                if ($healthExam) {
+                    $healthData = [];
+                    foreach ($request->health_exam_fields as $field) {
+                        // Check if the field exists in the HealthExamination model
+                        if (in_array($field, (new HealthExamination())->getFillable())) {
+                            $healthData[$field] = $healthExam->$field ?? 'N/A';
+                        } else {
+                            $healthData[$field] = 'N/A';
+                        }
+                    }
+                    $studentData['health_exam'] = $healthData;
+                } else {
+                    // No health exam found, set all fields to N/A
+                    $healthData = [];
+                    foreach ($request->health_exam_fields as $field) {
+                        $healthData[$field] = 'N/A';
+                    }
+                    $studentData['health_exam'] = $healthData;
+                }
             }
 
             $reportData[] = $studentData;
@@ -185,12 +224,16 @@ class HealthReportController extends Controller
             'gender_filter' => $request->gender_filter,
             'min_age' => $request->min_age,
             'max_age' => $request->max_age,
-            'sort_by' => $request->sort_by
+            'sort_by' => $request->sort_by,
+            'selected_students' => $request->selected_students ?? []
         ]);
     }
 
     public function exportPdf(Request $request)
     {
+        Log::info('PDF Export started', $request->all());
+        
+        try {
         $request->validate([
             'grade_level' => 'required|string',
             'school_year' => 'required|string',
@@ -201,51 +244,74 @@ class HealthReportController extends Controller
             'min_age' => 'nullable|integer',
             'max_age' => 'nullable|integer',
             'sort_by' => 'nullable|string',
+            'selected_students' => 'nullable|array',
         ]);
 
         $gradeLevel = $request->grade_level;
         $schoolYear = $request->school_year;
         $selectedFields = $request->fields;
 
-        // Get students for the selected grade (same logic as generate method)
-        $user = auth()->user();
-        
-        // Filter students based on user role
-        if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
-            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-            $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+        // Check if specific students are selected (same logic as generate method)
+        if ($request->selected_students && count($request->selected_students) > 0) {
+            // Extract student IDs from the student objects (same as generate method)
+            $studentIds = collect($request->selected_students)->pluck('id')->filter()->toArray();
+            
+            // If no IDs found, treat as plain array of IDs
+            if (empty($studentIds)) {
+                $studentIds = $request->selected_students;
+            }
+            
+            // Use selected students
+            $user = auth()->user();
+            
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $studentIds)
+                    ->whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::whereIn('id', $studentIds);
+            }
         } else {
-            // Admins can see all students
-            $studentsQuery = Student::query();
-        }
-        
-        // Apply grade level filter (skip if "All" is selected)
-        if ($gradeLevel !== 'All') {
-            $studentsQuery->where('grade_level', $gradeLevel);
-        }
-        
-        if ($request->section) {
-            $studentsQuery->where('section', $request->section);
-        }
+            // Use filter-based approach
+            $user = auth()->user();
+            
+            // Filter students based on user role
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::query();
+            }
+            
+            // Apply grade level filter (skip if "All" is selected)
+            if ($gradeLevel !== 'All') {
+                $studentsQuery->where('grade_level', $gradeLevel);
+            }
+            
+            if ($request->section) {
+                $studentsQuery->where('section', $request->section);
+            }
 
-        // Apply gender filter
-        if ($request->gender_filter && $request->gender_filter !== 'All') {
-            $studentsQuery->where('sex', $request->gender_filter);
-        }
+            // Apply gender filter
+            if ($request->gender_filter && $request->gender_filter !== 'All') {
+                $studentsQuery->where('sex', $request->gender_filter);
+            }
 
-        // Apply age range filter
-        if ($request->min_age) {
-            $studentsQuery->where('age', '>=', $request->min_age);
-        }
-        if ($request->max_age) {
-            $studentsQuery->where('age', '<=', $request->max_age);
+            // Apply age range filter
+            if ($request->min_age) {
+                $studentsQuery->where('age', '>=', $request->min_age);
+            }
+            if ($request->max_age) {
+                $studentsQuery->where('age', '<=', $request->max_age);
+            }
         }
         
         // Apply sorting
-        $sortBy = $request->sort_by ?? 'Name (A-Z)';
-        
-        switch ($sortBy) {
+        switch ($request->sort_by) {
             case 'Name (A-Z)':
                 $studentsQuery->orderBy('full_name', 'asc');
                 break;
@@ -298,12 +364,31 @@ class HealthReportController extends Controller
                     ->latest()
                     ->first();
                 
-                $studentData['health_exam'] = $healthExam;
+                if ($healthExam) {
+                    $healthData = [];
+                    foreach ($request->health_exam_fields as $field) {
+                        // Check if the field exists in the HealthExamination model
+                        if (in_array($field, (new HealthExamination())->getFillable())) {
+                            $healthData[$field] = $healthExam->$field ?? 'N/A';
+                        } else {
+                            $healthData[$field] = 'N/A';
+                        }
+                    }
+                    $studentData['health_exam'] = $healthData;
+                } else {
+                    // No health exam found, set all fields to N/A
+                    $healthData = [];
+                    foreach ($request->health_exam_fields as $field) {
+                        $healthData[$field] = 'N/A';
+                    }
+                    $studentData['health_exam'] = $healthData;
+                }
             }
 
             $reportData[] = $studentData;
         }
 
+        // Generate PDF
         $pdf = PDF::loadView('health-report-pdf', [
             'reportData' => $reportData,
             'grade_level' => 'Grade ' . $gradeLevel,
@@ -311,17 +396,90 @@ class HealthReportController extends Controller
             'section' => $request->section,
             'fields' => $selectedFields,
             'health_exam_fields' => $request->health_exam_fields ?? [],
-            'filters' => [
-                'gender' => $request->gender_filter,
-                'min_age' => $request->min_age,
-                'max_age' => $request->max_age,
-                'sort_by' => $request->sort_by
-            ]
+            'selected_students' => $request->selected_students ?? []
         ]);
 
-        $filename = 'health-report-' . strtolower(str_replace(' ', '-', $gradeLevel)) . '-' . $schoolYear . '.pdf';
+        $pdf->setPaper('A4', 'landscape');
+        
+        // Generate filename
+        $gradeLevel = str_replace(' ', '-', strtolower($gradeLevel));
+        $filename = "health-report-{$gradeLevel}-{$schoolYear}.pdf";
         
         return $pdf->download($filename);
+        
+        } catch (\Exception $e) {
+            Log::error('PDF Export failed: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json(['error' => 'PDF generation failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function searchStudents(Request $request)
+    {
+        try {
+            $query = $request->get('query', '');
+            
+            if (strlen($query) < 1) {
+                return response()->json([]);
+            }
+            
+            Log::info("Searching for: '{$query}'");
+            
+            $students = Student::whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
+                ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%'])
+                ->select('id', 'full_name', 'lrn', 'grade_level', 'section')
+                ->orderBy('full_name')
+                ->limit(20)
+                ->get();
+            
+            Log::info("Found " . count($students) . " students");
+            foreach ($students as $student) {
+                Log::info("Student: {$student->full_name} (LRN: {$student->lrn})");
+            }
+            
+            $result = $students->map(function($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->full_name,
+                    'lrn' => $student->lrn,
+                    'grade_level' => $student->grade_level,
+                    'section' => $student->section ?? 'N/A',
+                    'display_text' => $student->full_name . ' (LRN: ' . $student->lrn . ')'
+                ];
+            });
+            
+            return response()->json($result);
+            
+        } catch (\Exception $e) {
+            Log::error('Student search error: ' . $e->getMessage());
+            
+            // Fallback to basic query without section if there's an issue
+            try {
+                $students = Student::whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->select('id', 'full_name', 'lrn', 'grade_level')
+                    ->orderBy('full_name')
+                    ->limit(20)
+                    ->get();
+                
+                $result = $students->map(function($student) {
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->full_name,
+                        'lrn' => $student->lrn,
+                        'grade_level' => $student->grade_level,
+                        'section' => 'N/A',
+                        'display_text' => $student->full_name . ' (LRN: ' . $student->lrn . ')'
+                    ];
+                });
+                
+                return response()->json($result);
+                
+            } catch (\Exception $e2) {
+                Log::error('Student search fallback error: ' . $e2->getMessage());
+                return response()->json(['error' => 'Search failed'], 500);
+            }
+        }
     }
 
     private function getSchoolYearForGrade($grade)

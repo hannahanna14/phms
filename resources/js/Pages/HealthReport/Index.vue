@@ -10,10 +10,113 @@
                 </h1>
             </div>
 
+            <!-- Student Selection Card -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="pi pi-users mr-2 text-blue-600"></i>
+                    Student Selection
+                </h2>
+                
+                <!-- Student Search Section -->
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="pi pi-search mr-1"></i>
+                        Search Students
+                    </label>
+                    <InputText 
+                        v-model="searchQuery"
+                        placeholder="Type to search students by name or LRN..."
+                        class="w-full mb-3"
+                        @input="onStudentSearch"
+                    />
+                    
+                    <!-- Search Results -->
+                    <div v-if="studentOptions.length > 0 && searchQuery" class="bg-white border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                        <div 
+                            v-for="student in studentOptions" 
+                            :key="student.id"
+                            @click="addStudent(student)"
+                            class="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
+                        >
+                            <div class="font-medium text-gray-900">{{ student.name }}</div>
+                            <div class="text-sm text-gray-500">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</div>
+                        </div>
+                    </div>
+                    
+                    <small class="text-blue-600 mt-1 block">
+                        <i class="pi pi-info-circle mr-1"></i>
+                        Click on a student from search results to add them to your selection.
+                    </small>
+                </div>
+
+                <!-- Selected Students List -->
+                <div v-if="selectedStudents && selectedStudents.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-green-800 mb-3">
+                        <i class="pi pi-list mr-2"></i>
+                        Selected Students ({{ selectedStudents.length }})
+                    </h3>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        <div 
+                            v-for="student in selectedStudents" 
+                            :key="student.id"
+                            class="bg-white border border-green-200 rounded-lg p-3 shadow-sm"
+                        >
+                            <div class="flex items-center">
+                                <Checkbox 
+                                    v-model="student.checked" 
+                                    :binary="true"
+                                    @change="toggleStudent(student)"
+                                    class="mr-3"
+                                />
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-gray-900">{{ student.name }}</h4>
+                                    <p class="text-sm text-gray-600">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</p>
+                                </div>
+                                <Button 
+                                    icon="pi pi-times" 
+                                    size="small"
+                                    text
+                                    severity="danger"
+                                    @click="removeStudent(student)"
+                                    class="ml-2"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div class="text-sm text-green-700">
+                            <i class="pi pi-info-circle mr-1"></i>
+                            Report will be generated only for checked students.
+                        </div>
+                        <div class="space-x-2">
+                            <Button 
+                                label="Select All" 
+                                size="small"
+                                outlined
+                                @click="selectAllStudents"
+                                class="text-xs"
+                            />
+                            <Button 
+                                label="Clear All" 
+                                size="small"
+                                outlined
+                                severity="danger"
+                                @click="clearAllStudents"
+                                class="text-xs !text-red-600 !border-red-600 hover:!bg-red-50"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Report Configuration Card -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Report Configuration</h2>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="pi pi-cog mr-2 text-gray-600"></i>
+                    Report Configuration
+                </h2>
                 
+                <!-- Student Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Grade and Section Selection -->
                     <div class="space-y-4">
@@ -24,6 +127,7 @@
                                 :options="gradeLevels" 
                                 placeholder="Select a grade level"
                                 class="w-full"
+                                :disabled="selectedStudents.length > 0"
                             />
                         </div>
 
@@ -34,6 +138,7 @@
                                 :options="sectionOptions"
                                 placeholder="Select Section"
                                 class="w-full"
+                                :disabled="selectedStudents.length > 0"
                             />
                         </div>
                     </div>
@@ -47,6 +152,7 @@
                                 :options="genderOptions"
                                 placeholder="Select Gender"
                                 class="w-full"
+                                :disabled="selectedStudents.length > 0"
                             />
                         </div>
 
@@ -59,6 +165,7 @@
                                     :min="5"
                                     :max="18"
                                     class="w-full"
+                                    :disabled="selectedStudents.length > 0"
                                 />
                                 <InputNumber 
                                     v-model="maxAge" 
@@ -66,6 +173,7 @@
                                     :min="5"
                                     :max="18"
                                     class="w-full"
+                                    :disabled="selectedStudents.length > 0"
                                 />
                             </div>
                         </div>
@@ -111,7 +219,7 @@
                         icon="pi pi-file-pdf"
                         @click="generateReport"
                         :loading="loading"
-                        :disabled="!selectedGrade"
+                        :disabled="((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
                         class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                     />
                     <Button 
@@ -119,7 +227,7 @@
                         icon="pi pi-eye"
                         @click="previewReport"
                         :loading="loading"
-                        :disabled="!selectedGrade"
+                        :disabled="((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
                         outlined
                         severity="secondary"
                     />
@@ -143,6 +251,7 @@ import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
+import MultiSelect from 'primevue/multiselect';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
@@ -163,6 +272,12 @@ const selectedGrade = ref('');
 const section = ref('');
 const loading = ref(false);
 const reportData = ref([]);
+
+// Student search data
+const selectedStudents = ref([]);
+const studentOptions = ref([]);
+const searchLoading = ref(false);
+const searchQuery = ref('');
 
 // Section options
 const sectionOptions = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -236,30 +351,115 @@ const toggleHealthField = (fieldValue) => {
     console.log('Selected fields:', selectedHealthFields.value);
 };
 
+// Student search functionality
+const onStudentSearch = async () => {
+    const query = searchQuery.value;
+    
+    if (!query || query.length < 1) {
+        studentOptions.value = [];
+        return;
+    }
+    
+    searchLoading.value = true;
+    
+    try {
+        const response = await axios.get('/api/students/search', {
+            params: { query },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        studentOptions.value = response.data;
+    } catch (error) {
+        console.error('Error searching students:', error);
+        studentOptions.value = [];
+    } finally {
+        searchLoading.value = false;
+    }
+};
+
+// Add student to selection
+const addStudent = (student) => {
+    // Check if student is already selected
+    const exists = selectedStudents.value.find(s => s.id === student.id);
+    if (!exists) {
+        selectedStudents.value.push({
+            ...student,
+            checked: true
+        });
+        // Clear search after adding
+        searchQuery.value = '';
+        studentOptions.value = [];
+    }
+};
+
+// Toggle student checkbox
+const toggleStudent = (student) => {
+    // This is handled by v-model on the checkbox
+};
+
+// Remove student from selection
+const removeStudent = (studentToRemove) => {
+    selectedStudents.value = selectedStudents.value.filter(student => student.id !== studentToRemove.id);
+};
+
+// Select all students
+const selectAllStudents = () => {
+    selectedStudents.value.forEach(student => {
+        student.checked = true;
+    });
+};
+
+// Clear all student selections
+const clearAllStudents = () => {
+    selectedStudents.value = [];
+};
+
 const previewReport = async () => {
-    if (!selectedGrade.value) {
-        alert('Please select a grade level');
+    // Get only checked students
+    const checkedStudents = selectedStudents.value ? selectedStudents.value.filter(student => student && student.checked) : [];
+    
+    console.log('Selected students:', selectedStudents.value);
+    console.log('Checked students:', checkedStudents);
+    console.log('Selected grade:', selectedGrade.value);
+    
+    if (!selectedGrade.value && checkedStudents.length === 0) {
+        alert('Please select a grade level or check at least one student');
         return;
     }
 
     loading.value = true;
     
     try {
-        // Use Inertia to navigate to results page
-        router.post('/api/health-report/generate', {
-            grade_level: selectedGrade.value.replace('Grade ', ''),
-            school_year: getSchoolYearForGrade(selectedGrade.value),
+        const reportData = {
+            grade_level: checkedStudents.length > 0 ? 'All' : selectedGrade.value.replace('Grade ', ''),
+            school_year: checkedStudents.length > 0 ? '2024-2025' : getSchoolYearForGrade(selectedGrade.value),
             section: section.value,
             fields: selectedFields,
             health_exam_fields: selectedHealthFields.value,
             gender_filter: genderFilter.value,
             min_age: minAge.value,
             max_age: maxAge.value,
-            sort_by: sortBy.value
-        });
+            sort_by: sortBy.value,
+            selected_students: checkedStudents.map(s => ({
+                id: s.id,
+                name: s.name,
+                lrn: s.lrn,
+                grade_level: s.grade_level,
+                section: s.section
+            }))
+        };
+        
+        console.log('Sending report data:', reportData);
+        
+        // Use Inertia to navigate to results page
+        await router.post('/api/health-report/generate', reportData);
     } catch (error) {
         console.error('Error generating report:', error);
         alert('Error generating report. Please try again.');
+    } finally {
         loading.value = false;
     }
 };

@@ -7,7 +7,15 @@
             <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Health Report Results</h1>
-                    <p class="text-gray-600">{{ reportData.length }} students found for {{ grade_level }} ({{ school_year }})</p>
+                    <p class="text-gray-600">
+                        {{ reportData.length }} students found 
+                        <span v-if="selected_students.length > 0">
+                            ({{ selected_students.length }} selected students)
+                        </span>
+                        <span v-else>
+                            for {{ grade_level }} ({{ school_year }})
+                        </span>
+                    </p>
                 </div>
                 <div class="flex gap-3">
                     <Button 
@@ -33,12 +41,20 @@
                     <div class="text-sm text-gray-600">Total Students</div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">
-                    <div class="text-2xl font-bold text-green-600">{{ grade_level }}</div>
-                    <div class="text-sm text-gray-600">Grade Level</div>
+                    <div class="text-2xl font-bold text-green-600">
+                        {{ selected_students.length > 0 ? 'Selected' : grade_level }}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        {{ selected_students.length > 0 ? 'Students' : 'Grade Level' }}
+                    </div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">
-                    <div class="text-2xl font-bold text-purple-600">{{ section || 'All' }}</div>
-                    <div class="text-sm text-gray-600">Section</div>
+                    <div class="text-2xl font-bold text-purple-600">
+                        {{ selected_students.length > 0 ? 'Mixed' : (section || 'All') }}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        {{ selected_students.length > 0 ? 'Grades' : 'Section' }}
+                    </div>
                 </div>
             </div>
 
@@ -333,6 +349,10 @@ const props = defineProps({
     sort_by: {
         type: String,
         default: null
+    },
+    selected_students: {
+        type: Array,
+        default: () => []
     }
 });
 
@@ -386,6 +406,15 @@ const printReport = async () => {
         if (props.sort_by) {
             formData.append('sort_by', props.sort_by);
         }
+        
+        // Add selected students if any
+        if (props.selected_students && props.selected_students.length > 0) {
+            props.selected_students.forEach(student => {
+                // Handle both student objects and plain IDs
+                const studentId = typeof student === 'object' ? student.id : student;
+                formData.append('selected_students[]', studentId);
+            });
+        }
 
         // Make the request
         const response = await fetch('/health-report/export-pdf', {
@@ -393,6 +422,7 @@ const printReport = async () => {
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
             }
         });
 
