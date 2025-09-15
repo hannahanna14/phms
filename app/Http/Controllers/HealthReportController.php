@@ -234,183 +234,183 @@ class HealthReportController extends Controller
         Log::info('PDF Export started', $request->all());
         
         try {
-        $request->validate([
-            'grade_level' => 'required|string',
-            'school_year' => 'required|string',
-            'section' => 'nullable|string',
-            'fields' => 'required|array',
-            'health_exam_fields' => 'nullable|array',
-            'gender_filter' => 'nullable|string',
-            'min_age' => 'nullable|integer',
-            'max_age' => 'nullable|integer',
-            'sort_by' => 'nullable|string',
-            'selected_students' => 'nullable|array',
-        ]);
+            $request->validate([
+                'grade_level' => 'required|string',
+                'school_year' => 'required|string',
+                'section' => 'nullable|string',
+                'fields' => 'required|array',
+                'health_exam_fields' => 'nullable|array',
+                'gender_filter' => 'nullable|string',
+                'min_age' => 'nullable|integer',
+                'max_age' => 'nullable|integer',
+                'sort_by' => 'nullable|string',
+                'selected_students' => 'nullable|array',
+            ]);
 
-        $gradeLevel = $request->grade_level;
-        $schoolYear = $request->school_year;
-        $selectedFields = $request->fields;
+            $gradeLevel = $request->grade_level;
+            $schoolYear = $request->school_year;
+            $selectedFields = $request->fields;
 
-        // Check if specific students are selected (same logic as generate method)
-        if ($request->selected_students && count($request->selected_students) > 0) {
-            // Extract student IDs from the student objects (same as generate method)
-            $studentIds = collect($request->selected_students)->pluck('id')->filter()->toArray();
-            
-            // If no IDs found, treat as plain array of IDs
-            if (empty($studentIds)) {
-                $studentIds = $request->selected_students;
-            }
-            
-            // Use selected students
-            $user = auth()->user();
-            
-            if ($user->role === 'teacher') {
-                // Teachers can only see their assigned students
-                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-                $studentsQuery = Student::whereIn('id', $studentIds)
-                    ->whereIn('id', $assignedStudentIds);
-            } else {
-                // Admins can see all students
-                $studentsQuery = Student::whereIn('id', $studentIds);
-            }
-        } else {
-            // Use filter-based approach
-            $user = auth()->user();
-            
-            // Filter students based on user role
-            if ($user->role === 'teacher') {
-                // Teachers can only see their assigned students
-                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
-            } else {
-                // Admins can see all students
-                $studentsQuery = Student::query();
-            }
-            
-            // Apply grade level filter (skip if "All" is selected)
-            if ($gradeLevel !== 'All') {
-                $studentsQuery->where('grade_level', $gradeLevel);
-            }
-            
-            if ($request->section) {
-                $studentsQuery->where('section', $request->section);
-            }
-
-            // Apply gender filter
-            if ($request->gender_filter && $request->gender_filter !== 'All') {
-                $studentsQuery->where('sex', $request->gender_filter);
-            }
-
-            // Apply age range filter
-            if ($request->min_age) {
-                $studentsQuery->where('age', '>=', $request->min_age);
-            }
-            if ($request->max_age) {
-                $studentsQuery->where('age', '<=', $request->max_age);
-            }
-        }
-        
-        // Apply sorting
-        switch ($request->sort_by) {
-            case 'Name (A-Z)':
-                $studentsQuery->orderBy('full_name', 'asc');
-                break;
-            case 'Name (Z-A)':
-                $studentsQuery->orderBy('full_name', 'desc');
-                break;
-            case 'Age (Youngest First)':
-                $studentsQuery->orderBy('age', 'asc');
-                break;
-            case 'Age (Oldest First)':
-                $studentsQuery->orderBy('age', 'desc');
-                break;
-            default:
-                $studentsQuery->orderBy('full_name', 'asc');
-        }
-        
-        $students = $studentsQuery->get();
-
-        $reportData = [];
-
-        foreach ($students as $student) {
-            $studentData = [];
-            
-            // Basic student info
-            if (in_array('name', $selectedFields)) {
-                $studentData['name'] = $student->full_name;
-            }
-            if (in_array('lrn', $selectedFields)) {
-                $studentData['lrn'] = $student->lrn;
-            }
-            if (in_array('grade_level', $selectedFields)) {
-                $studentData['grade_level'] = $student->grade_level;
-            }
-            if (in_array('section', $selectedFields)) {
-                $studentData['section'] = $student->section;
-            }
-            if (in_array('gender', $selectedFields)) {
-                $studentData['gender'] = $student->sex;
-            }
-            if (in_array('age', $selectedFields)) {
-                $studentData['age'] = $student->age;
-            }
-            if (in_array('birthdate', $selectedFields)) {
-                $studentData['birthdate'] = $student->birthdate;
-            }
-
-            // Health examination data with selected fields
-            if ($request->health_exam_fields && count($request->health_exam_fields) > 0) {
-                $healthExam = HealthExamination::where('student_id', $student->id)
-                    ->latest()
-                    ->first();
+            // Check if specific students are selected (same logic as generate method)
+            if ($request->selected_students && count($request->selected_students) > 0) {
+                // Extract student IDs from the student objects (same as generate method)
+                $studentIds = collect($request->selected_students)->pluck('id')->filter()->toArray();
                 
-                if ($healthExam) {
-                    $healthData = [];
-                    foreach ($request->health_exam_fields as $field) {
-                        // Check if the field exists in the HealthExamination model
-                        if (in_array($field, (new HealthExamination())->getFillable())) {
-                            $healthData[$field] = $healthExam->$field ?? 'N/A';
-                        } else {
-                            $healthData[$field] = 'N/A';
-                        }
-                    }
-                    $studentData['health_exam'] = $healthData;
+                // If no IDs found, treat as plain array of IDs
+                if (empty($studentIds)) {
+                    $studentIds = $request->selected_students;
+                }
+                
+                // Use selected students
+                $user = auth()->user();
+                
+                if ($user->role === 'teacher') {
+                    // Teachers can only see their assigned students
+                    $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                    $studentsQuery = Student::whereIn('id', $studentIds)
+                        ->whereIn('id', $assignedStudentIds);
                 } else {
-                    // No health exam found, set all fields to N/A
-                    $healthData = [];
-                    foreach ($request->health_exam_fields as $field) {
-                        $healthData[$field] = 'N/A';
-                    }
-                    $studentData['health_exam'] = $healthData;
+                    // Admins can see all students
+                    $studentsQuery = Student::whereIn('id', $studentIds);
+                }
+            } else {
+                // Use filter-based approach
+                $user = auth()->user();
+                
+                // Filter students based on user role
+                if ($user->role === 'teacher') {
+                    // Teachers can only see their assigned students
+                    $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                    $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+                } else {
+                    // Admins can see all students
+                    $studentsQuery = Student::query();
+                }
+                
+                // Apply grade level filter (skip if "All" is selected)
+                if ($gradeLevel !== 'All') {
+                    $studentsQuery->where('grade_level', $gradeLevel);
+                }
+                
+                if ($request->section) {
+                    $studentsQuery->where('section', $request->section);
+                }
+
+                // Apply gender filter
+                if ($request->gender_filter && $request->gender_filter !== 'All') {
+                    $studentsQuery->where('sex', $request->gender_filter);
+                }
+
+                // Apply age range filter
+                if ($request->min_age) {
+                    $studentsQuery->where('age', '>=', $request->min_age);
+                }
+                if ($request->max_age) {
+                    $studentsQuery->where('age', '<=', $request->max_age);
                 }
             }
+            
+            // Apply sorting
+            switch ($request->sort_by) {
+                case 'Name (A-Z)':
+                    $studentsQuery->orderBy('full_name', 'asc');
+                    break;
+                case 'Name (Z-A)':
+                    $studentsQuery->orderBy('full_name', 'desc');
+                    break;
+                case 'Age (Youngest First)':
+                    $studentsQuery->orderBy('age', 'asc');
+                    break;
+                case 'Age (Oldest First)':
+                    $studentsQuery->orderBy('age', 'desc');
+                    break;
+                default:
+                    $studentsQuery->orderBy('full_name', 'asc');
+            }
+            
+            $students = $studentsQuery->get();
 
-            $reportData[] = $studentData;
-        }
+            $reportData = [];
 
-        // Generate PDF
-        $pdf = PDF::loadView('health-report-pdf', [
-            'reportData' => $reportData,
-            'grade_level' => 'Grade ' . $gradeLevel,
-            'school_year' => $schoolYear,
-            'section' => $request->section,
-            'fields' => $selectedFields,
-            'health_exam_fields' => $request->health_exam_fields ?? [],
-            'selected_students' => $request->selected_students ?? []
-        ]);
+            foreach ($students as $student) {
+                $studentData = [];
+                
+                // Basic student info
+                if (in_array('name', $selectedFields)) {
+                    $studentData['name'] = $student->full_name;
+                }
+                if (in_array('lrn', $selectedFields)) {
+                    $studentData['lrn'] = $student->lrn;
+                }
+                if (in_array('grade_level', $selectedFields)) {
+                    $studentData['grade_level'] = $student->grade_level;
+                }
+                if (in_array('section', $selectedFields)) {
+                    $studentData['section'] = $student->section;
+                }
+                if (in_array('gender', $selectedFields)) {
+                    $studentData['gender'] = $student->sex;
+                }
+                if (in_array('age', $selectedFields)) {
+                    $studentData['age'] = $student->age;
+                }
+                if (in_array('birthdate', $selectedFields)) {
+                    $studentData['birthdate'] = $student->birthdate;
+                }
 
-        $pdf->setPaper('A4', 'landscape');
-        
-        // Generate filename
-        $gradeLevel = str_replace(' ', '-', strtolower($gradeLevel));
-        $filename = "health-report-{$gradeLevel}-{$schoolYear}.pdf";
-        
-        return $pdf->download($filename);
-        
+                // Health examination data with selected fields
+                if ($request->health_exam_fields && count($request->health_exam_fields) > 0) {
+                    $healthExam = HealthExamination::where('student_id', $student->id)
+                        ->latest()
+                        ->first();
+                    
+                    if ($healthExam) {
+                        $healthData = [];
+                        foreach ($request->health_exam_fields as $field) {
+                            // Check if the field exists in the HealthExamination model
+                            if (in_array($field, (new HealthExamination())->getFillable())) {
+                                $healthData[$field] = $healthExam->$field ?? 'N/A';
+                            } else {
+                                $healthData[$field] = 'N/A';
+                            }
+                        }
+                        $studentData['health_exam'] = $healthData;
+                    } else {
+                        // No health exam found, set all fields to N/A
+                        $healthData = [];
+                        foreach ($request->health_exam_fields as $field) {
+                            $healthData[$field] = 'N/A';
+                        }
+                        $studentData['health_exam'] = $healthData;
+                    }
+                }
+
+                $reportData[] = $studentData;
+            }
+
+            // Return data for browser-based PDF generation instead of server-side PDF
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'reportData' => $reportData,
+                    'grade_level' => $gradeLevel,
+                    'school_year' => $schoolYear,
+                    'section' => $request->section,
+                    'fields' => $selectedFields,
+                    'health_exam_fields' => $request->health_exam_fields ?? [],
+                    'selected_students' => $request->selected_students ?? []
+                ]
+            ]);
+            
         } catch (\Exception $e) {
             Log::error('PDF Export failed: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
-            return response()->json(['error' => 'PDF generation failed: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'PDF generation failed', 
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
         }
     }
 

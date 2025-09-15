@@ -18,10 +18,10 @@
                             severity="secondary"
                         />
                         <Button
-                            label="Print Report"
-                            icon="pi pi-print"
-                            @click="printReport"
+                            label="Export PDF"
+                            icon="pi pi-download"
                             class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                            @click="printReport"
                         />
                     </div>
                 </div>
@@ -61,44 +61,57 @@
                         <Column field="section" header="Section" sortable />
                         <Column field="gender" header="Gender" sortable />
                         <Column field="age" header="Age" sortable />
-                        <Column field="birthdate" header="Birthdate" sortable />
 
-                        <!-- Oral examination field columns -->
-                        <Column v-if="oral_exam_fields.includes('decayed_teeth')" header="Decayed Teeth">
+                        <!-- Permanent Teeth Columns -->
+                        <Column v-if="hasRangeSet('permanent_teeth_decayed') || hasSelectedStudents()" header="Perm. Decayed">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.permanent_teeth_decayed || 'N/A' }}</span>
+                                <span>{{ data.permanent_teeth_decayed || 'N/A' }}</span>
                             </template>
                         </Column>
 
-                        <Column v-if="oral_exam_fields.includes('missing_teeth')" header="Missing Teeth">
+                        <Column v-if="hasRangeSet('permanent_teeth_filled') || hasSelectedStudents()" header="Perm. Filled">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.permanent_for_extraction || 'N/A' }}</span>
+                                <span>{{ data.permanent_teeth_filled || 'N/A' }}</span>
                             </template>
                         </Column>
 
-                        <Column v-if="oral_exam_fields.includes('filled_teeth')" header="Filled Teeth">
+                        <Column v-if="hasRangeSet('permanent_for_extraction') || hasSelectedStudents()" header="Perm. For Extraction">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.permanent_teeth_filled || 'N/A' }}</span>
+                                <span>{{ data.permanent_for_extraction || 'N/A' }}</span>
                             </template>
                         </Column>
 
-                        <Column v-if="oral_exam_fields.includes('total_dmft')" header="Total DMFT">
+                        <Column v-if="hasRangeSet('permanent_for_filling') || hasSelectedStudents()" header="Perm. For Filling">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.permanent_total_dft || 'N/A' }}</span>
+                                <span>{{ data.permanent_for_filling || 'N/A' }}</span>
                             </template>
                         </Column>
 
-                        <Column v-if="oral_exam_fields.includes('sealant')" header="Sealant">
+                        <!-- Temporary Teeth Columns -->
+                        <Column v-if="hasRangeSet('temporary_teeth_decayed') || hasSelectedStudents()" header="Temp. Decayed">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.permanent_index_dft || 'N/A' }}</span>
+                                <span>{{ data.temporary_teeth_decayed || 'N/A' }}</span>
                             </template>
                         </Column>
 
-                        <Column v-if="oral_exam_fields.includes('fluoride_application')" header="Fluoride Application">
+                        <Column v-if="hasRangeSet('temporary_teeth_filled') || hasSelectedStudents()" header="Temp. Filled">
                             <template #body="{ data }">
-                                <span>{{ data.oral_health?.temporary_total_dft || 'N/A' }}</span>
+                                <span>{{ data.temporary_teeth_filled || 'N/A' }}</span>
                             </template>
                         </Column>
+
+                        <Column v-if="hasRangeSet('temporary_for_extraction') || hasSelectedStudents()" header="Temp. For Extraction">
+                            <template #body="{ data }">
+                                <span>{{ data.temporary_for_extraction || 'N/A' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="hasRangeSet('temporary_for_filling') || hasSelectedStudents()" header="Temp. For Filling">
+                            <template #body="{ data }">
+                                <span>{{ data.temporary_for_filling || 'N/A' }}</span>
+                            </template>
+                        </Column>
+
                 </DataTable>
             </div>
         </div>
@@ -123,72 +136,148 @@ const props = defineProps({
     max_age: Number,
     sort_by: String,
     minValues: Object,
-    maxValues: Object
+    maxValues: Object,
+    selected_students: Array
 });
+
+// Check if a range was set for a field (not [0,0] or null)
+const hasRangeSet = (fieldKey) => {
+    if (!props.minValues && !props.maxValues) return false;
+    
+    const minVal = props.minValues?.[fieldKey];
+    const maxVal = props.maxValues?.[fieldKey];
+    
+    // Show column if either min or max is set and not zero
+    return (minVal !== null && minVal !== undefined && minVal > 0) || 
+           (maxVal !== null && maxVal !== undefined && maxVal > 0);
+};
+
+// Check if specific students were selected
+const hasSelectedStudents = () => {
+    return props.selected_students && Array.isArray(props.selected_students) && props.selected_students.length > 0;
+};
 
 const goBack = () => {
     router.visit('/oral-health-report');
 };
 
 const printReport = () => {
-    // Create form data with current report parameters
+    // Create a form and submit it to trigger PDF download using blade template
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '/oral-health-report/export-pdf';
     form.target = '_blank';
 
     // Add CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (csrfToken) {
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
+    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+
+    // Add grade level
+    const gradeInput = document.createElement('input');
+    gradeInput.type = 'hidden';
+    gradeInput.name = 'grade_level';
+    gradeInput.value = props.grade_level.replace('Grade ', '');
+    form.appendChild(gradeInput);
+
+    // Add section if exists
+    if (props.section) {
+        const sectionInput = document.createElement('input');
+        sectionInput.type = 'hidden';
+        sectionInput.name = 'section';
+        sectionInput.value = props.section;
+        form.appendChild(sectionInput);
     }
 
-    // Add all the report parameters
-    const params = {
-        grade_level: props.grade_level,
-        section: props.section,
-        fields: props.fields,
-        oral_exam_fields: props.oral_exam_fields,
-        gender_filter: props.gender_filter,
-        min_age: props.min_age,
-        max_age: props.max_age,
-        sort_by: props.sort_by,
-        minValues: props.minValues,
-        maxValues: props.maxValues
-    };
-
-    Object.keys(params).forEach(key => {
-        if (params[key] !== null && params[key] !== undefined) {
-            if (Array.isArray(params[key])) {
-                params[key].forEach(value => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = `${key}[]`;
-                    input.value = value;
-                    form.appendChild(input);
-                });
-            } else if (typeof params[key] === 'object') {
-                Object.keys(params[key]).forEach(subKey => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = `${key}[${subKey}]`;
-                    input.value = params[key][subKey];
-                    form.appendChild(input);
-                });
-            } else {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = params[key];
-                form.appendChild(input);
-            }
-        }
+    // Add fields
+    props.fields.forEach(field => {
+        const fieldInput = document.createElement('input');
+        fieldInput.type = 'hidden';
+        fieldInput.name = 'fields[]';
+        fieldInput.value = field;
+        form.appendChild(fieldInput);
     });
 
+    // Add oral exam fields
+    if (props.oral_exam_fields && props.oral_exam_fields.length > 0) {
+        props.oral_exam_fields.forEach(field => {
+            const fieldInput = document.createElement('input');
+            fieldInput.type = 'hidden';
+            fieldInput.name = 'oral_exam_fields[]';
+            fieldInput.value = field;
+            form.appendChild(fieldInput);
+        });
+    }
+
+    // Add optional filters
+    if (props.gender_filter) {
+        const genderInput = document.createElement('input');
+        genderInput.type = 'hidden';
+        genderInput.name = 'gender_filter';
+        genderInput.value = props.gender_filter;
+        form.appendChild(genderInput);
+    }
+
+    if (props.min_age) {
+        const minAgeInput = document.createElement('input');
+        minAgeInput.type = 'hidden';
+        minAgeInput.name = 'min_age';
+        minAgeInput.value = props.min_age;
+        form.appendChild(minAgeInput);
+    }
+
+    if (props.max_age) {
+        const maxAgeInput = document.createElement('input');
+        maxAgeInput.type = 'hidden';
+        maxAgeInput.name = 'max_age';
+        maxAgeInput.value = props.max_age;
+        form.appendChild(maxAgeInput);
+    }
+
+    if (props.sort_by) {
+        const sortInput = document.createElement('input');
+        sortInput.type = 'hidden';
+        sortInput.name = 'sort_by';
+        sortInput.value = props.sort_by;
+        form.appendChild(sortInput);
+    }
+
+    // Add min/max values
+    if (props.minValues) {
+        Object.keys(props.minValues).forEach(key => {
+            const minInput = document.createElement('input');
+            minInput.type = 'hidden';
+            minInput.name = `minValues[${key}]`;
+            minInput.value = props.minValues[key];
+            form.appendChild(minInput);
+        });
+    }
+
+    if (props.maxValues) {
+        Object.keys(props.maxValues).forEach(key => {
+            const maxInput = document.createElement('input');
+            maxInput.type = 'hidden';
+            maxInput.name = `maxValues[${key}]`;
+            maxInput.value = props.maxValues[key];
+            form.appendChild(maxInput);
+        });
+    }
+
+    // Add selected students
+    if (props.selected_students && props.selected_students.length > 0) {
+        props.selected_students.forEach(student => {
+            const studentInput = document.createElement('input');
+            studentInput.type = 'hidden';
+            studentInput.name = 'selected_students[]';
+            studentInput.value = typeof student === 'object' ? student.id : student;
+            form.appendChild(studentInput);
+        });
+    }
+
+    // Append form to body and submit
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);

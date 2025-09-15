@@ -63,7 +63,7 @@
                 <!-- Print Header -->
                 <div class="print-header">
                 <div class="print-logo">
-                    <img src="/images/logo.png" alt="School Logo" style="width: 60px; height: 60px; object-fit: contain;" />
+                    <img :src="logoUrl" alt="School Logo" style="width: 60px; height: 60px; object-fit: contain;" />
                 </div>
                     <div class="print-school-name">Naawan Central School</div>
                     <div class="print-region">Region X - Northern Mindanao</div>
@@ -307,6 +307,7 @@ import { router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import logoUrl from '../../assets/logo.png';
 
 const props = defineProps({
     reportData: {
@@ -360,10 +361,12 @@ const goBack = () => {
     router.visit('/health-report');
 };
 
+// logoUrl is now imported directly
+
 const printReport = async () => {
     try {
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        // Get CSRF token from Inertia
+        const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
 
         if (!csrfToken) {
             alert('CSRF token not found. Please refresh the page and try again.');
@@ -372,7 +375,6 @@ const printReport = async () => {
 
         // Prepare form data
         const formData = new FormData();
-        formData.append('_token', csrfToken);
         formData.append('grade_level', props.grade_level.replace('Grade ', ''));
         formData.append('school_year', props.school_year);
 
@@ -415,40 +417,106 @@ const printReport = async () => {
             });
         }
 
-        // Make the request
-        const response = await fetch('/health-report/export-pdf', {
-            method: 'POST',
-            body: formData,
+        // Get data from server for browser-based PDF generation
+        const response = await window.axios.post('/health-report/export-pdf', formData, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.data.success) {
+            // Use browser's print functionality to generate PDF
+            generateBrowserPDF(response.data.data);
+        } else {
+            throw new Error('Failed to get report data');
         }
-
-        // Get the blob and create download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-
-        // Generate filename
-        const gradeLevel = props.grade_level.replace('Grade ', '').toLowerCase().replace(' ', '-');
-        const filename = `health-report-${gradeLevel}-${props.school_year}.pdf`;
-        link.download = filename;
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
 
     } catch (error) {
         console.error('PDF export failed:', error);
         alert('Failed to generate PDF. Please try again.');
     }
+};
+
+const generateBrowserPDF = (data) => {
+    // Load html2pdf.js library for better compatibility
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    script.onload = () => {
+        // Create HTML content for PDF
+        const element = document.createElement('div');
+        element.innerHTML = `
+            <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                    <div style="margin-right: 20px;">
+                        <img src="${logoUrl}" alt="School Logo" style="width: 60px; height: 60px; object-fit: contain;">
+                    </div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">NAAWAN CENTRAL SCHOOL</div>
+                        <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Region X - Northern Mindanao</div>
+                        <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Health Report</div>
+                        <div style="font-size: 12px; color: #666;">
+                            Grade ${data.grade_level}${data.section ? ' - Section ' + data.section : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 10px;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            ${data.fields.includes('name') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Name</th>' : ''}
+                            ${data.fields.includes('lrn') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">LRN</th>' : ''}
+                            ${data.fields.includes('grade_level') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Grade</th>' : ''}
+                            ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Section</th>' : ''}
+                            ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Gender</th>' : ''}
+                            ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Age</th>' : ''}
+                            ${data.fields.includes('birthdate') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">Birthdate</th>' : ''}
+                            ${data.health_exam_fields.map(field => `<th style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold;">${field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.reportData.map(student => `
+                            <tr>
+                                ${data.fields.includes('name') ? `<td style="border: 1px solid #000; padding: 6px;">${student.name || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('lrn') ? `<td style="border: 1px solid #000; padding: 6px;">${student.lrn || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('grade_level') ? `<td style="border: 1px solid #000; padding: 6px;">${student.grade_level || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 6px;">${student.section || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 6px;">${student.gender || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 6px;">${student.age || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('birthdate') ? `<td style="border: 1px solid #000; padding: 6px;">${student.birthdate || 'N/A'}</td>` : ''}
+                                ${data.health_exam_fields.map(field => `<td style="border: 1px solid #000; padding: 6px;">${student.health_exam?.[field] || 'N/A'}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 30px; text-align: right; font-size: 10px; border-top: 1px solid #ccc; padding-top: 15px;">
+                    <div>Printed by: Test User</div>
+                    <div>Date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                </div>
+            </div>
+        `;
+
+        // Configure PDF options
+        const opt = {
+            margin: 10,
+            filename: `health-report-${data.grade_level.toLowerCase().replace(' ', '-')}-${data.school_year}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        // Generate and download PDF
+        html2pdf().set(opt).from(element).save();
+    };
+    
+    script.onerror = () => {
+        console.error('Failed to load html2pdf library');
+        alert('Failed to load PDF library. Please try again.');
+    };
+    
+    document.head.appendChild(script);
 };
 </script>
 

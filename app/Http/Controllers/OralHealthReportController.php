@@ -2,21 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
-use App\Models\OralHealthTreatment;
-use App\Models\OralHealthExamination;
 use Illuminate\Http\Request;
+use App\Models\Student;
+use App\Models\OralHealthExamination;
 use Inertia\Inertia;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class OralHealthReportController extends Controller
 {
     public function index()
     {
-        // Get dynamic grade levels from database
+        // Get dynamic grade levels from database and normalize them
         $dbGradeLevels = Student::distinct('grade_level')
             ->whereNotNull('grade_level')
+            ->where('grade_level', '!=', '')
             ->pluck('grade_level')
+            ->map(function($grade) {
+                // Normalize grade levels - convert "4" to "Grade 4"
+                if (is_numeric($grade)) {
+                    return "Grade " . $grade;
+                }
+                return $grade;
+            })
             ->toArray();
         
         $standardGradeLevels = [
@@ -54,7 +62,7 @@ class OralHealthReportController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'grade_level' => 'required|string',
+            'grade_level' => 'nullable|string',
             'section' => 'nullable|string',
             'gender_filter' => 'nullable|string',
             'min_age' => 'nullable|integer',
@@ -63,45 +71,84 @@ class OralHealthReportController extends Controller
             'fields' => 'nullable|array',
             'oral_exam_fields' => 'nullable|array',
             'minValues' => 'nullable|array',
-            'maxValues' => 'nullable|array'
+            'maxValues' => 'nullable|array',
+            'selected_students' => 'nullable|array'
         ]);
 
         $gradeLevel = $request->grade_level;
         $selectedFields = $request->fields ?? ['name', 'lrn', 'grade_level', 'section', 'gender', 'age', 'birthdate'];
         
-        // Get students for the selected grade
-        $user = auth()->user();
-        
-        // Filter students based on user role
-        if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
-            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-            $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+        // Check if specific students are selected
+        if ($request->selected_students && count($request->selected_students) > 0) {
+            // Extract student IDs from the student objects
+            $studentIds = collect($request->selected_students)
+                ->filter(function($student) {
+                    return isset($student['id']) && is_numeric($student['id']);
+                })
+                ->pluck('id')
+                ->toArray();
+            
+            // Use selected students
+            $user = auth()->user();
+            
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $studentIds)
+                    ->whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::whereIn('id', $studentIds);
+            }
         } else {
-            // Admins can see all students
-            $studentsQuery = Student::query();
-        }
-        
-        // Apply grade level filter (skip if "All" is selected)
-        if ($gradeLevel !== 'All') {
-            $studentsQuery->where('grade_level', $gradeLevel);
-        }
-        
-        if ($request->section) {
-            $studentsQuery->where('section', $request->section);
-        }
+            // Use filter-based approach
+            $user = auth()->user();
+            
+            // Filter students based on user role
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::query();
+            }
+            
+            // Apply grade level filter (skip if "All" is selected)
+            if ($gradeLevel && $gradeLevel !== 'All') {
+                // Handle both "Grade 6" and "6" formats
+                $studentsQuery->where(function($query) use ($gradeLevel) {
+                    $query->where('grade_level', $gradeLevel);
+                    
+                    // If grade level is in "Grade X" format, also check for numeric format
+                    if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
+                        $numericGrade = $matches[1];
+                        $query->orWhere('grade_level', $numericGrade);
+                    }
+                    
+                    // If grade level is numeric, also check for "Grade X" format
+                    if (is_numeric($gradeLevel)) {
+                        $query->orWhere('grade_level', 'Grade ' . $gradeLevel);
+                    }
+                });
+            }
+            
+            if ($request->section) {
+                $studentsQuery->where('section', $request->section);
+            }
 
-        // Apply gender filter
-        if ($request->gender_filter && $request->gender_filter !== 'All') {
-            $studentsQuery->where('sex', $request->gender_filter);
-        }
+            // Apply gender filter
+            if ($request->gender_filter && $request->gender_filter !== 'All') {
+                $studentsQuery->where('sex', $request->gender_filter);
+            }
 
-        // Apply age range filter
-        if ($request->min_age) {
-            $studentsQuery->where('age', '>=', $request->min_age);
-        }
-        if ($request->max_age) {
-            $studentsQuery->where('age', '<=', $request->max_age);
+            // Apply age range filter
+            if ($request->min_age) {
+                $studentsQuery->where('age', '>=', $request->min_age);
+            }
+            if ($request->max_age) {
+                $studentsQuery->where('age', '<=', $request->max_age);
+            }
         }
         
         // Apply sorting based on user selection
@@ -159,22 +206,59 @@ class OralHealthReportController extends Controller
                 ->latest()
                 ->first();
 
-            // Add oral health examination data if fields are selected
-            $oralExamFields = $request->oral_exam_fields ?? [];
-            if (!empty($oralExamFields)) {
-                $fieldMapping = [
-                    'decayed_teeth' => 'permanent_teeth_decayed',
-                    'missing_teeth' => 'permanent_for_extraction', 
-                    'filled_teeth' => 'permanent_teeth_filled',
-                    'total_dmft' => 'permanent_total_dft',
-                    'sealant' => 'permanent_index_dft',
-                    'fluoride_application' => 'temporary_total_dft'
-                ];
+            // Add oral health examination data based on range filters
+            $minValues = $request->minValues ?? [];
+            $maxValues = $request->maxValues ?? [];
+            $selectedStudents = $request->selected_students ?? [];
+            
+            // If specific students are selected, skip range filtering
+            $includeStudent = true;
+            
+            if (empty($selectedStudents)) {
+                // Get oral exam fields that have ranges set
+                $oralExamFields = $request->oral_exam_fields ?? [];
                 
-                foreach ($oralExamFields as $field) {
-                    $dbField = $fieldMapping[$field] ?? $field;
-                    $studentData[$field] = $oralHealth ? ($oralHealth->$dbField ?? 0) : 0;
+                // Only apply filtering if there are oral exam fields specified
+                if (!empty($oralExamFields)) {
+                    foreach ($oralExamFields as $field) {
+                        $minVal = $minValues[$field] ?? null;
+                        $maxVal = $maxValues[$field] ?? null;
+                        
+                        $actualValue = $oralHealth ? ($oralHealth->$field ?? 0) : 0;
+                        
+                        // Check if value falls within range
+                        // For minimum: if min is set and > 0, actual value must be >= min
+                        if ($minVal !== null && $minVal > 0 && $actualValue < $minVal) {
+                            $includeStudent = false;
+                            break;
+                        }
+                        
+                        // For maximum: if max is set and > 0, actual value must be <= max
+                        if ($maxVal !== null && $maxVal > 0 && $actualValue > $maxVal) {
+                            $includeStudent = false;
+                            break;
+                        }
+                    }
                 }
+            }
+            
+            // Only include student if they pass the oral health filters (or if specific students selected)
+            if (!$includeStudent) {
+                continue;
+            }
+            
+            // Add oral health data for display
+            if ($oralHealth) {
+                $studentData['permanent_teeth_filled'] = $oralHealth->permanent_teeth_filled ?? 0;
+                $studentData['permanent_teeth_decayed'] = $oralHealth->permanent_teeth_decayed ?? 0;
+                $studentData['permanent_for_extraction'] = $oralHealth->permanent_for_extraction ?? 0;
+                $studentData['permanent_for_filling'] = $oralHealth->permanent_for_filling ?? 0;
+                $studentData['permanent_index_dft'] = $oralHealth->permanent_index_dft ?? 0;
+                $studentData['temporary_teeth_filled'] = $oralHealth->temporary_teeth_filled ?? 0;
+                $studentData['temporary_teeth_decayed'] = $oralHealth->temporary_teeth_decayed ?? 0;
+                $studentData['temporary_for_extraction'] = $oralHealth->temporary_for_extraction ?? 0;
+                $studentData['temporary_for_filling'] = $oralHealth->temporary_for_filling ?? 0;
+                $studentData['temporary_index_dft'] = $oralHealth->temporary_index_dft ?? 0;
             }
             
             $reportData[] = $studentData;
@@ -191,22 +275,25 @@ class OralHealthReportController extends Controller
             'max_age' => $request->max_age,
             'sort_by' => $request->sort_by,
             'minValues' => $request->minValues ?? [],
-            'maxValues' => $request->maxValues ?? []
+            'maxValues' => $request->maxValues ?? [],
+            'selected_students' => $request->selected_students ?? []
         ]);
     }
 
     public function exportPdf(Request $request)
     {
-        $request->validate([
-            'grade_level' => 'required|string',
-            'section' => 'nullable|string',
-            'gender_filter' => 'nullable|string',
-            'min_age' => 'nullable|integer',
-            'max_age' => 'nullable|integer',
-            'sort_by' => 'nullable|string',
-            'minValues' => 'nullable|array',
-            'maxValues' => 'nullable|array'
-        ]);
+        try {
+            $request->validate([
+                'grade_level' => 'nullable|string',
+                'section' => 'nullable|string',
+                'gender_filter' => 'nullable|string',
+                'min_age' => 'nullable|integer',
+                'max_age' => 'nullable|integer',
+                'sort_by' => 'nullable|string',
+                'minValues' => 'nullable|array',
+                'maxValues' => 'nullable|array',
+                'selected_students' => 'nullable|array'
+            ]);
 
         $gradeLevel = $request->grade_level;
         $minValues = $request->minValues ?? [];
@@ -221,39 +308,77 @@ class OralHealthReportController extends Controller
             $oralExamFields = array_unique(array_merge(array_keys($minValues), array_keys($maxValues)));
         }
 
-        // Get students for the selected grade (same logic as generate method)
-        $user = auth()->user();
-        
-        // Filter students based on user role
-        if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
-            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
-            $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+        // Check if specific students are selected
+        if ($request->selected_students && count($request->selected_students) > 0) {
+            // Extract student IDs from the student objects
+            $studentIds = collect($request->selected_students)
+                ->filter(function($student) {
+                    return isset($student['id']) && is_numeric($student['id']);
+                })
+                ->pluck('id')
+                ->toArray();
+            
+            // Use selected students
+            $user = auth()->user();
+            
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $studentIds)
+                    ->whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::whereIn('id', $studentIds);
+            }
         } else {
-            // Admins can see all students
-            $studentsQuery = Student::query();
-        }
-        
-        // Apply grade level filter (skip if "All" is selected)
-        if ($gradeLevel !== 'All') {
-            $studentsQuery->where('grade_level', $gradeLevel);
-        }
-        
-        if ($request->section) {
-            $studentsQuery->where('section', $request->section);
-        }
+            // Use filter-based approach (same logic as generate method)
+            $user = auth()->user();
+            
+            // Filter students based on user role
+            if ($user->role === 'teacher') {
+                // Teachers can only see their assigned students
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+            } else {
+                // Admins can see all students
+                $studentsQuery = Student::query();
+            }
+            
+            // Apply grade level filter (skip if "All" is selected)
+            if ($gradeLevel && $gradeLevel !== 'All') {
+                // Handle both "Grade 6" and "6" formats
+                $studentsQuery->where(function($query) use ($gradeLevel) {
+                    $query->where('grade_level', $gradeLevel);
+                    
+                    // If grade level is in "Grade X" format, also check for numeric format
+                    if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
+                        $numericGrade = $matches[1];
+                        $query->orWhere('grade_level', $numericGrade);
+                    }
+                    
+                    // If grade level is numeric, also check for "Grade X" format
+                    if (is_numeric($gradeLevel)) {
+                        $query->orWhere('grade_level', 'Grade ' . $gradeLevel);
+                    }
+                });
+            }
+            
+            if ($request->section) {
+                $studentsQuery->where('section', $request->section);
+            }
 
-        // Apply gender filter
-        if ($request->gender_filter && $request->gender_filter !== 'All') {
-            $studentsQuery->where('sex', $request->gender_filter);
-        }
+            // Apply gender filter
+            if ($request->gender_filter && $request->gender_filter !== 'All') {
+                $studentsQuery->where('sex', $request->gender_filter);
+            }
 
-        // Apply age range filter
-        if ($request->min_age) {
-            $studentsQuery->where('age', '>=', $request->min_age);
-        }
-        if ($request->max_age) {
-            $studentsQuery->where('age', '<=', $request->max_age);
+            // Apply age range filter
+            if ($request->min_age) {
+                $studentsQuery->where('age', '>=', $request->min_age);
+            }
+            if ($request->max_age) {
+                $studentsQuery->where('age', '<=', $request->max_age);
+            }
         }
         
         // Apply sorting
@@ -360,23 +485,51 @@ class OralHealthReportController extends Controller
             }
             
             if ($includeStudent) {
-                $studentData['oral_health'] = $oralHealth;
+                // Add oral health data directly to student data
+                if ($oralHealth) {
+                    $studentData['permanent_teeth_decayed'] = $oralHealth->permanent_teeth_decayed ?? 0;
+                    $studentData['permanent_teeth_filled'] = $oralHealth->permanent_teeth_filled ?? 0;
+                    $studentData['permanent_for_extraction'] = $oralHealth->permanent_for_extraction ?? 0;
+                    $studentData['permanent_for_filling'] = $oralHealth->permanent_for_filling ?? 0;
+                    $studentData['temporary_teeth_decayed'] = $oralHealth->temporary_teeth_decayed ?? 0;
+                    $studentData['temporary_teeth_filled'] = $oralHealth->temporary_teeth_filled ?? 0;
+                    $studentData['temporary_for_extraction'] = $oralHealth->temporary_for_extraction ?? 0;
+                    $studentData['temporary_for_filling'] = $oralHealth->temporary_for_filling ?? 0;
+                } else {
+                    $studentData['permanent_teeth_decayed'] = 0;
+                    $studentData['permanent_teeth_filled'] = 0;
+                    $studentData['permanent_for_extraction'] = 0;
+                    $studentData['permanent_for_filling'] = 0;
+                    $studentData['temporary_teeth_decayed'] = 0;
+                    $studentData['temporary_teeth_filled'] = 0;
+                    $studentData['temporary_for_extraction'] = 0;
+                    $studentData['temporary_for_filling'] = 0;
+                }
+                
                 $reportData[] = $studentData;
             }
         }
 
+        // Generate PDF using blade template
         $pdf = PDF::loadView('oral-health-report-pdf', [
             'reportData' => $reportData,
-            'grade_level' => 'Grade ' . $gradeLevel,
+            'grade_level' => $gradeLevel,
             'section' => $request->section,
             'fields' => $selectedFields,
-            'oral_exam_fields' => $request->oral_exam_fields ?? [],
-            'minValues' => $minValues,
-            'maxValues' => $maxValues
+            'oral_exam_fields' => $oralExamFields,
+            'user_name' => auth()->user()->name ?? 'System'
         ]);
 
-        $filename = 'oral-health-report-' . strtolower(str_replace(' ', '-', $gradeLevel)) . '.pdf';
+        $filename = 'oral-health-report-grade-' . $gradeLevel . ($request->section ? '-section-' . $request->section : '') . '.pdf';
         
         return $pdf->download($filename);
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Export failed: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'PDF generation failed', 
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 }

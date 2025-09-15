@@ -2,12 +2,15 @@
     <Head title="Health Report Generator" />
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-6xl mx-auto">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
-                    <i class="pi pi-chart-bar mr-2 text-green-600"></i>
-                    Health Report Generator
-                </h1>
+            <!-- Header Card -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <div class="mb-4">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                        <i class="pi pi-chart-bar mr-2 text-green-600"></i>
+                        Health Report Generator
+                    </h1>
+                    <p class="text-gray-600">Generate comprehensive health reports for students</p>
+                </div>
             </div>
 
             <!-- Student Selection Card -->

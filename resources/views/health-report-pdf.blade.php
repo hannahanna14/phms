@@ -90,7 +90,9 @@
             @php
                 // Try multiple logo locations
                 $logoPaths = [
-                    public_path('public/images/logo.png'),
+                    public_path('images/logo.png'),
+                    resource_path('js/assets/logo.png'),
+                    public_path('assets/logo.png'),
                 ];
                 
                 $logoFound = false;
@@ -121,7 +123,7 @@
             <div class="region">Region X - Northern Mindanao</div>
             <div class="report-title">Health Report</div>
             <div class="report-details">
-                Grade {{ $grade_level }} 
+                {{ $grade_level }} 
                 @if($section) - Section {{ $section }} @endif
             </div>
         </div>

@@ -107,9 +107,9 @@
             <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="50" cy="50" r="45" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
                 <circle cx="50" cy="50" r="35" fill="#ffffff" stroke="#1e3a8a" stroke-width="1"/>
-                <text x="50" y="40" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#1e3a8a">NAAWAN</text>
-                <text x="50" y="50" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">CENTRAL</text>
-                <text x="50" y="60" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">SCHOOL</text>
+                <text x="50" y="38" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#1e3a8a">NAAWAN</text>
+                <text x="50" y="48" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">CENTRAL</text>
+                <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">SCHOOL</text>
             </svg>
         </div>
         <div class="school-info">
@@ -144,27 +144,10 @@
                 @if(in_array('age', $fields))
                     <th>Age</th>
                 @endif
-                @if(in_array('birthdate', $fields))
-                    <th>Birthdate</th>
-                @endif
-                @if(in_array('decayed_teeth', $oral_exam_fields))
-                    <th>Decayed Teeth</th>
-                @endif
-                @if(in_array('missing_teeth', $oral_exam_fields))
-                    <th>Missing Teeth</th>
-                @endif
-                @if(in_array('filled_teeth', $oral_exam_fields))
-                    <th>Filled Teeth</th>
-                @endif
-                @if(in_array('total_dmft', $oral_exam_fields))
-                    <th>Total DMFT</th>
-                @endif
-                @if(in_array('sealant', $oral_exam_fields))
-                    <th>Sealant</th>
-                @endif
-                @if(in_array('fluoride_application', $oral_exam_fields))
-                    <th>Fluoride Application</th>
-                @endif
+                <!-- Dynamic Oral Health Columns -->
+                @foreach($oral_exam_fields as $field)
+                    <th>{{ ucwords(str_replace(['_', 'permanent', 'temporary'], [' ', 'Perm.', 'Temp.'], $field)) }}</th>
+                @endforeach
             </tr>
         </thead>
         <tbody>
@@ -188,34 +171,17 @@
                     @if(in_array('age', $fields))
                         <td>{{ $student['age'] ?? 'N/A' }}</td>
                     @endif
-                    @if(in_array('birthdate', $fields))
-                        <td>{{ $student['birthdate'] ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('decayed_teeth', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->decayed_teeth ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('missing_teeth', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->missing_teeth ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('filled_teeth', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->filled_teeth ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('total_dmft', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->total_dmft ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('sealant', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->sealant ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('fluoride_application', $oral_exam_fields))
-                        <td>{{ $student['oral_health']->fluoride_application ?? 'N/A' }}</td>
-                    @endif
+                    <!-- Dynamic Oral Health Data -->
+                    @foreach($oral_exam_fields as $field)
+                        <td>{{ $student[$field] ?? 'N/A' }}</td>
+                    @endforeach
                 </tr>
             @endforeach
         </tbody>
     </table>
 
     <div class="footer">
-        <div>Printed by: Test User</div>
+        <div>Printed by: {{ $user_name ?? 'System' }}</div>
         <div>Date: {{ date('F d, Y') }}</div>
     </div>
 </body>
