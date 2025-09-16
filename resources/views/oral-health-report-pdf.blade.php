@@ -104,13 +104,36 @@
 <body>
     <div class="header">
         <div class="logo">
-            <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="45" fill="#1e3a8a" stroke="#000" stroke-width="2"/>
-                <circle cx="50" cy="50" r="35" fill="#ffffff" stroke="#1e3a8a" stroke-width="1"/>
-                <text x="50" y="38" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#1e3a8a">NAAWAN</text>
-                <text x="50" y="48" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">CENTRAL</text>
-                <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="6" fill="#1e3a8a">SCHOOL</text>
-            </svg>
+            @php
+                // Try multiple logo locations
+                $logoPaths = [
+                    public_path('images/logo.png'),
+                    resource_path('js/assets/logo.png'),
+                    public_path('assets/logo.png'),
+                ];
+                
+                $logoFound = false;
+                foreach ($logoPaths as $path) {
+                    if (file_exists($path)) {
+                        try {
+                            $imageData = file_get_contents($path);
+                            if ($imageData !== false) {
+                                $base64 = base64_encode($imageData);
+                                $extension = pathinfo($path, PATHINFO_EXTENSION);
+                                echo '<img src="data:image/' . $extension . ';base64,' . $base64 . '" alt="School Logo" style="width: 70px; height: 70px; object-fit: contain;">';
+                                $logoFound = true;
+                                break;
+                            }
+                        } catch (Exception $e) {
+                            // Continue to next path
+                        }
+                    }
+                }
+                
+                if (!$logoFound) {
+                    echo '<div style="width: 70px; height: 70px; border: 2px solid #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #1e3a8a; background-color: #f8fafc;">LOGO</div>';
+                }
+            @endphp
         </div>
         <div class="school-info">
             <div class="school-name">NAAWAN CENTRAL SCHOOL</div>

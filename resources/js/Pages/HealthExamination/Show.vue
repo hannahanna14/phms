@@ -134,6 +134,11 @@ const onGradeChange = () => {
     fetchTreatmentRecords();
 };
 
+const printHealthExaminationPdf = () => {
+    const url = `/health-examination-pdf/${student.id}`;
+    window.open(url, '_blank');
+};
+
 // Remove watch to prevent page reloads - only use @change handler
 
 </script>
@@ -175,7 +180,7 @@ const onGradeChange = () => {
                         </div>
                     </div>
 
-                    <!-- Grade Selection -->
+                    <!-- Grade Selection and Print PDF Button -->
                     <div class="flex gap-2">
                         <Select 
                             v-model="selectedGrade" 
@@ -183,6 +188,14 @@ const onGradeChange = () => {
                             placeholder="Select Grade"
                             class="w-32 text-sm"
                             @change="onGradeChange"
+                        />
+                        <Button 
+                            label="Print PDF" 
+                            icon="pi pi-file-pdf" 
+                            severity="secondary"
+                            outlined
+                            class="text-sm"
+                            @click="printHealthExaminationPdf"
                         />
                     </div>
 

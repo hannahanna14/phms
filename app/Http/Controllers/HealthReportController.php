@@ -482,6 +482,88 @@ class HealthReportController extends Controller
         }
     }
 
+    public function exportHealthExaminationPdf($studentId)
+    {
+        $student = Student::find($studentId);
+        
+        if (!$student) {
+            return response('Student not found', 404);
+        }
+        
+        // Define all possible grade levels in order
+        $allGradeLevels = ['Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+        
+        // Get all health examinations for this student
+        $healthExaminations = HealthExamination::where('student_id', $student->id)->get();
+        
+        // Create an ordered array with data only for grades where student has records
+        $orderedExaminations = [];
+        foreach ($allGradeLevels as $grade) {
+            $found = false;
+            
+            // Look for matching examination with flexible grade level matching
+            foreach ($healthExaminations as $exam) {
+                $examGrade = $exam->grade_level;
+                
+                // Check multiple formats: "6", "Grade 6", etc.
+                if ($examGrade == $grade || 
+                    $examGrade == str_replace('Grade ', '', $grade) ||
+                    "Grade {$examGrade}" == $grade ||
+                    ($grade == 'Kinder' && in_array($examGrade, ['Kinder', 'Kinder 1', 'Kinder 2']))) {
+                    $orderedExaminations[$grade] = $exam;
+                    $found = true;
+                    break;
+                }
+            }
+            
+            if (!$found) {
+                $orderedExaminations[$grade] = null; // No data for this grade
+            }
+        }
+        
+        // Get health treatments for this student
+        $healthTreatments = HealthTreatment::where('student_id', $student->id)
+            ->orderBy('date', 'desc')
+            ->get();
+        
+        $pdf = PDF::loadView('health-examination-pdf', compact('student', 'orderedExaminations', 'allGradeLevels', 'healthTreatments'));
+        $pdf->setPaper('A4', 'landscape');
+        
+        $filename = 'health_examination_' . str_replace(' ', '_', $student->full_name) . '_' . date('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    public function testHealthExaminationPdf($studentId = null)
+    {
+        // Use a specific student ID or get the first student for testing
+        $student = $studentId ? Student::find($studentId) : Student::first();
+        
+        if (!$student) {
+            return response('No student found', 404);
+        }
+        
+        // Define all possible grade levels in order
+        $allGradeLevels = ['Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+        
+        // Get all health examinations for this student
+        $healthExaminations = HealthExamination::where('student_id', $student->id)
+            ->get()
+            ->keyBy('grade_level'); // Key by grade level for easy lookup
+        
+        // Create an ordered array with data only for grades where student has records
+        $orderedExaminations = [];
+        foreach ($allGradeLevels as $grade) {
+            if (isset($healthExaminations[$grade])) {
+                $orderedExaminations[$grade] = $healthExaminations[$grade];
+            } else {
+                $orderedExaminations[$grade] = null; // No data for this grade
+            }
+        }
+        
+        return view('health-examination-pdf', compact('student', 'orderedExaminations', 'allGradeLevels'));
+    }
+
     private function getSchoolYearForGrade($grade)
     {
         $gradeToYear = [

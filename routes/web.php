@@ -87,12 +87,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-report.preview-pdf');
 
     // Oral Health Report Routes
-    Route::get('/oral-health-report', [OralHealthReportController::class, 'index'])
-        ->name('oral-health-report.index');
-    Route::match(['GET', 'POST'], '/oral-health-report/generate', [OralHealthReportController::class, 'generate'])
-        ->name('oral-health-report.generate');
-    Route::post('/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])
-        ->name('oral-health-report.export-pdf');
+    Route::get('/oral-health-report', [OralHealthReportController::class, 'index'])->name('oral-health-report.index');
+    Route::post('/oral-health-report/generate', [OralHealthReportController::class, 'generate'])->name('oral-health-report.generate');
+    Route::post('/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])->name('oral-health-report.export-pdf');
+
+    // Health examination PDF routes
+    Route::get('/health-examination-pdf/{studentId}', [App\Http\Controllers\HealthReportController::class, 'exportHealthExaminationPdf'])->name('health-examination.export-pdf');
+    Route::get('/test-health-examination-pdf/{studentId?}', [App\Http\Controllers\HealthReportController::class, 'testHealthExaminationPdf'])->name('test.health-examination-pdf');
 
     // User Management Routes
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

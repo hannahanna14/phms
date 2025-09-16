@@ -161,125 +161,201 @@ const goBack = () => {
     router.visit('/oral-health-report');
 };
 
-const printReport = () => {
-    // Create a form and submit it to trigger PDF download using blade template
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/oral-health-report/export-pdf';
-    form.target = '_blank';
+const printReport = async () => {
+    try {
+        // Get CSRF token from multiple sources
+        let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || 
+                       document.querySelector('meta[name="csrf-token"]')?.content ||
+                       window.Laravel?.csrfToken || '';
 
-    // Add CSRF token
-    const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = '_token';
-    csrfInput.value = csrfToken;
-    form.appendChild(csrfInput);
+        // Try to get from Inertia page props as fallback
+        if (!csrfToken && window.page?.props?.csrf_token) {
+            csrfToken = window.page.props.csrf_token;
+        }
 
-    // Add grade level
-    const gradeInput = document.createElement('input');
-    gradeInput.type = 'hidden';
-    gradeInput.name = 'grade_level';
-    gradeInput.value = props.grade_level.replace('Grade ', '');
-    form.appendChild(gradeInput);
+        if (!csrfToken) {
+            alert('CSRF token not found. Please refresh the page and try again.');
+            return;
+        }
 
-    // Add section if exists
-    if (props.section) {
-        const sectionInput = document.createElement('input');
-        sectionInput.type = 'hidden';
-        sectionInput.name = 'section';
-        sectionInput.value = props.section;
-        form.appendChild(sectionInput);
-    }
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('grade_level', props.grade_level ? props.grade_level.replace('Grade ', '') : '');
 
-    // Add fields
-    props.fields.forEach(field => {
-        const fieldInput = document.createElement('input');
-        fieldInput.type = 'hidden';
-        fieldInput.name = 'fields[]';
-        fieldInput.value = field;
-        form.appendChild(fieldInput);
-    });
+        if (props.section) {
+            formData.append('section', props.section);
+        }
 
-    // Add oral exam fields
-    if (props.oral_exam_fields && props.oral_exam_fields.length > 0) {
-        props.oral_exam_fields.forEach(field => {
-            const fieldInput = document.createElement('input');
-            fieldInput.type = 'hidden';
-            fieldInput.name = 'oral_exam_fields[]';
-            fieldInput.value = field;
-            form.appendChild(fieldInput);
+        // Add fields array
+        props.fields.forEach(field => {
+            formData.append('fields[]', field);
         });
-    }
 
-    // Add optional filters
-    if (props.gender_filter) {
-        const genderInput = document.createElement('input');
-        genderInput.type = 'hidden';
-        genderInput.name = 'gender_filter';
-        genderInput.value = props.gender_filter;
-        form.appendChild(genderInput);
-    }
+        // Add oral exam fields array
+        if (props.oral_exam_fields && props.oral_exam_fields.length > 0) {
+            props.oral_exam_fields.forEach(field => {
+                formData.append('oral_exam_fields[]', field);
+            });
+        }
 
-    if (props.min_age) {
-        const minAgeInput = document.createElement('input');
-        minAgeInput.type = 'hidden';
-        minAgeInput.name = 'min_age';
-        minAgeInput.value = props.min_age;
-        form.appendChild(minAgeInput);
-    }
+        // Add optional filters
+        if (props.gender_filter) {
+            formData.append('gender_filter', props.gender_filter);
+        }
+        if (props.min_age) {
+            formData.append('min_age', props.min_age);
+        }
+        if (props.max_age) {
+            formData.append('max_age', props.max_age);
+        }
+        if (props.sort_by) {
+            formData.append('sort_by', props.sort_by);
+        }
 
-    if (props.max_age) {
-        const maxAgeInput = document.createElement('input');
-        maxAgeInput.type = 'hidden';
-        maxAgeInput.name = 'max_age';
-        maxAgeInput.value = props.max_age;
-        form.appendChild(maxAgeInput);
-    }
+        // Add min/max values if any
+        if (props.minValues) {
+            Object.keys(props.minValues).forEach(key => {
+                formData.append(`minValues[${key}]`, props.minValues[key]);
+            });
+        }
+        if (props.maxValues) {
+            Object.keys(props.maxValues).forEach(key => {
+                formData.append(`maxValues[${key}]`, props.maxValues[key]);
+            });
+        }
 
-    if (props.sort_by) {
-        const sortInput = document.createElement('input');
-        sortInput.type = 'hidden';
-        sortInput.name = 'sort_by';
-        sortInput.value = props.sort_by;
-        form.appendChild(sortInput);
-    }
+        // Add selected students if any
+        if (props.selected_students && props.selected_students.length > 0) {
+            props.selected_students.forEach(student => {
+                const studentId = typeof student === 'object' ? student.id : student;
+                formData.append('selected_students[]', studentId);
+            });
+        }
 
-    // Add min/max values
-    if (props.minValues) {
-        Object.keys(props.minValues).forEach(key => {
-            const minInput = document.createElement('input');
-            minInput.type = 'hidden';
-            minInput.name = `minValues[${key}]`;
-            minInput.value = props.minValues[key];
-            form.appendChild(minInput);
+        // Set CSRF token in axios defaults
+        window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        
+        // Get data from server for browser-based PDF generation
+        const response = await window.axios.post('/oral-health-report/export-pdf', formData, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'multipart/form-data'
+            }
         });
-    }
 
-    if (props.maxValues) {
-        Object.keys(props.maxValues).forEach(key => {
-            const maxInput = document.createElement('input');
-            maxInput.type = 'hidden';
-            maxInput.name = `maxValues[${key}]`;
-            maxInput.value = props.maxValues[key];
-            form.appendChild(maxInput);
-        });
-    }
+        if (response.data.success) {
+            // Use browser's print functionality to generate PDF
+            generateBrowserPDF(response.data.data);
+        } else {
+            throw new Error('Failed to get report data');
+        }
 
-    // Add selected students
-    if (props.selected_students && props.selected_students.length > 0) {
-        props.selected_students.forEach(student => {
-            const studentInput = document.createElement('input');
-            studentInput.type = 'hidden';
-            studentInput.name = 'selected_students[]';
-            studentInput.value = typeof student === 'object' ? student.id : student;
-            form.appendChild(studentInput);
-        });
+    } catch (error) {
+        console.error('PDF export failed:', error);
+        
+        if (error.response && error.response.status === 419) {
+            alert('Session expired. Please refresh the page and try again.');
+        } else if (error.response && error.response.status === 422) {
+            alert('Validation error. Please check your filters and try again.');
+        } else if (error.response && error.response.data && error.response.data.message) {
+            alert('Error: ' + error.response.data.message);
+        } else {
+            alert('Failed to generate PDF. Please try again.');
+        }
     }
+};
 
-    // Append form to body and submit
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+const generateBrowserPDF = (data) => {
+    // Load html2pdf.js library for better compatibility
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    script.onload = () => {
+        // Create HTML content for PDF
+        const element = document.createElement('div');
+        element.innerHTML = `
+            <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; width: 100%;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                    <div style="margin-right: 20px;">
+                        <img src="/images/logo.png" alt="School Logo" style="width: 70px; height: 70px; object-fit: contain;" onerror="this.style.display='none';">
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;">NAAWAN CENTRAL SCHOOL</div>
+                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Region X - Northern Mindanao</div>
+                        <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">Oral Health Report</div>
+                        <div style="font-size: 14px; color: #666;">
+                            ${data.grade_level ? 'Grade ' + data.grade_level : 'Selected Students'}${data.section ? ' - Section ' + data.section : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;">
+                    <thead>
+                        <tr style="background-color: #f3f4f6;">
+                            ${data.fields.includes('name') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Name</th>' : ''}
+                            ${data.fields.includes('lrn') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">LRN</th>' : ''}
+                            ${data.fields.includes('grade_level') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Grade</th>' : ''}
+                            ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Section</th>' : ''}
+                            ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Gender</th>' : ''}
+                            ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Age</th>' : ''}
+                            ${data.oral_exam_fields.map(field => 
+                                `<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
+                            ).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.reportData && data.reportData.length > 0 ? data.reportData.map(student => `
+                            <tr>
+                                ${data.fields.includes('name') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.name || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('lrn') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.lrn || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('grade_level') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.grade_level || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.section || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.gender || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.age || 'N/A'}</td>` : ''}
+                                ${data.oral_exam_fields.map(field => 
+                                    `<td style="border: 1px solid #000; padding: 6px; font-size: 10px; text-align: center;">${student[field] !== undefined && student[field] !== null ? student[field] : 'N/A'}</td>`
+                                ).join('')}
+                            </tr>
+                        `).join('') : '<tr><td colspan="100%" style="text-align: center; padding: 20px; font-size: 12px;">No data available</td></tr>'}
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 30px; font-size: 10px; color: #666;">
+                    <div>Printed by: ${data.user_name || 'System'}</div>
+                    <div>Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+        `;
+
+        // Add debug logging
+        console.log('PDF Data:', data);
+        console.log('Report Data Length:', data.reportData ? data.reportData.length : 0);
+        console.log('Oral Exam Fields:', data.oral_exam_fields);
+        
+        // Configure PDF options
+        const options = {
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `oral-health-report-grade-${data.grade_level || 'selected'}${data.section ? '-section-' + data.section : ''}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 1,
+                useCORS: true,
+                letterRendering: true,
+                allowTaint: false,
+                scrollX: 0,
+                scrollY: 0
+            },
+            jsPDF: { 
+                unit: 'in', 
+                format: 'a4', 
+                orientation: 'landscape',
+                compress: true
+            }
+        };
+
+        // Generate and download PDF
+        window.html2pdf().set(options).from(element).save();
+    };
+    
+    document.head.appendChild(script);
 };
 </script>

@@ -80,13 +80,26 @@ class OralHealthReportController extends Controller
         
         // Check if specific students are selected
         if ($request->selected_students && count($request->selected_students) > 0) {
-            // Extract student IDs from the student objects
+            // Extract student IDs - handle both object format and plain ID format
             $studentIds = collect($request->selected_students)
-                ->filter(function($student) {
-                    return isset($student['id']) && is_numeric($student['id']);
+                ->map(function($student) {
+                    if (is_array($student) && isset($student['id'])) {
+                        return $student['id'];
+                    } elseif (is_object($student) && isset($student->id)) {
+                        return $student->id;
+                    } else {
+                        return $student; // Plain ID from frontend
+                    }
                 })
-                ->pluck('id')
+                ->filter(function($id) {
+                    return !empty($id) && is_numeric($id);
+                })
                 ->toArray();
+            
+            \Log::info('Selected student IDs for PDF:', [
+                'raw_selected_students' => $request->selected_students,
+                'extracted_ids' => $studentIds
+            ]);
             
             // Use selected students
             $user = auth()->user();
@@ -302,21 +315,50 @@ class OralHealthReportController extends Controller
         // Default student fields to include
         $selectedFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age', 'birthdate'];
         
-        // Get all oral exam fields that have ranges set
+        // Get only oral exam fields that have actual filter values set (not null/empty)
         $oralExamFields = [];
         if (!empty($minValues) || !empty($maxValues)) {
-            $oralExamFields = array_unique(array_merge(array_keys($minValues), array_keys($maxValues)));
+            $fieldsWithValues = [];
+            
+            // Check minValues for actual non-null values
+            foreach ($minValues as $field => $value) {
+                if ($value !== null && $value !== "" && $value !== "null") {
+                    $fieldsWithValues[] = $field;
+                }
+            }
+            
+            // Check maxValues for actual non-null values
+            foreach ($maxValues as $field => $value) {
+                if ($value !== null && $value !== "" && $value !== "null") {
+                    $fieldsWithValues[] = $field;
+                }
+            }
+            
+            $oralExamFields = array_unique($fieldsWithValues);
         }
 
         // Check if specific students are selected
         if ($request->selected_students && count($request->selected_students) > 0) {
-            // Extract student IDs from the student objects
+            // Extract student IDs - handle both object format and plain ID format
             $studentIds = collect($request->selected_students)
-                ->filter(function($student) {
-                    return isset($student['id']) && is_numeric($student['id']);
+                ->map(function($student) {
+                    if (is_array($student) && isset($student['id'])) {
+                        return $student['id'];
+                    } elseif (is_object($student) && isset($student->id)) {
+                        return $student->id;
+                    } else {
+                        return $student; // Plain ID from frontend
+                    }
                 })
-                ->pluck('id')
+                ->filter(function($id) {
+                    return !empty($id) && is_numeric($id);
+                })
                 ->toArray();
+            
+            \Log::info('Selected student IDs for PDF:', [
+                'raw_selected_students' => $request->selected_students,
+                'extracted_ids' => $studentIds
+            ]);
             
             // Use selected students
             $user = auth()->user();
@@ -402,10 +444,23 @@ class OralHealthReportController extends Controller
         }
         
         $students = $studentsQuery->get();
+        
+        \Log::info('PDF Export Debug:', [
+            'students_count' => $students->count(),
+            'grade_level' => $gradeLevel,
+            'section' => $request->section,
+            'selected_students' => $request->selected_students ? count($request->selected_students) : 0,
+            'query_sql' => $studentsQuery->toSql()
+        ]);
 
         $reportData = [];
 
         foreach ($students as $student) {
+            \Log::info('Processing student for PDF:', [
+                'student_id' => $student->id,
+                'student_name' => $student->full_name
+            ]);
+            
             $studentData = [
                 'name' => $student->full_name,
                 'lrn' => $student->lrn,
@@ -421,29 +476,45 @@ class OralHealthReportController extends Controller
                 ->latest()
                 ->first();
             
-            // Apply min/max filters if specified
+            // Apply min/max filters if specified - but skip filtering for selected students
             $includeStudent = true;
             
-            // Only apply filtering if there are actual non-null values
-            $hasFilters = false;
-            foreach ($minValues as $value) {
-                if ($value !== null) {
-                    $hasFilters = true;
-                    break;
-                }
-            }
-            if (!$hasFilters) {
-                foreach ($maxValues as $value) {
+            // Skip filtering if specific students are selected
+            $isSelectedStudentMode = $request->selected_students && count($request->selected_students) > 0;
+            
+            if (!$isSelectedStudentMode) {
+                // Only apply filtering if there are actual non-null values
+                $hasFilters = false;
+                foreach ($minValues as $value) {
                     if ($value !== null) {
                         $hasFilters = true;
                         break;
                     }
                 }
+                if (!$hasFilters) {
+                    foreach ($maxValues as $value) {
+                        if ($value !== null) {
+                            $hasFilters = true;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $hasFilters = false; // No filtering for selected students
             }
             
             if ($hasFilters) {
                 // Map frontend field names to database column names
                 $fieldMapping = [
+                    'permanent_teeth_decayed' => 'permanent_teeth_decayed',
+                    'permanent_teeth_filled' => 'permanent_teeth_filled',
+                    'permanent_for_extraction' => 'permanent_for_extraction',
+                    'permanent_for_filling' => 'permanent_for_filling',
+                    'temporary_teeth_decayed' => 'temporary_teeth_decayed',
+                    'temporary_teeth_filled' => 'temporary_teeth_filled',
+                    'temporary_for_extraction' => 'temporary_for_extraction',
+                    'temporary_for_filling' => 'temporary_for_filling',
+                    // Legacy mappings
                     'decayed_teeth' => 'permanent_teeth_decayed',
                     'missing_teeth' => 'permanent_for_extraction', 
                     'filled_teeth' => 'permanent_teeth_filled',
@@ -455,6 +526,10 @@ class OralHealthReportController extends Controller
                 foreach ($oralExamFields as $field) {
                     $min = $minValues[$field] ?? null;
                     $max = $maxValues[$field] ?? null;
+                    
+                    // Convert string "null" to actual null
+                    if ($min === "null" || $min === "") $min = null;
+                    if ($max === "null" || $max === "") $max = null;
                     
                     // Skip if both min and max are null
                     if ($min === null && $max === null) {
@@ -470,14 +545,35 @@ class OralHealthReportController extends Controller
                     // Convert to integer for comparison
                     $value = (int) $value;
                     
+                    \Log::info('Filtering student:', [
+                        'student_id' => $student->id,
+                        'field' => $field,
+                        'db_field' => $dbField,
+                        'value' => $value,
+                        'min' => $min,
+                        'max' => $max
+                    ]);
+                    
                     // Check min value
                     if ($min !== null && $value < $min) {
+                        \Log::info('Student excluded by min filter:', [
+                            'student_id' => $student->id,
+                            'field' => $field,
+                            'value' => $value,
+                            'min' => $min
+                        ]);
                         $includeStudent = false;
                         break;
                     }
                     
                     // Check max value
                     if ($max !== null && $value > $max) {
+                        \Log::info('Student excluded by max filter:', [
+                            'student_id' => $student->id,
+                            'field' => $field,
+                            'value' => $value,
+                            'max' => $max
+                        ]);
                         $includeStudent = false;
                         break;
                     }
@@ -506,23 +602,40 @@ class OralHealthReportController extends Controller
                     $studentData['temporary_for_filling'] = 0;
                 }
                 
+                \Log::info('Adding student to reportData:', [
+                    'student_id' => $student->id,
+                    'student_name' => $studentData['name'],
+                    'include_student' => $includeStudent
+                ]);
+                
                 $reportData[] = $studentData;
+            } else {
+                \Log::info('Student excluded from report:', [
+                    'student_id' => $student->id,
+                    'student_name' => $student->full_name,
+                    'include_student' => $includeStudent
+                ]);
             }
         }
 
-        // Generate PDF using blade template
-        $pdf = PDF::loadView('oral-health-report-pdf', [
-            'reportData' => $reportData,
-            'grade_level' => $gradeLevel,
-            'section' => $request->section,
-            'fields' => $selectedFields,
-            'oral_exam_fields' => $oralExamFields,
-            'user_name' => auth()->user()->name ?? 'System'
+        \Log::info('Final reportData for PDF:', [
+            'reportData_count' => count($reportData),
+            'reportData_sample' => count($reportData) > 0 ? $reportData[0] : 'empty'
         ]);
 
-        $filename = 'oral-health-report-grade-' . $gradeLevel . ($request->section ? '-section-' . $request->section : '') . '.pdf';
-        
-        return $pdf->download($filename);
+        // Return data for browser-based PDF generation instead of server-side PDF
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'reportData' => $reportData,
+                'grade_level' => $gradeLevel,
+                'section' => $request->section,
+                'fields' => $selectedFields,
+                'oral_exam_fields' => $oralExamFields,
+                'selected_students' => $request->selected_students ?? [],
+                'user_name' => auth()->user()->name ?? 'System'
+            ]
+        ]);
         
     } catch (\Exception $e) {
         \Log::error('PDF Export failed: ' . $e->getMessage());
