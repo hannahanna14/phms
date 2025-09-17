@@ -14,7 +14,7 @@ Route::get('/students', [StudentController::class, 'index']);
 Route::post('/students', [StudentController::class, 'store']);
 
 // Health Examination API Routes
-Route::middleware('web')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/health-examination/{id}', [PupilHealthController::class, 'getHealthExamination']);
     Route::get('/health-examination/student/{studentId}', [PupilHealthController::class, 'getHealthExaminationByGradeYear']);
     Route::get('/oral-health-examination/student/{studentId}', [PupilHealthController::class, 'getOralHealthByGrade']);

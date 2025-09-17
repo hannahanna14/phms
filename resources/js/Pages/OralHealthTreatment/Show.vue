@@ -1,0 +1,91 @@
+<template>
+    <div class="min-h-screen bg-gray-50 p-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-semibold text-gray-800">View Oral Health Treatment</h1>
+                <div class="flex gap-3">
+                    <Button 
+                        v-if="treatment.can_edit" 
+                        label="Edit" 
+                        icon="pi pi-pencil" 
+                        @click="editTreatment"
+                    />
+                    <Button label="Back" icon="pi pi-arrow-left" outlined @click="goBack" />
+                </div>
+            </div>
+
+            <!-- Timer Status -->
+            <div v-if="timer_status" class="mb-6 p-4 rounded-lg" :class="getAlertClass()">
+                <strong>Timer:</strong> {{ timer_status.display }}
+            </div>
+
+            <!-- Treatment Details -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Student Info -->
+                    <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-2">Student Information</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>Name:</strong> {{ student.full_name }}</div>
+                            <div><strong>LRN:</strong> {{ student.lrn }}</div>
+                            <div><strong>Grade:</strong> {{ treatment.grade_level }}</div>
+                            <div><strong>Date:</strong> {{ new Date(treatment.date).toLocaleDateString() }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Treatment Details -->
+                    <div class="md:col-span-2">
+                        <h3 class="font-semibold text-gray-700 mb-4">Oral Health Treatment Details</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                <div class="p-3 bg-gray-50 rounded border">{{ treatment.title }}</div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Chief Complaint</label>
+                                <div class="p-3 bg-gray-50 rounded border">{{ treatment.chief_complaint }}</div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Treatment</label>
+                                <div class="p-3 bg-gray-50 rounded border">{{ treatment.treatment }}</div>
+                            </div>
+                            
+                            <div v-if="treatment.remarks">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                                <div class="p-3 bg-gray-50 rounded border">{{ treatment.remarks }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import Button from 'primevue/button';
+
+const props = defineProps({
+    treatment: Object,
+    student: Object,
+    timer_status: Object,
+    remaining_minutes: Number
+});
+
+const getAlertClass = () => {
+    if (props.timer_status?.status === 'expired') return 'bg-red-100 text-red-800';
+    if (props.timer_status?.status === 'active') return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
+};
+
+const editTreatment = () => {
+    window.location.href = `/oral-health-treatment/${props.treatment.id}/edit`;
+};
+
+const goBack = () => {
+    window.history.back();
+};
+</script>

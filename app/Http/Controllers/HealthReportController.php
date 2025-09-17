@@ -57,7 +57,8 @@ class HealthReportController extends Controller
         array_unshift($allGradeLevels, 'All');
         
         return Inertia::render('HealthReport/Index', [
-            'gradeLevels' => array_values($allGradeLevels)
+            'gradeLevels' => array_values($allGradeLevels),
+            'userRole' => auth()->user()->role
         ]);
     }
 
@@ -419,23 +420,75 @@ class HealthReportController extends Controller
         try {
             $query = $request->get('query', '');
             
+            // For teachers with empty query, return all assigned students
+            $user = auth()->user();
             if (strlen($query) < 1) {
+                if ($user && $user->role === 'teacher') {
+                    // Return all assigned students for teachers
+                    $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                    if ($assignedStudentIds->isEmpty()) {
+                        return response()->json([]);
+                    }
+                    
+                    $students = Student::whereIn('id', $assignedStudentIds)
+                        ->select('id', 'full_name', 'lrn', 'grade_level')
+                        ->orderBy('full_name')
+                        ->get();
+                        
+                    $result = $students->map(function($student) {
+                        return [
+                            'id' => $student->id,
+                            'name' => $student->full_name,
+                            'lrn' => $student->lrn,
+                            'grade_level' => $student->grade_level,
+                            'section' => 'N/A',
+                            'display_text' => $student->full_name . ' (LRN: ' . $student->lrn . ')'
+                        ];
+                    });
+                    
+                    return response()->json($result);
+                }
                 return response()->json([]);
             }
             
             Log::info("Searching for: '{$query}'");
             
-            $students = Student::whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
-                ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%'])
-                ->select('id', 'full_name', 'lrn', 'grade_level', 'section')
+            $user = auth()->user();
+            
+            Log::info("Search Debug - User Info:", [
+                'user_id' => $user ? $user->id : 'null',
+                'user_role' => $user ? $user->role : 'null',
+                'is_authenticated' => auth()->check()
+            ]);
+            
+            // Build base query with search criteria
+            $studentsQuery = Student::where(function($q) use ($query) {
+                $q->whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
+                  ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%']);
+            });
+            
+            // Filter by teacher assignments if user is a teacher
+            if ($user->role === 'teacher') {
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                Log::info("Teacher search - filtering by assigned students:", ['assigned_ids' => $assignedStudentIds->toArray()]);
+                
+                if ($assignedStudentIds->isEmpty()) {
+                    return response()->json([]);
+                }
+                
+                $studentsQuery->whereIn('id', $assignedStudentIds);
+            }
+            
+            $students = $studentsQuery->select('id', 'full_name', 'lrn', 'grade_level')
                 ->orderBy('full_name')
                 ->limit(20)
                 ->get();
             
-            Log::info("Found " . count($students) . " students");
-            foreach ($students as $student) {
-                Log::info("Student: {$student->full_name} (LRN: {$student->lrn})");
-            }
+            Log::info("Search results:", [
+                'user_role' => $user->role,
+                'total_found' => count($students),
+                'student_names' => $students->pluck('full_name')->toArray()
+            ]);
             
             $result = $students->map(function($student) {
                 return [
@@ -443,7 +496,7 @@ class HealthReportController extends Controller
                     'name' => $student->full_name,
                     'lrn' => $student->lrn,
                     'grade_level' => $student->grade_level,
-                    'section' => $student->section ?? 'N/A',
+                    'section' => 'N/A', // Section column doesn't exist in students table
                     'display_text' => $student->full_name . ' (LRN: ' . $student->lrn . ')'
                 ];
             });
@@ -484,54 +537,45 @@ class HealthReportController extends Controller
 
     public function exportHealthExaminationPdf($studentId)
     {
-        $student = Student::find($studentId);
+        $student = Student::findOrFail($studentId);
         
-        if (!$student) {
-            return response('Student not found', 404);
-        }
+        // Get health examinations for this student
+        $healthExaminations = HealthExamination::where('student_id', $studentId)->get();
         
-        // Define all possible grade levels in order
-        $allGradeLevels = ['Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
-        
-        // Get all health examinations for this student
-        $healthExaminations = HealthExamination::where('student_id', $student->id)->get();
-        
-        // Create an ordered array with data only for grades where student has records
+        // Create ordered examinations array with flexible grade level matching
         $orderedExaminations = [];
-        foreach ($allGradeLevels as $grade) {
-            $found = false;
+        $gradeOrder = ['Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+        
+        foreach ($gradeOrder as $grade) {
+            // Try to find examination with exact match first
+            $exam = $healthExaminations->firstWhere('grade_level', $grade);
             
-            // Look for matching examination with flexible grade level matching
-            foreach ($healthExaminations as $exam) {
-                $examGrade = $exam->grade_level;
-                
-                // Check multiple formats: "6", "Grade 6", etc.
-                if ($examGrade == $grade || 
-                    $examGrade == str_replace('Grade ', '', $grade) ||
-                    "Grade {$examGrade}" == $grade ||
-                    ($grade == 'Kinder' && in_array($examGrade, ['Kinder', 'Kinder 1', 'Kinder 2']))) {
-                    $orderedExaminations[$grade] = $exam;
-                    $found = true;
-                    break;
-                }
+            // If not found, try variations (e.g., "6" for "Grade 6")
+            if (!$exam) {
+                $gradeNumber = str_replace('Grade ', '', $grade);
+                $exam = $healthExaminations->firstWhere('grade_level', $gradeNumber);
             }
             
-            if (!$found) {
-                $orderedExaminations[$grade] = null; // No data for this grade
-            }
+            $orderedExaminations[$grade] = $exam;
         }
         
         // Get health treatments for this student
-        $healthTreatments = HealthTreatment::where('student_id', $student->id)
+        $healthTreatments = HealthTreatment::where('student_id', $studentId)
             ->orderBy('date', 'desc')
             ->get();
         
-        $pdf = PDF::loadView('health-examination-pdf', compact('student', 'orderedExaminations', 'allGradeLevels', 'healthTreatments'));
-        $pdf->setPaper('A4', 'landscape');
+        $pdf = PDF::loadView('health-examination-pdf', compact('student', 'orderedExaminations', 'healthTreatments'));
         
-        $filename = 'health_examination_' . str_replace(' ', '_', $student->full_name) . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->stream('health-examination-' . $student->lrn . '.pdf');
+    }
+
+    public function exportOralHealthExaminationPdf($studentId)
+    {
+        $student = Student::findOrFail($studentId);
         
-        return $pdf->download($filename);
+        $pdf = PDF::loadView('oral-health-examination-pdf', compact('student'));
+        
+        return $pdf->stream('oral-health-examination-' . $student->lrn . '.pdf');
     }
 
     public function testHealthExaminationPdf($studentId = null)

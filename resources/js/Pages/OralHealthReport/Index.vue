@@ -120,9 +120,27 @@
                 <form @submit.prevent="generateReport" class="space-y-6">
                     <div>
                         
+                        <!-- Teacher Notice -->
+                        <div v-if="userRole === 'teacher'" class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                                    <span class="text-blue-800 font-medium">Teacher View:</span>
+                                    <span class="text-blue-700 ml-1">You can only generate reports for your assigned students.</span>
+                                </div>
+                                <Button 
+                                    label="Select All My Students" 
+                                    icon="pi pi-users"
+                                    size="small"
+                                    @click="selectAllAssignedStudents"
+                                    class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                                />
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Left Column -->
-                            <div class="space-y-6">
+                            <!-- Left Column (Hidden for Teachers) -->
+                            <div v-if="userRole !== 'teacher'" class="space-y-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Grade Level</label>
                                     <Dropdown 
@@ -207,8 +225,13 @@
                             <TabPanel header="Permanent Teeth">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div v-for="field in permanentTeethFields" :key="field.key" class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                                        <div class="mb-3">
+                                        <div class="mb-3 flex items-center justify-between">
                                             <label class="text-sm font-medium text-gray-700">{{ field.label }}</label>
+                                            <Checkbox 
+                                                v-model="form.selectedFields[field.key]" 
+                                                :binary="true"
+                                                class="ml-2"
+                                            />
                                         </div>
                                         
                                         <!-- Range Slider -->
@@ -240,8 +263,13 @@
                             <TabPanel header="Temporary Teeth">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div v-for="field in temporaryTeethFields" :key="field.key" class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                                        <div class="mb-3">
+                                        <div class="mb-3 flex items-center justify-between">
                                             <label class="text-sm font-medium text-gray-700">{{ field.label }}</label>
+                                            <Checkbox 
+                                                v-model="form.selectedFields[field.key]" 
+                                                :binary="true"
+                                                class="ml-2"
+                                            />
                                         </div>
                                         
                                         <!-- Range Slider -->
@@ -278,7 +306,7 @@
                             label="Generate Report" 
                             icon="pi pi-file-export"
                             :loading="form.processing"
-                            :disabled="((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
+                            :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
                             class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                         />
                         <Button 
@@ -288,7 +316,7 @@
                             severity="secondary"
                             outlined
                             @click="previewReport"
-                            :disabled="((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
+                            :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
                             class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
                         />
                     </div>
@@ -313,12 +341,30 @@ import TabPanel from 'primevue/tabpanel'
 import axios from 'axios';
 
 const props = defineProps({
-    gradeLevels: Array
+    gradeLevels: Array,
+    userRole: {
+        type: String,
+        default: 'admin'
+    }
 });
 
 const form = useForm({
     grade_level: '',
     section: '',
+    selectedFields: {
+        // Permanent teeth
+        permanent_index_dft: false,
+        permanent_teeth_decayed: false,
+        permanent_teeth_filled: false,
+        permanent_for_extraction: false,
+        permanent_for_filling: false,
+        // Temporary teeth
+        temporary_index_dft: false,
+        temporary_teeth_decayed: false,
+        temporary_teeth_filled: false,
+        temporary_for_extraction: false,
+        temporary_for_filling: false
+    },
     minValues: {
         // Permanent teeth
         permanent_index_dft: null,
@@ -456,8 +502,41 @@ const toggleStudent = (student) => {
 };
 
 // Remove student from selection
-const removeStudent = (studentToRemove) => {
-    selectedStudents.value = selectedStudents.value.filter(student => student.id !== studentToRemove.id);
+const removeStudent = (studentId) => {
+    selectedStudents.value = selectedStudents.value.filter(s => s.id !== studentId);
+};
+
+// Function to select all assigned students for teachers
+const selectAllAssignedStudents = async () => {
+    if (props.userRole !== 'teacher') return;
+    
+    try {
+        // Get all assigned students by searching with empty query
+        const response = await axios.get('/api/students/search', {
+            params: { query: '' }, // Empty query to get all assigned students
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            }
+        });
+
+        // Add all returned students to selection
+        const assignedStudents = response.data.map(student => ({
+            ...student,
+            checked: true
+        }));
+        
+        selectedStudents.value = assignedStudents;
+        
+        // Clear search
+        searchQuery.value = '';
+        studentOptions.value = [];
+        
+        console.log('Selected all assigned students:', assignedStudents.length);
+    } catch (error) {
+        console.error('Error loading assigned students:', error);
+        alert('Failed to load assigned students.');
+    }
 };
 
 // Select all students
@@ -502,12 +581,10 @@ const previewReport = () => {
         section: s.section
     }));
     
-    // Add oral exam fields that have ranges set
+    // Add oral exam fields that are selected (checked)
     const oralExamFields = [];
-    Object.keys(form.minValues).forEach(fieldKey => {
-        const minVal = form.minValues[fieldKey];
-        const maxVal = form.maxValues[fieldKey];
-        if ((minVal !== null && minVal > 0) || (maxVal !== null && maxVal > 0)) {
+    Object.keys(form.selectedFields).forEach(fieldKey => {
+        if (form.selectedFields[fieldKey]) {
             oralExamFields.push(fieldKey);
         }
     });
@@ -543,12 +620,10 @@ const generateReport = () => {
         section: s.section
     }));
     
-    // Add oral exam fields that have ranges set
+    // Add oral exam fields that are selected (checked)
     const oralExamFields = [];
-    Object.keys(form.minValues).forEach(fieldKey => {
-        const minVal = form.minValues[fieldKey];
-        const maxVal = form.maxValues[fieldKey];
-        if ((minVal !== null && minVal > 0) || (maxVal !== null && maxVal > 0)) {
+    Object.keys(form.selectedFields).forEach(fieldKey => {
+        if (form.selectedFields[fieldKey]) {
             oralExamFields.push(fieldKey);
         }
     });

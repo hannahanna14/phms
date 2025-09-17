@@ -121,8 +121,26 @@
 
                 <!-- Student Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Grade and Section Selection -->
-                    <div class="space-y-4">
+                    <!-- Teacher Notice -->
+                    <div v-if="userRole === 'teacher'" class="md:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                                <span class="text-blue-800 font-medium">Teacher View:</span>
+                                <span class="text-blue-700 ml-1">You can only generate reports for your assigned students.</span>
+                            </div>
+                            <Button 
+                                label="Select All My Students" 
+                                icon="pi pi-users"
+                                size="small"
+                                @click="selectAllAssignedStudents"
+                                class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- Grade and Section Selection (Hidden for Teachers) -->
+                    <div v-if="userRole !== 'teacher'" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Grade Level</label>
                             <Select
@@ -222,7 +240,7 @@
                         icon="pi pi-file-pdf"
                         @click="generateReport"
                         :loading="loading"
-                        :disabled="((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
+                        :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
                         class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                     />
                     <Button
@@ -230,7 +248,7 @@
                         icon="pi pi-eye"
                         @click="previewReport"
                         :loading="loading"
-                        :disabled="((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
+                        :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
                         outlined
                         severity="secondary"
                     />
@@ -264,6 +282,10 @@ const props = defineProps({
     gradeLevels: {
         type: Array,
         default: () => []
+    },
+    userRole: {
+        type: String,
+        default: 'admin'
     }
 });
 
@@ -401,8 +423,41 @@ const toggleStudent = (student) => {
 };
 
 // Remove student from selection
-const removeStudent = (studentToRemove) => {
-    selectedStudents.value = selectedStudents.value.filter(student => student.id !== studentToRemove.id);
+const removeStudent = (studentId) => {
+    selectedStudents.value = selectedStudents.value.filter(s => s.id !== studentId);
+};
+
+// Function to select all assigned students for teachers
+const selectAllAssignedStudents = async () => {
+    if (props.userRole !== 'teacher') return;
+    
+    try {
+        // Get all assigned students by searching with empty query
+        const response = await axios.get('/api/students/search', {
+            params: { query: '' }, // Empty query to get all assigned students
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            }
+        });
+
+        // Add all returned students to selection
+        const assignedStudents = response.data.map(student => ({
+            ...student,
+            checked: true
+        }));
+        
+        selectedStudents.value = assignedStudents;
+        
+        // Clear search
+        searchQuery.value = '';
+        studentOptions.value = [];
+        
+        console.log('Selected all assigned students:', assignedStudents.length);
+    } catch (error) {
+        console.error('Error loading assigned students:', error);
+        alert('Failed to load assigned students.');
+    }
 };
 
 // Select all students

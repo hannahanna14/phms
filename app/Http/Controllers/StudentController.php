@@ -43,22 +43,87 @@ class StudentController extends Controller
 
     public function dashboard()
     {
-        // Total students
-        $totalStudents = Student::count();
-        $femaleStudents = Student::where('sex', 'Female')->count();
-        $maleStudents = Student::where('sex', 'Male')->count();
+        $user = auth()->user();
+        
+        // Filter students based on user role
+        if ($user->role === 'teacher') {
+            // Teachers can only see their assigned students
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            \Log::info('Teacher dashboard filtering:', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'assigned_student_ids' => $assignedStudentIds->toArray()
+            ]);
+            
+            if ($assignedStudentIds->isEmpty()) {
+                // No assigned students
+                $totalStudents = 0;
+                $femaleStudents = 0;
+                $maleStudents = 0;
+                $nutritionalStatusBMI = collect();
+                $nutritionalStatusHeight = collect();
+                $dewormingDewormed = 0;
+                $dewormingNotDewormed = 0;
+                $ironPositive = 0;
+                $ironNegative = 0;
+            } else {
+                // Filter by assigned students
+                $totalStudents = Student::whereIn('id', $assignedStudentIds)->count();
+                $femaleStudents = Student::whereIn('id', $assignedStudentIds)->where('sex', 'Female')->count();
+                $maleStudents = Student::whereIn('id', $assignedStudentIds)->where('sex', 'Male')->count();
 
-        // Nutritional Status BMI Distribution
-        $nutritionalStatusBMI = HealthExamination::selectRaw('
-            nutritional_status_bmi,
-            COUNT(*) as count
-        ')->groupBy('nutritional_status_bmi')->get();
+                // Nutritional Status BMI Distribution for assigned students
+                $nutritionalStatusBMI = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->selectRaw('nutritional_status_bmi, COUNT(*) as count')
+                    ->groupBy('nutritional_status_bmi')->get();
 
-        // Nutritional Status Height Distribution
-        $nutritionalStatusHeight = HealthExamination::selectRaw('
-            nutritional_status_height,
-            COUNT(*) as count
-        ')->groupBy('nutritional_status_height')->get();
+                // Nutritional Status Height Distribution for assigned students
+                $nutritionalStatusHeight = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->selectRaw('nutritional_status_height, COUNT(*) as count')
+                    ->groupBy('nutritional_status_height')->get();
+
+                // Deworming stats for assigned students
+                $dewormingDewormed = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->where('deworming_status', 'dewormed')->count();
+                $dewormingNotDewormed = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->where('deworming_status', 'not_dewormed')->count();
+
+                // Iron supplement stats for assigned students
+                $ironPositive = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->where('iron_supplementation', 'positive')->count();
+                $ironNegative = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->where('iron_supplementation', 'negative')->count();
+            }
+        } else {
+            // Admins can see all students
+            $totalStudents = Student::count();
+            $femaleStudents = Student::where('sex', 'Female')->count();
+            $maleStudents = Student::where('sex', 'Male')->count();
+
+            // Nutritional Status BMI Distribution
+            $nutritionalStatusBMI = HealthExamination::selectRaw('
+                nutritional_status_bmi,
+                COUNT(*) as count
+            ')->groupBy('nutritional_status_bmi')->get();
+
+            // Nutritional Status Height Distribution
+            $nutritionalStatusHeight = HealthExamination::selectRaw('
+                nutritional_status_height,
+                COUNT(*) as count
+            ')->groupBy('nutritional_status_height')->get();
+
+            $dewormingDewormed = HealthExamination::where('deworming_status', 'dewormed')->count();
+            $dewormingNotDewormed = HealthExamination::where('deworming_status', 'not_dewormed')->count();
+            $ironPositive = HealthExamination::where('iron_supplementation', 'positive')->count();
+            $ironNegative = HealthExamination::where('iron_supplementation', 'negative')->count();
+        }
+
+        \Log::info('Dashboard stats:', [
+            'user_role' => $user->role,
+            'total_students' => $totalStudents,
+            'female_students' => $femaleStudents,
+            'male_students' => $maleStudents
+        ]);
 
         return Inertia::render('Home', [
             'dashboardData' => [
@@ -68,14 +133,15 @@ class StudentController extends Controller
                 'nutritionalStatusBMI' => $nutritionalStatusBMI,
                 'nutritionalStatusHeight' => $nutritionalStatusHeight,
                 'deworming' => [
-                    'dewormed' => HealthExamination::where('deworming_status', 'dewormed')->count(),
-                    'notDewormed' => HealthExamination::where('deworming_status', 'not_dewormed')->count()
+                    'dewormed' => $dewormingDewormed,
+                    'notDewormed' => $dewormingNotDewormed
                 ],
                 'ironSupplement' => [
-                    'positive' => HealthExamination::where('iron_supplementation', 'positive')->count(),
-                    'negative' => HealthExamination::where('iron_supplementation', 'negative')->count()
+                    'positive' => $ironPositive,
+                    'negative' => $ironNegative
                 ]
-            ]
+            ],
+            'userRole' => $user->role
         ]);
     }
 
@@ -155,8 +221,31 @@ class StudentController extends Controller
 
     public function pupilHealth()
     {
-        $students = Student::with(['healthExaminations'])
-            ->select('id', 'full_name', 'age', 'sex', 'grade_level', 'school_year')
+        $user = auth()->user();
+        
+        // Filter students based on user role
+        if ($user->role === 'teacher') {
+            // Teachers can only see their assigned students
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            \Log::info('Teacher filtering in StudentController:', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'assigned_student_ids' => $assignedStudentIds->toArray(),
+                'assignments_count' => $user->assignedStudents()->count()
+            ]);
+            
+            if ($assignedStudentIds->isEmpty()) {
+                $studentsQuery = Student::whereRaw('1 = 0'); // Return no students if none assigned
+            } else {
+                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+            }
+        } else {
+            // Admins can see all students
+            $studentsQuery = Student::query();
+        }
+        
+        $students = $studentsQuery->with(['healthExaminations'])
+            ->select('id', 'full_name', 'lrn', 'age', 'sex', 'grade_level', 'school_year')
             ->get()
             ->map(function ($student) {
                 return [
@@ -168,6 +257,12 @@ class StudentController extends Controller
                     'health_record' => $student->healthExaminations->isNotEmpty() ? 'Health Examination' : null
                 ];
             });
+
+        \Log::info('Final student result in StudentController:', [
+            'user_role' => $user->role,
+            'students_count' => $students->count(),
+            'student_names' => $students->pluck('name')->toArray()
+        ]);
 
         return Inertia::render('Pupil Health/Index', [
             'students' => $students
@@ -209,6 +304,15 @@ class StudentController extends Controller
 
     public function showIncident(Student $student, Request $request)
     {
+        // Check if teacher has access to this student
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($student->id)) {
+                abort(403, 'Access denied. You can only view your assigned students.');
+            }
+        }
+        
         $grade = $request->query('grade', $student->grade_level);
         
         // Get school year based on grade level
@@ -224,7 +328,8 @@ class StudentController extends Controller
             'student' => $student,
             'incidents' => $incidents,
             'currentGrade' => $grade,
-            'currentSchoolYear' => $schoolYear
+            'currentSchoolYear' => $schoolYear,
+            'userRole' => $user->role
         ]);
     }
 

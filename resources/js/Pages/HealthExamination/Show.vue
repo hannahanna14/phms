@@ -6,7 +6,7 @@ import Card from 'primevue/card';
 import Tag from 'primevue/tag';
 import Select from 'primevue/select';
 
-const { student, healthExamination, selectedGrade: propSelectedGrade } = usePage().props;
+const { student, healthExamination, selectedGrade: propSelectedGrade, userRole } = usePage().props;
 
 console.log('Props received:', { student, healthExamination, propSelectedGrade });
 console.log('Current URL:', window.location.href);
@@ -139,6 +139,14 @@ const printHealthExaminationPdf = () => {
     window.open(url, '_blank');
 };
 
+const editTreatment = (treatment) => {
+    window.location.href = `/health-treatment/${treatment.id}/edit`;
+};
+
+const viewTreatment = (treatment) => {
+    window.location.href = `/health-treatment/${treatment.id}`;
+};
+
 // Remove watch to prevent page reloads - only use @change handler
 
 </script>
@@ -190,10 +198,10 @@ const printHealthExaminationPdf = () => {
                             @change="onGradeChange"
                         />
                         <Button 
+                            v-if="userRole !== 'teacher'"
                             label="Print PDF" 
-                            icon="pi pi-file-pdf" 
-                            severity="secondary"
-                            outlined
+                            icon="pi pi-print" 
+                            severity="info"
                             class="text-sm"
                             @click="printHealthExaminationPdf"
                         />
@@ -203,35 +211,63 @@ const printHealthExaminationPdf = () => {
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
                             <span>Health Treatment</span>
-                            <Button icon="pi pi-plus" class="p-button-text text-white text-xs" @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" />
+                            <Button 
+                                v-if="userRole !== 'teacher'"
+                                icon="pi pi-plus" 
+                                class="p-button-text text-white text-xs" 
+                                @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" 
+                            />
                         </div>
                         <div class="p-3">
                             <table class="w-full text-xs">
                                 <thead>
                                     <tr class="border-b">
+                                        <th class="text-left py-1">Title</th>
                                         <th class="text-left py-1">Chief Complaint</th>
                                         <th class="text-left py-1">Treatment</th>
-                                        <th class="text-left py-1">Status</th>
+                                        <th class="text-left py-1">Timer Status</th>
                                         <th class="text-left py-1">Date</th>
+                                        <th class="text-left py-1">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-if="treatmentRecords.length === 0">
-                                        <td colspan="4" class="text-center py-2 text-gray-500">No records available</td>
+                                        <td colspan="6" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in treatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
+                                        <td class="py-2">{{ treatment.title }}</td>
                                         <td class="py-2">{{ treatment.chief_complaint }}</td>
                                         <td class="py-2">{{ treatment.treatment }}</td>
                                         <td class="py-2">
                                             <Tag 
-                                                :value="treatment.status"
-                                                :severity="treatment.status === 'completed' ? 'success' : 
-                                                         treatment.status === 'in_progress' ? 'warning' :
-                                                         treatment.status === 'cancelled' ? 'danger' : 'secondary'"
+                                                :value="treatment.timer_status?.display || 'Unknown'"
+                                                :severity="treatment.timer_status?.color || 'secondary'"
                                                 class="text-xs"
                                             />
                                         </td>
                                         <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
+                                        <td class="py-2">
+                                            <div class="flex gap-1">
+                                                <Button 
+                                                    v-if="treatment.can_edit"
+                                                    icon="pi pi-pencil" 
+                                                    size="small"
+                                                    severity="info"
+                                                    @click="editTreatment(treatment)"
+                                                    class="!p-1 !text-xs"
+                                                    title="Edit Treatment"
+                                                />
+                                                <Button 
+                                                    icon="pi pi-eye" 
+                                                    size="small"
+                                                    severity="secondary"
+                                                    outlined
+                                                    @click="viewTreatment(treatment)"
+                                                    class="!p-1 !text-xs"
+                                                    title="View Treatment"
+                                                />
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -245,7 +281,7 @@ const printHealthExaminationPdf = () => {
                         <div class="bg-blue-700 text-white p-3 text-sm flex justify-between items-center">
                             <span>Pupil Health Examination</span>
                             <Button 
-                                v-if="!currentRecord"
+                                v-if="!currentRecord && userRole !== 'teacher'"
                                 label="Add Record" 
                                 icon="pi pi-plus" 
                                 class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 

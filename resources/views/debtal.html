@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Chart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .dental-chart {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        
+        .dental-chart td {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #000;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        /* Empty cells with no borders */
+        .empty {
+            border: none;
+            background: transparent;
+        }
+        
+        /* No border class for specific cells */
+        .no-border {
+            border: none !important;
+            background: transparent !important;
+        }
+        
+        /* Label cells */
+        .label {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 9px;
+            padding: 2px;
+        }
+        
+        /* Regular cells with numbers */
+        .tooth-number {
+            background-color: #f9f9f9;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        /* Symbol cells */
+        .symbol {
+            background-color: white;
+            color: #0066cc;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        /* Working area cells */
+        .work-area {
+            background-color: white;
+        }
+        
+        /* Side labels */
+        .side-label {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 9px;
+        }
+        
+        /* Container for table and vertical label */
+        .chart-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Vertical permanent teeth label */
+        .vertical-label {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 5px 3px;
+            margin-right: 5px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<div class="chart-container">
+    <div class="vertical-label">PERMANENT TEETH</div>
+    <table class="dental-chart">
+    <!-- Row 1: Empty spacing -->
+    <tr>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+    <!-- Row 2: Temporary teeth numbers (55-65) with RIGHT spanning columns 2-3 -->
+    <tr>
+        <td class="empty no-border"></td>
+        <td class="side-label no-border" colspan="2">RIGHT</td>
+        <td class="tooth-number">55</td>
+        <td class="tooth-number">54</td>
+        <td class="tooth-number">53</td>
+        <td class="tooth-number">52</td>
+        <td class="tooth-number">51</td>
+        <td class="tooth-number">61</td>
+        <td class="tooth-number">62</td>
+        <td class="tooth-number">63</td>
+        <td class="tooth-number">64</td>
+        <td class="tooth-number">65</td>
+        <td class="side-label no-border" colspan="2">LEFT</td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+    <!-- Row 3: Temporary teeth symbols with horizontal TEMPORARY TEETH label -->
+    <tr>
+        <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">×</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">—</td>
+        <td class="symbol">—</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">×</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+    <!-- Row 4: Empty spacing -->
+    <tr>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+    </tr>
+    
+    <!-- Row 5: Empty spacing -->
+    <tr>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+    </tr>
+    
+    <!-- Row 6: Upper permanent teeth numbers (18-28) starting at column 1 -->
+    <tr>
+        <td class="tooth-number">18</td>
+        <td class="tooth-number">17</td>
+        <td class="tooth-number">16</td>
+        <td class="tooth-number">15</td>
+        <td class="tooth-number">14</td>
+        <td class="tooth-number">13</td>
+        <td class="tooth-number">12</td>
+        <td class="tooth-number">11</td>
+        <td class="tooth-number">21</td>
+        <td class="tooth-number">22</td>
+        <td class="tooth-number">23</td>
+        <td class="tooth-number">24</td>
+        <td class="tooth-number">25</td>
+        <td class="tooth-number">26</td>
+        <td class="tooth-number">27</td>
+        <td class="tooth-number">28</td>
+    </tr>
+    
+    <!-- Row 7: Upper permanent teeth symbols -->
+    <tr>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">—</td>
+        <td class="symbol">—</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+    </tr>
+    
+    <!-- Row 8: Lower permanent teeth symbols -->
+    <tr>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">—</td>
+        <td class="symbol">—</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">×</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+    </tr>
+    
+    <!-- Row 9: Lower permanent teeth numbers -->
+    <tr>
+        <td class="tooth-number">48</td>
+        <td class="tooth-number">47</td>
+        <td class="tooth-number">46</td>
+        <td class="tooth-number">45</td>
+        <td class="tooth-number">44</td>
+        <td class="tooth-number">43</td>
+        <td class="tooth-number">42</td>
+        <td class="tooth-number">41</td>
+        <td class="tooth-number">31</td>
+        <td class="tooth-number">32</td>
+        <td class="tooth-number">33</td>
+        <td class="tooth-number">34</td>
+        <td class="tooth-number">35</td>
+        <td class="tooth-number">36</td>
+        <td class="tooth-number">37</td>
+        <td class="tooth-number">38</td>
+    </tr>
+    
+    <!-- Row 10: Empty spacing -->
+    <tr>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+    </tr>
+    
+    <!-- Row 11: Empty spacing -->
+    <tr>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="work-area"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+    </tr>
+    
+    <!-- Row 12: TEMPORARY TEETH label and symbols -->
+    <tr>
+        <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="symbol">×</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">—</td>
+        <td class="symbol">—</td>
+        <td class="symbol">◇</td>
+        <td class="symbol">×</td>
+        <td class="symbol">○</td>
+        <td class="symbol">○</td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+    <!-- Row 13: Bottom temporary teeth numbers (85-75) starting at column 4 -->
+    <tr>
+        <td class="empty no-border"></td>
+        <td class="side-label no-border" colspan="2">RIGHT</td>
+        <td class="tooth-number">85</td>
+        <td class="tooth-number">84</td>
+        <td class="tooth-number">83</td>
+        <td class="tooth-number">82</td>
+        <td class="tooth-number">81</td>
+        <td class="tooth-number">71</td>
+        <td class="tooth-number">72</td>
+        <td class="tooth-number">73</td>
+        <td class="tooth-number">74</td>
+        <td class="tooth-number">75</td>
+        <td class="side-label no-border" colspan="2">LEFT</td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+    <!-- Row 14: Bottom spacing -->
+    <tr>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+        <td class="empty no-border"></td>
+    </tr>
+    
+</table>
+</div>
+</body>
+</html>

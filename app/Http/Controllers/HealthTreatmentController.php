@@ -25,7 +25,6 @@ class HealthTreatmentController extends Controller
             'chief_complaint' => 'required|string',
             'treatment' => 'required|string',
             'remarks' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
             'grade_level' => 'required|string|min:1',
             'school_year' => 'required|string',
         ]);
@@ -33,7 +32,10 @@ class HealthTreatmentController extends Controller
         // Debug log the validated data
         \Log::info('Health Treatment Store - Validated Data:', $validated);
 
-        HealthTreatment::create($validated);
+        $treatment = HealthTreatment::create($validated);
+        
+        // Start the timer automatically when treatment is created
+        $treatment->startTimer();
 
         return redirect()->route('pupil-health.health-exam.show', [
             'student' => $validated['student_id'],
@@ -72,6 +74,31 @@ class HealthTreatmentController extends Controller
 
             $treatments = $query->orderBy('date', 'desc')->get();
             
+            // Add timer information to each treatment
+            $treatments = $treatments->map(function ($treatment) {
+                $timerStatus = $treatment->getTimerStatus();
+                return [
+                    'id' => $treatment->id,
+                    'student_id' => $treatment->student_id,
+                    'date' => $treatment->date,
+                    'title' => $treatment->title,
+                    'chief_complaint' => $treatment->chief_complaint,
+                    'treatment' => $treatment->treatment,
+                    'status' => $treatment->status,
+                    'remarks' => $treatment->remarks,
+                    'grade_level' => $treatment->grade_level,
+                    'school_year' => $treatment->school_year,
+                    'started_at' => $treatment->started_at,
+                    'expires_at' => $treatment->expires_at,
+                    'is_expired' => $treatment->is_expired,
+                    'can_edit' => $treatment->canEdit(),
+                    'remaining_minutes' => $treatment->getRemainingMinutes(),
+                    'timer_status' => $timerStatus,
+                    'created_at' => $treatment->created_at,
+                    'updated_at' => $treatment->updated_at,
+                ];
+            });
+            
             \Log::info('Filtered Treatment Result:', [
                 'grade_param' => $request->grade,
                 'count' => $treatments->count(),
@@ -87,14 +114,64 @@ class HealthTreatmentController extends Controller
         }
     }
 
+    public function edit(HealthTreatment $healthTreatment)
+    {
+        // Check if treatment can be edited
+        if (!$healthTreatment->canEdit()) {
+            return redirect()->back()->with('error', 'This treatment can no longer be edited (timer expired).');
+        }
+
+        return Inertia::render('HealthTreatment/Edit', [
+            'treatment' => $healthTreatment,
+            'student' => $healthTreatment->student,
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'remaining_minutes' => $healthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    public function show(HealthTreatment $healthTreatment)
+    {
+        return Inertia::render('HealthTreatment/Show', [
+            'treatment' => $healthTreatment,
+            'student' => $healthTreatment->student,
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'remaining_minutes' => $healthTreatment->getRemainingMinutes()
+        ]);
+    }
+
     public function update(Request $request, HealthTreatment $healthTreatment)
     {
+        // Check if treatment can be edited
+        if (!$healthTreatment->canEdit()) {
+            return response()->json(['error' => 'This treatment can no longer be edited (timer expired).'], 403);
+        }
+
         $validated = $request->validate([
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'title' => 'sometimes|required|string|max:255',
+            'chief_complaint' => 'sometimes|required|string',
+            'treatment' => 'sometimes|required|string',
+            'remarks' => 'nullable|string',
         ]);
 
         $healthTreatment->update($validated);
 
-        return response()->json($healthTreatment);
+        return response()->json([
+            'treatment' => $healthTreatment,
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'can_edit' => $healthTreatment->canEdit()
+        ]);
+    }
+
+    /**
+     * Get current timer status for a treatment
+     */
+    public function getTimerStatus(HealthTreatment $healthTreatment)
+    {
+        return response()->json([
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'remaining_minutes' => $healthTreatment->getRemainingMinutes(),
+            'can_edit' => $healthTreatment->canEdit(),
+            'is_expired' => $healthTreatment->isExpired()
+        ]);
     }
 }

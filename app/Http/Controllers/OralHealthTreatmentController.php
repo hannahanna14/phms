@@ -25,7 +25,6 @@ class OralHealthTreatmentController extends Controller
             'chief_complaint' => 'required|string',
             'treatment' => 'required|string',
             'remarks' => 'nullable|string',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
             'grade_level' => 'required|string|min:1',
             'school_year' => 'required|string',
         ]);
@@ -33,7 +32,10 @@ class OralHealthTreatmentController extends Controller
         // Debug log the validated data
         \Log::info('Oral Health Treatment Store - Validated Data:', $validated);
 
-        OralHealthTreatment::create($validated);
+        $treatment = OralHealthTreatment::create($validated);
+        
+        // Start the timer automatically when treatment is created
+        $treatment->startTimer();
 
         return redirect()->route('pupil-health.oral-health.show', [
             'student' => $validated['student_id'],
@@ -81,6 +83,31 @@ class OralHealthTreatmentController extends Controller
 
             $treatments = $query->orderBy('date', 'desc')->get();
             
+            // Add timer information to each treatment
+            $treatments = $treatments->map(function ($treatment) {
+                $timerStatus = $treatment->getTimerStatus();
+                return [
+                    'id' => $treatment->id,
+                    'student_id' => $treatment->student_id,
+                    'date' => $treatment->date,
+                    'title' => $treatment->title,
+                    'chief_complaint' => $treatment->chief_complaint,
+                    'treatment' => $treatment->treatment,
+                    'status' => $treatment->status,
+                    'remarks' => $treatment->remarks,
+                    'grade_level' => $treatment->grade_level,
+                    'school_year' => $treatment->school_year,
+                    'started_at' => $treatment->started_at,
+                    'expires_at' => $treatment->expires_at,
+                    'is_expired' => $treatment->is_expired,
+                    'can_edit' => $treatment->canEdit(),
+                    'remaining_minutes' => $treatment->getRemainingMinutes(),
+                    'timer_status' => $timerStatus,
+                    'created_at' => $treatment->created_at,
+                    'updated_at' => $treatment->updated_at,
+                ];
+            });
+            
             \Log::info('Filtered Oral Health Treatment Result:', [
                 'grade_param' => $request->grade,
                 'count' => $treatments->count(),
@@ -98,12 +125,49 @@ class OralHealthTreatmentController extends Controller
 
     public function update(Request $request, OralHealthTreatment $oralHealthTreatment)
     {
+        // Check if treatment can be edited
+        if (!$oralHealthTreatment->canEdit()) {
+            return response()->json(['error' => 'This treatment can no longer be edited (timer expired).'], 403);
+        }
+
         $validated = $request->validate([
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'title' => 'sometimes|required|string|max:255',
+            'chief_complaint' => 'sometimes|required|string',
+            'treatment' => 'sometimes|required|string',
+            'remarks' => 'nullable|string',
         ]);
 
         $oralHealthTreatment->update($validated);
 
-        return response()->json($oralHealthTreatment);
+        return response()->json([
+            'treatment' => $oralHealthTreatment,
+            'timer_status' => $oralHealthTreatment->getTimerStatus(),
+            'can_edit' => $oralHealthTreatment->canEdit()
+        ]);
+    }
+
+    public function edit(OralHealthTreatment $oralHealthTreatment)
+    {
+        // Check if treatment can be edited
+        if (!$oralHealthTreatment->canEdit()) {
+            return redirect()->back()->with('error', 'This treatment can no longer be edited (timer expired).');
+        }
+
+        return Inertia::render('OralHealthTreatment/Edit', [
+            'treatment' => $oralHealthTreatment,
+            'student' => $oralHealthTreatment->student,
+            'timer_status' => $oralHealthTreatment->getTimerStatus(),
+            'remaining_minutes' => $oralHealthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    public function show(OralHealthTreatment $oralHealthTreatment)
+    {
+        return Inertia::render('OralHealthTreatment/Show', [
+            'treatment' => $oralHealthTreatment,
+            'student' => $oralHealthTreatment->student,
+            'timer_status' => $oralHealthTreatment->getTimerStatus(),
+            'remaining_minutes' => $oralHealthTreatment->getRemainingMinutes()
+        ]);
     }
 }

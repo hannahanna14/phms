@@ -55,7 +55,8 @@ class OralHealthReportController extends Controller
         array_unshift($allGradeLevels, 'All');
         
         return Inertia::render('OralHealthReport/Index', [
-            'gradeLevels' => array_values($allGradeLevels)
+            'gradeLevels' => array_values($allGradeLevels),
+            'userRole' => auth()->user()->role
         ]);
     }
 
@@ -260,18 +261,26 @@ class OralHealthReportController extends Controller
                 continue;
             }
             
-            // Add oral health data for display
-            if ($oralHealth) {
-                $studentData['permanent_teeth_filled'] = $oralHealth->permanent_teeth_filled ?? 0;
-                $studentData['permanent_teeth_decayed'] = $oralHealth->permanent_teeth_decayed ?? 0;
-                $studentData['permanent_for_extraction'] = $oralHealth->permanent_for_extraction ?? 0;
-                $studentData['permanent_for_filling'] = $oralHealth->permanent_for_filling ?? 0;
-                $studentData['permanent_index_dft'] = $oralHealth->permanent_index_dft ?? 0;
-                $studentData['temporary_teeth_filled'] = $oralHealth->temporary_teeth_filled ?? 0;
-                $studentData['temporary_teeth_decayed'] = $oralHealth->temporary_teeth_decayed ?? 0;
-                $studentData['temporary_for_extraction'] = $oralHealth->temporary_for_extraction ?? 0;
-                $studentData['temporary_for_filling'] = $oralHealth->temporary_for_filling ?? 0;
-                $studentData['temporary_index_dft'] = $oralHealth->temporary_index_dft ?? 0;
+            // Add oral health data for display - only selected fields
+            $selectedOralFields = $request->oral_exam_fields ?? [];
+            
+            // If no specific oral fields selected, include all for backward compatibility
+            if (empty($selectedOralFields)) {
+                $selectedOralFields = [
+                    'permanent_teeth_filled', 'permanent_teeth_decayed', 'permanent_for_extraction', 
+                    'permanent_for_filling', 'permanent_index_dft', 'temporary_teeth_filled',
+                    'temporary_teeth_decayed', 'temporary_for_extraction', 'temporary_for_filling', 
+                    'temporary_index_dft'
+                ];
+            }
+            
+            // Add only selected oral health fields
+            foreach ($selectedOralFields as $field) {
+                if ($oralHealth) {
+                    $studentData[$field] = $oralHealth->$field ?? 0;
+                } else {
+                    $studentData[$field] = 0;
+                }
             }
             
             $reportData[] = $studentData;
@@ -315,26 +324,44 @@ class OralHealthReportController extends Controller
         // Default student fields to include
         $selectedFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age', 'birthdate'];
         
-        // Get only oral exam fields that have actual filter values set (not null/empty)
-        $oralExamFields = [];
+        // Use selected oral exam fields from request, or default to all if none specified
+        $requestedOralFields = $request->oral_exam_fields ?? [];
+        
+        if (!empty($requestedOralFields)) {
+            // Use only the fields selected by user
+            $oralExamFields = $requestedOralFields;
+        } else {
+            // Default to all fields if none specified
+            $oralExamFields = [
+                'permanent_teeth_decayed',
+                'permanent_teeth_filled', 
+                'permanent_for_extraction',
+                'permanent_for_filling',
+                'temporary_teeth_decayed',
+                'temporary_teeth_filled',
+                'temporary_for_extraction', 
+                'temporary_for_filling'
+            ];
+        }
+        
+        // Get fields that have filter values set (for filtering logic only)
+        $fieldsWithFilters = [];
         if (!empty($minValues) || !empty($maxValues)) {
-            $fieldsWithValues = [];
-            
             // Check minValues for actual non-null values
             foreach ($minValues as $field => $value) {
                 if ($value !== null && $value !== "" && $value !== "null") {
-                    $fieldsWithValues[] = $field;
+                    $fieldsWithFilters[] = $field;
                 }
             }
             
             // Check maxValues for actual non-null values
             foreach ($maxValues as $field => $value) {
                 if ($value !== null && $value !== "" && $value !== "null") {
-                    $fieldsWithValues[] = $field;
+                    $fieldsWithFilters[] = $field;
                 }
             }
             
-            $oralExamFields = array_unique($fieldsWithValues);
+            $fieldsWithFilters = array_unique($fieldsWithFilters);
         }
 
         // Check if specific students are selected
@@ -523,7 +550,7 @@ class OralHealthReportController extends Controller
                     'fluoride_application' => 'temporary_total_dft'
                 ];
                 
-                foreach ($oralExamFields as $field) {
+                foreach ($fieldsWithFilters as $field) {
                     $min = $minValues[$field] ?? null;
                     $max = $maxValues[$field] ?? null;
                     
@@ -581,25 +608,13 @@ class OralHealthReportController extends Controller
             }
             
             if ($includeStudent) {
-                // Add oral health data directly to student data
-                if ($oralHealth) {
-                    $studentData['permanent_teeth_decayed'] = $oralHealth->permanent_teeth_decayed ?? 0;
-                    $studentData['permanent_teeth_filled'] = $oralHealth->permanent_teeth_filled ?? 0;
-                    $studentData['permanent_for_extraction'] = $oralHealth->permanent_for_extraction ?? 0;
-                    $studentData['permanent_for_filling'] = $oralHealth->permanent_for_filling ?? 0;
-                    $studentData['temporary_teeth_decayed'] = $oralHealth->temporary_teeth_decayed ?? 0;
-                    $studentData['temporary_teeth_filled'] = $oralHealth->temporary_teeth_filled ?? 0;
-                    $studentData['temporary_for_extraction'] = $oralHealth->temporary_for_extraction ?? 0;
-                    $studentData['temporary_for_filling'] = $oralHealth->temporary_for_filling ?? 0;
-                } else {
-                    $studentData['permanent_teeth_decayed'] = 0;
-                    $studentData['permanent_teeth_filled'] = 0;
-                    $studentData['permanent_for_extraction'] = 0;
-                    $studentData['permanent_for_filling'] = 0;
-                    $studentData['temporary_teeth_decayed'] = 0;
-                    $studentData['temporary_teeth_filled'] = 0;
-                    $studentData['temporary_for_extraction'] = 0;
-                    $studentData['temporary_for_filling'] = 0;
+                // Add only selected oral health data fields
+                foreach ($oralExamFields as $field) {
+                    if ($oralHealth) {
+                        $studentData[$field] = $oralHealth->$field ?? 0;
+                    } else {
+                        $studentData[$field] = 0;
+                    }
                 }
                 
                 \Log::info('Adding student to reportData:', [
@@ -620,7 +635,10 @@ class OralHealthReportController extends Controller
 
         \Log::info('Final reportData for PDF:', [
             'reportData_count' => count($reportData),
-            'reportData_sample' => count($reportData) > 0 ? $reportData[0] : 'empty'
+            'reportData_sample' => count($reportData) > 0 ? $reportData[0] : 'empty',
+            'oral_exam_fields_being_returned' => $oralExamFields,
+            'request_oral_exam_fields' => $request->oral_exam_fields,
+            'all_request_data' => $request->all()
         ]);
 
         // Return data for browser-based PDF generation instead of server-side PDF

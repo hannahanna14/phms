@@ -191,9 +191,32 @@ const printReport = async () => {
             formData.append('fields[]', field);
         });
 
-        // Add oral exam fields array
-        if (props.oral_exam_fields && props.oral_exam_fields.length > 0) {
-            props.oral_exam_fields.forEach(field => {
+        // Add oral exam fields array - if none specified, include all visible fields
+        let oralFieldsToInclude = props.oral_exam_fields || [];
+        
+        // If no specific oral exam fields are set, include all fields that are currently visible
+        if (oralFieldsToInclude.length === 0) {
+            const defaultFields = [
+                'permanent_teeth_decayed',
+                'permanent_teeth_filled', 
+                'permanent_for_extraction',
+                'permanent_for_filling',
+                'temporary_teeth_decayed',
+                'temporary_teeth_filled',
+                'temporary_for_extraction',
+                'temporary_for_filling'
+            ];
+            
+            // Include fields that have ranges set or if students are selected
+            defaultFields.forEach(field => {
+                if (hasRangeSet(field) || hasSelectedStudents()) {
+                    oralFieldsToInclude.push(field);
+                }
+            });
+        }
+        
+        if (oralFieldsToInclude.length > 0) {
+            oralFieldsToInclude.forEach(field => {
                 formData.append('oral_exam_fields[]', field);
             });
         }
@@ -244,6 +267,11 @@ const printReport = async () => {
         });
 
         if (response.data.success) {
+            // Debug logging
+            console.log('PDF Export Response:', response.data);
+            console.log('Report Data:', response.data.data.reportData);
+            console.log('Oral Exam Fields:', response.data.data.oral_exam_fields);
+            
             // Use browser's print functionality to generate PDF
             generateBrowserPDF(response.data.data);
         } else {
@@ -270,6 +298,7 @@ const generateBrowserPDF = (data) => {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
     script.onload = () => {
+        console.log('html2pdf library loaded successfully');
         // Create HTML content for PDF
         const element = document.createElement('div');
         element.innerHTML = `
@@ -297,9 +326,12 @@ const generateBrowserPDF = (data) => {
                             ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Section</th>' : ''}
                             ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Gender</th>' : ''}
                             ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Age</th>' : ''}
-                            ${data.oral_exam_fields.map(field => 
-                                `<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
-                            ).join('')}
+                            ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
+                                data.oral_exam_fields.map(field => 
+                                    `<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
+                                ).join('') : 
+                                '<th colspan="8" style="border: 1px solid #000; padding: 8px; text-align: center;">No oral health fields selected</th>'
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -311,9 +343,12 @@ const generateBrowserPDF = (data) => {
                                 ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.section || 'N/A'}</td>` : ''}
                                 ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.gender || 'N/A'}</td>` : ''}
                                 ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.age || 'N/A'}</td>` : ''}
-                                ${data.oral_exam_fields.map(field => 
-                                    `<td style="border: 1px solid #000; padding: 6px; font-size: 10px; text-align: center;">${student[field] !== undefined && student[field] !== null ? student[field] : 'N/A'}</td>`
-                                ).join('')}
+                                ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
+                                    data.oral_exam_fields.map(field => 
+                                        `<td style="border: 1px solid #000; padding: 6px; font-size: 10px; text-align: center;">${student[field] !== undefined && student[field] !== null ? student[field] : 'N/A'}</td>`
+                                    ).join('') : 
+                                    '<td colspan="8" style="border: 1px solid #000; padding: 6px; text-align: center;">No data</td>'
+                                }
                             </tr>
                         `).join('') : '<tr><td colspan="100%" style="text-align: center; padding: 20px; font-size: 12px;">No data available</td></tr>'}
                     </tbody>
@@ -330,6 +365,9 @@ const generateBrowserPDF = (data) => {
         console.log('PDF Data:', data);
         console.log('Report Data Length:', data.reportData ? data.reportData.length : 0);
         console.log('Oral Exam Fields:', data.oral_exam_fields);
+        console.log('Oral Exam Fields Type:', typeof data.oral_exam_fields);
+        console.log('Oral Exam Fields Length:', data.oral_exam_fields ? data.oral_exam_fields.length : 'undefined');
+        console.log('HTML Content Preview:', element.innerHTML.substring(0, 1000));
         
         // Configure PDF options
         const options = {
@@ -353,7 +391,23 @@ const generateBrowserPDF = (data) => {
         };
 
         // Generate and download PDF
-        window.html2pdf().set(options).from(element).save();
+        try {
+            console.log('Starting PDF generation with html2pdf...');
+            window.html2pdf().set(options).from(element).save().then(() => {
+                console.log('PDF generation completed successfully');
+            }).catch((error) => {
+                console.error('PDF generation failed:', error);
+                alert('PDF generation failed. Please try again.');
+            });
+        } catch (error) {
+            console.error('Error initializing PDF generation:', error);
+            alert('PDF generation library not loaded. Please refresh and try again.');
+        }
+    };
+    
+    script.onerror = () => {
+        console.error('Failed to load html2pdf library');
+        alert('Failed to load PDF library. Please check your internet connection and try again.');
     };
     
     document.head.appendChild(script);

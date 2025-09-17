@@ -26,8 +26,8 @@
                         severity="secondary"
                     />
                     <Button
-                        label="Print Report"
-                        icon="pi pi-print"
+                        label="Export PDF"
+                        icon="pi pi-download"
                         @click="printReport"
                         class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
                     />

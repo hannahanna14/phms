@@ -27,6 +27,7 @@
                             <div><strong>School Year:</strong> {{ student.school_year || '2024-2025' }}</div>
                         </div>
                         
+                        
                         <h3 class="text-md font-semibold text-gray-700 mt-4 mb-2">Personal Info</h3>
                         <div class="space-y-2 text-sm">
                             <div><strong>Age:</strong> {{ student.age }} years</div>
@@ -36,7 +37,7 @@
                         </div>
                     </div>
 
-                    <!-- Grade Selection -->
+                    <!-- Grade Selection and Print PDF -->
                     <div class="flex gap-2">
                         <Select 
                             v-model="selectedGrade" 
@@ -45,13 +46,22 @@
                             class="w-32 text-sm"
                             @change="onGradeChange"
                         />
+                        <Button 
+                            v-if="userRole !== 'teacher'"
+                            label="Print PDF" 
+                            icon="pi pi-print" 
+                            severity="info"
+                            @click="printPDF"
+                            class="text-sm"
+                        />
                     </div>
 
                     <!-- Oral Health Treatment Card -->
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
-                            <span>Oral Health Treatment</span>
                             <Button 
+                                v-if="userRole !== 'teacher'"
+                                label="Add Treatment" 
                                 icon="pi pi-plus" 
                                 class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
                                 @click="$inertia.visit(`/pupil-health/oral-health-treatment/${student.id}/create`)" 
@@ -61,29 +71,52 @@
                             <table class="w-full text-xs">
                                 <thead>
                                     <tr class="border-b">
+                                        <th class="text-left py-1">Title</th>
                                         <th class="text-left py-1">Chief Complaint</th>
                                         <th class="text-left py-1">Treatment</th>
-                                        <th class="text-left py-1">Status</th>
+                                        <th class="text-left py-1">Timer Status</th>
                                         <th class="text-left py-1">Date</th>
+                                        <th class="text-left py-1">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-if="oralTreatmentRecords.length === 0">
-                                        <td colspan="4" class="text-center py-2 text-gray-500">No records available</td>
+                                        <td colspan="6" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in oralTreatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
+                                        <td class="py-2">{{ treatment.title }}</td>
                                         <td class="py-2">{{ treatment.chief_complaint }}</td>
                                         <td class="py-2">{{ treatment.treatment }}</td>
                                         <td class="py-2">
                                             <Tag 
-                                                :value="treatment.status"
-                                                :severity="treatment.status === 'completed' ? 'success' : 
-                                                         treatment.status === 'in_progress' ? 'warning' :
-                                                         treatment.status === 'cancelled' ? 'danger' : 'secondary'"
+                                                :value="treatment.timer_status?.display || 'Unknown'"
+                                                :severity="treatment.timer_status?.color || 'secondary'"
                                                 class="text-xs"
                                             />
                                         </td>
                                         <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
+                                        <td class="py-2">
+                                            <div class="flex gap-1">
+                                                <Button 
+                                                    v-if="treatment.can_edit"
+                                                    icon="pi pi-pencil" 
+                                                    size="small"
+                                                    severity="info"
+                                                    @click="editOralTreatment(treatment)"
+                                                    class="!p-1 !text-xs"
+                                                    title="Edit Treatment"
+                                                />
+                                                <Button 
+                                                    icon="pi pi-eye" 
+                                                    size="small"
+                                                    severity="secondary"
+                                                    outlined
+                                                    @click="viewOralTreatment(treatment)"
+                                                    class="!p-1 !text-xs"
+                                                    title="View Treatment"
+                                                />
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -214,12 +247,13 @@
 </template>
 
 <script setup>
-import { Head, Link, usePage } from '@inertiajs/vue3'
-import { ref, computed, onMounted, watch } from 'vue'
-import Button from 'primevue/button'
-import Tag from 'primevue/tag'
-import Select from 'primevue/select'
-import axios from 'axios'
+import { ref, computed, onMounted, watch } from 'vue';
+import { usePage, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import Tag from 'primevue/tag';
+import Select from 'primevue/select';
 
 const props = defineProps({
     student: {
@@ -229,8 +263,27 @@ const props = defineProps({
     examinations: {
         type: Array,
         default: () => []
+    },
+    userRole: {
+        type: String,
+        default: 'admin'
     }
 })
+
+const printPDF = () => {
+    const url = `/oral-health-examination/${props.student.id}/pdf`;
+    window.open(url, '_blank');
+};
+
+const editOralTreatment = (treatment) => {
+    window.location.href = `/oral-health-treatment/${treatment.id}/edit`;
+};
+
+const viewOralTreatment = (treatment) => {
+    window.location.href = `/oral-health-treatment/${treatment.id}`;
+};
+
+import axios from 'axios'
 
 const page = usePage()
 
@@ -438,7 +491,7 @@ const addSymbolsToTeeth = () => {
             // Add symbol badge
             const symbolBadge = document.createElement('div');
             symbolBadge.className = 'tooth-symbol';
-            symbolBadge.textContent = symbols.length;
+            symbolBadge.textContent = symbols[0]; // Show the actual symbol text, not the length
             symbolBadge.title = symbols.join(', ');
             tooth.appendChild(symbolBadge);
         }
@@ -545,9 +598,25 @@ watch(currentExam, (newExam) => {
     }
 });
 
+// Watch for chart type changes
+watch(chartType, (newType) => {
+    if (currentExam.value && currentExam.value.tooth_symbols) {
+        setTimeout(() => {
+            createDisplayTeeth(newType);
+        }, 50);
+    }
+});
+
 onMounted(() => {
     fetchOralHealthByGrade(selectedGrade.value);
     fetchOralTreatmentRecords();
+    
+    // Initialize chart after component mounts
+    setTimeout(() => {
+        if (currentExam.value && currentExam.value.tooth_symbols) {
+            createDisplayTeeth(chartType.value);
+        }
+    }, 200);
 });
 
 watch(selectedGrade, (newGrade) => {
@@ -660,20 +729,23 @@ const formatDate = (date) => {
 
 .tooth-symbol {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -8px;
+    right: -8px;
     background: #ff4757;
     color: white;
-    border-radius: 50%;
-    width: 16px;
+    border-radius: 4px;
+    min-width: 20px;
     height: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: 9px;
     font-weight: bold;
     z-index: 5;
     pointer-events: none;
+    padding: 0 2px;
+    border: 1px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .chart-selector {

@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4 landscape;
-            margin: 15mm;
+            margin: 10mm;
         }
         
         body {
@@ -70,22 +70,58 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            table-layout: fixed;
         }
         
         .data-table th,
         .data-table td {
             border: 1px solid #000;
-            padding: 6px 3px;
+            padding: 2px 1px;
             text-align: left;
-            font-size: 9px;
+            font-size: 7px;
             word-wrap: break-word;
-            max-width: 60px;
+            max-width: 40px;
+            overflow: hidden;
         }
         
         .data-table th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: center;
+        }
+        
+        /* Specific column widths */
+        .data-table th:nth-child(1), /* Name */
+        .data-table td:nth-child(1) {
+            width: 80px;
+            max-width: 80px;
+        }
+        
+        .data-table th:nth-child(2), /* LRN */
+        .data-table td:nth-child(2) {
+            width: 70px;
+            max-width: 70px;
+        }
+        
+        .data-table th:nth-child(3), /* Grade */
+        .data-table td:nth-child(3),
+        .data-table th:nth-child(4), /* Section */
+        .data-table td:nth-child(4),
+        .data-table th:nth-child(5), /* Gender */
+        .data-table td:nth-child(5),
+        .data-table th:nth-child(6), /* Age */
+        .data-table td:nth-child(6) {
+            width: 30px;
+            max-width: 30px;
+        }
+        
+        /* Oral health columns - very compact */
+        .data-table th:nth-child(n+7),
+        .data-table td:nth-child(n+7) {
+            width: 25px;
+            max-width: 25px;
+            font-size: 6px;
+            padding: 1px;
         }
         
         .footer {
@@ -98,6 +134,87 @@
         
         .page-break {
             page-break-before: always;
+        }
+        
+        /* Empty cells with no borders */
+        .empty {
+            border: none;
+            background: transparent;
+        }
+        
+        /* No border class for specific cells */
+        .no-border {
+            border: none !important;
+            background: transparent !important;
+        }
+        
+        /* Label cells */
+        .label {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 7px;
+            padding: 2px;
+        }
+        
+        /* Tooth number cells */
+        .tooth-number {
+            background-color: #f9f9f9;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        /* Symbol cells */
+        .symbol {
+            background-color: white;
+            color: #0066cc;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Working area cells */
+        .work-area {
+            background-color: white;
+        }
+        
+        /* Side labels */
+        .side-label {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 7px;
+        }
+        
+        /* Container for table and vertical label */
+        .chart-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        /* Vertical permanent teeth label */
+        .vertical-label {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            font-weight: bold;
+            font-size: 8px;
+            padding: 5px 3px;
+            margin-right: 5px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .grade-section {
+            margin-bottom: 40px;
+        }
+        
+        .grade-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0 10px 0;
+            color: #333;
         }
     </style>
 </head>
@@ -167,9 +284,11 @@
                 @if(in_array('age', $fields))
                     <th>Age</th>
                 @endif
-                <!-- Dynamic Oral Health Columns -->
+                @php
+                    $oral_exam_fields = $oral_exam_fields ?? ['permanent_teeth_decayed', 'permanent_teeth_filled', 'permanent_for_extraction', 'permanent_for_filling', 'temporary_teeth_decayed', 'temporary_teeth_filled', 'temporary_for_extraction', 'temporary_for_filling'];
+                @endphp
                 @foreach($oral_exam_fields as $field)
-                    <th>{{ ucwords(str_replace(['_', 'permanent', 'temporary'], [' ', 'Perm.', 'Temp.'], $field)) }}</th>
+                    <th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">{{ str_replace(['_', 'permanent', 'temporary'], [' ', 'Perm.', 'Temp.'], $field) }}</th>
                 @endforeach
             </tr>
         </thead>
@@ -189,15 +308,6 @@
                         <td>{{ $student['section'] ?? 'N/A' }}</td>
                     @endif
                     @if(in_array('gender', $fields))
-                        <td>{{ $student['gender'] ?? 'N/A' }}</td>
-                    @endif
-                    @if(in_array('age', $fields))
-                        <td>{{ $student['age'] ?? 'N/A' }}</td>
-                    @endif
-                    <!-- Dynamic Oral Health Data -->
-                    @foreach($oral_exam_fields as $field)
-                        <td>{{ $student[$field] ?? 'N/A' }}</td>
-                    @endforeach
                 </tr>
             @endforeach
         </tbody>

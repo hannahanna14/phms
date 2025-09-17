@@ -38,6 +38,7 @@
                 <div class="bg-blue-700 text-white p-3 text-sm flex justify-between items-center">
                     <span>Incident Reports</span>
                     <Button 
+                        v-if="userRole !== 'teacher'"
                         label="Add Record" 
                         icon="pi pi-plus" 
                         class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
@@ -85,7 +86,11 @@ import Select from 'primevue/select'
 
 const props = defineProps({
     student: Object,
-    incidents: Array
+    incidents: Array,
+    userRole: {
+        type: String,
+        default: 'admin'
+    }
 })
 
 // Grade level management

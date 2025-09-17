@@ -32,8 +32,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('logout');
 
     //Pupil Health Routes
-    Route::inertia('/pupil-health', 'Pupil Health/Index')->name('pupil-health');
-    Route::get('/pupil-health', [StudentController::class, 'pupilHealth'])->name('pupil-health.index');
+    Route::get('/pupil-health', [StudentController::class, 'pupilHealth'])->name('pupil-health');
     Route::get('/pupil-health/record-type', [PupilHealthController::class, 'recordType'])->name('pupil-health.record-type');
 
 
@@ -65,8 +64,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-treatment.store');
     Route::get('/api/health-treatment/student/{student}', [HealthTreatmentController::class, 'index'])
         ->name('health-treatment.index');
+    Route::get('/health-treatment/{healthTreatment}/edit', [HealthTreatmentController::class, 'edit'])
+        ->name('health-treatment.edit');
+    Route::get('/health-treatment/{healthTreatment}', [HealthTreatmentController::class, 'show'])
+        ->name('health-treatment.show');
     Route::put('/api/health-treatment/{healthTreatment}', [HealthTreatmentController::class, 'update'])
         ->name('health-treatment.update');
+    Route::get('/api/health-treatment/{healthTreatment}/timer-status', [HealthTreatmentController::class, 'getTimerStatus'])
+        ->name('health-treatment.timer-status');
 
     // Oral Health Treatment Routes
     Route::get('/pupil-health/oral-health-treatment/{student}/create', [OralHealthTreatmentController::class, 'create'])
@@ -75,6 +80,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('oral-health-treatment.store');
     Route::get('/api/oral-health-treatment/student/{student}', [OralHealthTreatmentController::class, 'index'])
         ->name('oral-health-treatment.index');
+    Route::get('/oral-health-treatment/{oralHealthTreatment}/edit', [OralHealthTreatmentController::class, 'edit'])
+        ->name('oral-health-treatment.edit');
+    Route::get('/oral-health-treatment/{oralHealthTreatment}', [OralHealthTreatmentController::class, 'show'])
+        ->name('oral-health-treatment.show');
+    Route::put('/api/oral-health-treatment/{oralHealthTreatment}', [OralHealthTreatmentController::class, 'update'])
+        ->name('oral-health-treatment.update');
 
     // Health Report Routes
     Route::get('/health-report', [HealthReportController::class, 'index'])
@@ -88,12 +99,15 @@ Route::middleware(['auth'])->group(function () {
 
     // Oral Health Report Routes
     Route::get('/oral-health-report', [OralHealthReportController::class, 'index'])->name('oral-health-report.index');
-    Route::post('/oral-health-report/generate', [OralHealthReportController::class, 'generate'])->name('oral-health-report.generate');
+    Route::match(['GET', 'POST'], '/oral-health-report/generate', [OralHealthReportController::class, 'generate'])->name('oral-health-report.generate');
     Route::post('/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])->name('oral-health-report.export-pdf');
 
     // Health examination PDF routes
     Route::get('/health-examination-pdf/{studentId}', [App\Http\Controllers\HealthReportController::class, 'exportHealthExaminationPdf'])->name('health-examination.export-pdf');
     Route::get('/test-health-examination-pdf/{studentId?}', [App\Http\Controllers\HealthReportController::class, 'testHealthExaminationPdf'])->name('test.health-examination-pdf');
+    
+    // Oral health examination PDF routes
+    Route::get('/oral-health-examination/{studentId}/pdf', [App\Http\Controllers\HealthReportController::class, 'exportOralHealthExaminationPdf'])->name('oral-health-examination.export-pdf');
 
     // User Management Routes
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

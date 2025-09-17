@@ -22,10 +22,24 @@ class PupilHealthController extends Controller
         
         $user = auth()->user();
         
+        \Log::info('Current authenticated user:', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'full_name' => $user->full_name,
+            'role' => $user->role
+        ]);
+        
         // Filter students based on user role
         if ($user->role === 'teacher') {
             // Teachers can only see their assigned students
             $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            \Log::info('Teacher filtering debug:', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'assigned_student_ids' => $assignedStudentIds->toArray(),
+                'assignments_count' => $user->assignedStudents()->count()
+            ]);
+            
             if ($assignedStudentIds->isEmpty()) {
                 $studentsQuery = Student::whereRaw('1 = 0'); // Return no students if none assigned
             } else {
@@ -36,9 +50,17 @@ class PupilHealthController extends Controller
             $studentsQuery = Student::query();
         }
 
+        $students = $studentsQuery->get();
+        
+        \Log::info('Final student query result:', [
+            'user_role' => $user->role,
+            'students_count' => $students->count(),
+            'student_names' => $students->pluck('full_name')->toArray()
+        ]);
+        
         return Inertia::render('PupilHealth/Index', [
             'selectedGrade' => $selectedGrade,
-            'students' => $studentsQuery->get()
+            'students' => $students
         ]);
     }
 
@@ -46,6 +68,15 @@ class PupilHealthController extends Controller
     {
         $selectedGrade = $request->query('grade') ?? session('grade');
         \Log::info('Show Health Exam - Selected Grade from URL:', ['grade' => $selectedGrade]);
+        
+        // Check if teacher has access to this student
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($student->id)) {
+                abort(403, 'Access denied. You can only view your assigned students.');
+            }
+        }
         
         // Get the health examination for this student
         $healthExamination = HealthExamination::where('student_id', $student->id)->first();
@@ -61,7 +92,8 @@ class PupilHealthController extends Controller
         return Inertia::render('HealthExamination/Show', [
             'student' => $student,
             'healthExamination' => $healthExamination,
-            'selectedGrade' => $selectedGrade
+            'selectedGrade' => $selectedGrade,
+            'userRole' => $user->role
         ]);
     }
 
@@ -192,11 +224,21 @@ class PupilHealthController extends Controller
 
     public function showOralHealth(Student $student)
     {
+        // Check if teacher has access to this student
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($student->id)) {
+                abort(403, 'Access denied. You can only view your assigned students.');
+            }
+        }
+        
         $examinations = OralHealthExamination::where('student_id', $student->id)->get();
         
         return Inertia::render('OralHealth/Show', [
             'student' => $student,
-            'examinations' => $examinations
+            'examinations' => $examinations,
+            'userRole' => $user->role
         ]);
     }
 

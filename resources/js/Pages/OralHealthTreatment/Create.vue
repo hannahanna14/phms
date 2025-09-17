@@ -173,7 +173,6 @@ const form = useForm({
     chief_complaint: '',
     treatment: '',
     remarks: '',
-    status: 'pending',
     grade_level: selectedGrade.value.replace('Grade ', ''), // Store as "4" not "Grade 4"
     school_year: schoolYear
 });

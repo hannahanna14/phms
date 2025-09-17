@@ -69,13 +69,20 @@
             overflow: visible;
         }
         
-        .info-section {
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 20px;
         }
         
-        .info-row {
+        .info-table td {
+            border: none;
+            padding: 4px 0;
+            vertical-align: middle;
+        }
+        
+        .date-cell {
             display: flex;
-            margin-bottom: 12px;
             align-items: center;
         }
         
@@ -91,6 +98,9 @@
             height: 18px;
             width: 200px;
             margin-right: 40px;
+            padding-left: 5px;
+            display: inline-block;
+            text-align: left;
         }
         
         .info-label-right {
@@ -104,6 +114,9 @@
             border-bottom: 1px solid #000;
             height: 18px;
             width: 200px;
+            padding-left: 5px;
+            display: inline-block;
+            text-align: left;
         }
         
         .three-column {
@@ -254,52 +267,51 @@
         BUREAU OF LEARNERS SUPPORT SERVICES-SCHOOL HEALTH DIVISION
     </div>
     
-    <div class="info-section">
-        <div class="info-row">
-            <span class="info-label">Name:</span>
-            <span class="info-value">{{ $student->full_name ?? '' }}</span>
-            <span class="info-label-right">School ID:</span>
-            <span class="info-value-right">{{ $student->school_id ?? '' }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">LRN:</span>
-            <span class="info-value">{{ $student->lrn ?? '' }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">Date of Birth:</span>
-            <div class="date-section">
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Name:</td>
+            <td class="info-value">{{ $student->full_name ?? '' }}</td>
+            <td class="info-label-right">School ID:</td>
+            <td class="info-value-right">{{ $student->school_id ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">LRN:</td>
+            <td class="info-value">{{ $student->lrn ?? '' }}</td>
+            <td class="info-label-right"></td>
+            <td class="info-value-right"></td>
+        </tr>
+        <tr>
+            <td class="info-label">Date of Birth:</td>
+            <td class="date-cell">
                 <span class="date-label">Month:</span>
                 <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('M') : '' }}</span>
                 <span class="date-label">Day:</span>
                 <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('d') : '' }}</span>
                 <span class="date-label">Year:</span>
                 <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('Y') : '' }}</span>
-            </div>
-            <span class="info-label-right">Region:</span>
-            <span class="info-value-right">{{ $student->region ?? '' }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">Birthplace:</span>
-            <span class="info-value">{{ $student->birthplace ?? '' }}</span>
-            <span class="info-label-right">Division:</span>
-            <span class="info-value-right">{{ $student->division ?? '' }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">Parent/Guardian:</span>
-            <span class="info-value">{{ $student->parent_guardian ?? '' }}</span>
-            <span class="info-label-right">Telephone No:</span>
-            <span class="info-value-right">{{ $student->telephone_no ?? '' }}</span>
-        </div>
-        
-        <div class="info-row">
-            <span class="info-label">Address:</span>
-            <span class="info-value">{{ $student->address ?? '' }}</span>
-        </div>
-    </div>
+            </td>
+            <td class="info-label-right">Region:</td>
+            <td class="info-value-right">{{ $student->region ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Birthplace:</td>
+            <td class="info-value">{{ $student->birthplace ?? '' }}</td>
+            <td class="info-label-right">Division:</td>
+            <td class="info-value-right">{{ $student->division ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Parent/Guardian:</td>
+            <td class="info-value">{{ $student->parent_guardian ?? '' }}</td>
+            <td class="info-label-right">Telephone No:</td>
+            <td class="info-value-right">{{ $student->telephone_no ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Address:</td>
+            <td class="info-value">{{ $student->address ?? '' }}</td>
+            <td class="info-label-right"></td>
+            <td class="info-value-right"></td>
+        </tr>
+    </table>
     
     <table class="examination-table">
         <thead>
