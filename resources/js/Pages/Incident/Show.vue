@@ -35,6 +35,18 @@
                             <div><strong>Status:</strong> <span class="text-green-600 font-semibold">Active</span></div>
                         </div>
                     </div>
+
+                    <!-- Grade Level Selector -->
+                    <div class="border rounded-lg bg-white shadow p-4">
+                        <h3 class="text-md font-semibold text-gray-700 mb-3">Select Grade Level</h3>
+                        <Select 
+                            v-model="selectedGrade" 
+                            :options="gradeLevels"
+                            placeholder="Select Grade Level"
+                            class="w-full"
+                            @change="onGradeChange"
+                        />
+                    </div>
                 </div>
 
                 <!-- Right Column: Incident Details -->
@@ -96,11 +108,14 @@
 </template>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { Head, Link, usePage } from '@inertiajs/vue3'
+import { ref, onMounted, computed, watch } from 'vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import Select from 'primevue/select'
 import axios from 'axios'
+
+const { student, userRole, currentGrade } = usePage().props
 
 const props = defineProps({
     student: {
@@ -110,14 +125,48 @@ const props = defineProps({
     userRole: {
         type: String,
         default: 'admin'
+    },
+    currentGrade: {
+        type: String,
+        default: null
     }
 })
 
 const incidents = ref([])
 
+// Grade level management
+const gradeLevels = computed(() => {
+    const standardGrades = ['Kinder 1', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+    // Convert student grade to match format (e.g., "6" becomes "Grade 6")
+    const studentGradeFormatted = isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
+    return standardGrades.includes(studentGradeFormatted) ? standardGrades : [...standardGrades, studentGradeFormatted];
+});
+
+// Initialize selected grade
+const getInitialGrade = () => {
+    // Check URL parameter first
+    const urlGrade = new URLSearchParams(window.location.search).get('grade');
+    if (urlGrade) {
+        const formattedGrade = isNaN(urlGrade) ? urlGrade : `Grade ${urlGrade}`;
+        return formattedGrade;
+    }
+    
+    // Use current grade prop if available
+    if (currentGrade) {
+        return isNaN(currentGrade) ? currentGrade : `Grade ${currentGrade}`;
+    }
+    
+    // Default to student's current grade level
+    return isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
+};
+
+const selectedGrade = ref(getInitialGrade());
+
 const fetchIncidents = async () => {
     try {
-        const response = await axios.get(`/api/incidents/student/${props.student.id}`, {
+        // Extract grade number for API call
+        const gradeForApi = selectedGrade.value.replace('Grade ', '');
+        const response = await axios.get(`/api/incidents/student/${student.id}?grade=${gradeForApi}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -129,6 +178,22 @@ const fetchIncidents = async () => {
         incidents.value = [];
     }
 };
+
+const onGradeChange = () => {
+    // Update URL without page reload
+    const gradeForUrl = selectedGrade.value.replace('Grade ', '');
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('grade', gradeForUrl);
+    window.history.replaceState({}, '', newUrl);
+    
+    // Fetch incidents for new grade
+    fetchIncidents();
+};
+
+// Watch for grade changes
+watch(selectedGrade, () => {
+    fetchIncidents();
+});
 
 onMounted(() => {
     fetchIncidents();

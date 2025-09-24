@@ -41,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-examination.create');
     Route::post('/pupil-health/health-examination', [PupilHealthController::class, 'storeHealthExam'])
         ->name('health-examination.store');
+    Route::get('/pupil-health/health-examination/{healthExamination}/edit', [PupilHealthController::class, 'editHealthExam'])
+        ->name('health-examination.edit');
+    Route::put('/pupil-health/health-examination/{healthExamination}', [PupilHealthController::class, 'updateHealthExam'])
+        ->name('health-examination.update');
     Route::get('/pupil-health/health-examination/{student}', [PupilHealthController::class, 'showHealthExam'])
         ->name('pupil-health.health-exam.show');
 
@@ -50,6 +54,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('oral-health-examination.create');
     Route::post('/pupil-health/oral-health/store', [PupilHealthController::class, 'storeOralHealth'])
         ->name('oral-health-examination.store');
+    Route::get('/pupil-health/oral-health/{id}/edit', [PupilHealthController::class, 'editOralHealth'])
+        ->name('oral-health-examination.edit');
+    Route::put('/pupil-health/oral-health/{oralHealthExamination}', [PupilHealthController::class, 'updateOralHealth'])
+        ->name('oral-health-examination.update');
     Route::get('/pupil-health/incident/{student}', [StudentController::class, 'showIncident'])
         ->name('pupil-health.incident');
     Route::get('/pupil-health/incident/{student}/create', [StudentController::class, 'createIncident'])

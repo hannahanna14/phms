@@ -13,6 +13,19 @@
                 </div>
             </div>
 
+            <!-- Draft Restored Notification -->
+            <div v-if="showDraftNotification" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                    <span class="text-blue-800 text-sm">
+                        <strong>Draft restored:</strong> Your previous report settings have been recovered.
+                    </span>
+                    <button @click="showDraftNotification = false" class="ml-auto text-blue-600 hover:text-blue-800">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- Student Selection Card -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">
@@ -240,7 +253,7 @@
                         icon="pi pi-file-pdf"
                         @click="generateReport"
                         :loading="loading"
-                        :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
+                        :disabled="isGenerateDisabled"
                         class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                     />
                     <Button
@@ -248,7 +261,7 @@
                         icon="pi pi-eye"
                         @click="previewReport"
                         :loading="loading"
-                        :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !selectedGrade : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || loading"
+                        :disabled="isGenerateDisabled"
                         outlined
                         severity="secondary"
                     />
@@ -259,6 +272,15 @@
                         @click="printReport"
                         outlined
                         severity="info"
+                    />
+                    <Button
+                        v-if="showDraftNotification"
+                        label="Clear Draft"
+                        icon="pi pi-trash"
+                        @click="clearDraft"
+                        outlined
+                        severity="danger"
+                        size="small"
                     />
                 </div>
             </div>
@@ -275,6 +297,7 @@ import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Checkbox from 'primevue/checkbox';
+import { useFormPersistence } from '@/composables/useFormPersistence';
 
 import axios from 'axios';
 
@@ -289,29 +312,47 @@ const props = defineProps({
     }
 });
 
-// Form data
-const selectedGrade = ref('');
-const section = ref('');
+// Format grade levels properly
+const gradeLevels = computed(() => {
+    const standardGrades = [
+        'Kinder 1',
+        'Kinder 2', 
+        'Grade 1',
+        'Grade 2',
+        'Grade 3',
+        'Grade 4',
+        'Grade 5',
+        'Grade 6'
+    ];
+    return standardGrades;
+});
+
+// Form data - consolidated for persistence
+const formData = ref({
+    selectedGrade: '',
+    section: '',
+    genderFilter: 'All',
+    minAge: null,
+    maxAge: null,
+    sortBy: 'Name (A-Z)',
+    selectedStudents: [],
+    selectedHealthFields: [],
+    includeHealthExam: false,
+    includeHealthTreatment: false,
+    includeOralHealth: false,
+    includeIncidents: false
+});
+
+// Non-persistent data
 const loading = ref(false);
 const reportData = ref([]);
-
-// Student search data
-const selectedStudents = ref([]);
 const studentOptions = ref([]);
 const searchLoading = ref(false);
 const searchQuery = ref('');
 
-// Section options
+// Options
 const sectionOptions = ['A', 'B', 'C', 'D', 'E', 'F'];
-
-// Filter options
-const genderFilter = ref('All');
 const genderOptions = ['All', 'Male', 'Female'];
-const minAge = ref(null);
-const maxAge = ref(null);
-
-// Sort options
-const sortBy = ref('Name (A-Z)');
 const sortOptions = [
     'Name (A-Z)',
     'Name (Z-A)',
@@ -319,11 +360,103 @@ const sortOptions = [
     'Age (Oldest First)'
 ];
 
+// Computed property for button disabled state
+const isGenerateDisabled = computed(() => {
+    if (loading.value) return true;
+    
+    // If students are selected, check if any are checked
+    if (selectedStudents.value && selectedStudents.value.length > 0) {
+        const checkedStudents = selectedStudents.value.filter(s => s && s.checked === true);
+        console.log('Health Report - Selected students:', selectedStudents.value);
+        console.log('Health Report - Checked students:', checkedStudents);
+        console.log('Health Report - Button should be enabled:', checkedStudents.length > 0);
+        return checkedStudents.length === 0;
+    }
+    
+    // If no students selected, require grade level
+    console.log('Health Report - No students selected, grade level:', selectedGrade.value);
+    console.log('Health Report - Button should be enabled:', !!selectedGrade.value);
+    return !selectedGrade.value;
+});
+
+// Set up form persistence
+const {
+    showDraftNotification,
+    initializeForm,
+    setupAutoSave,
+    onSubmitSuccess,
+    clearSavedFormData
+} = useFormPersistence('health_report_form', formData.value, {
+    excludeFields: [], // Save all form fields
+    autoSave: true,
+    showNotification: true
+});
+
+// Create reactive references for easier access
+const selectedGrade = computed({
+    get: () => formData.value.selectedGrade,
+    set: (value) => formData.value.selectedGrade = value
+});
+
+const section = computed({
+    get: () => formData.value.section,
+    set: (value) => formData.value.section = value
+});
+
+const genderFilter = computed({
+    get: () => formData.value.genderFilter,
+    set: (value) => formData.value.genderFilter = value
+});
+
+const minAge = computed({
+    get: () => formData.value.minAge,
+    set: (value) => formData.value.minAge = value
+});
+
+const maxAge = computed({
+    get: () => formData.value.maxAge,
+    set: (value) => formData.value.maxAge = value
+});
+
+const sortBy = computed({
+    get: () => formData.value.sortBy,
+    set: (value) => formData.value.sortBy = value
+});
+
+const selectedStudents = computed({
+    get: () => formData.value.selectedStudents,
+    set: (value) => formData.value.selectedStudents = value
+});
+
+const selectedHealthFields = computed({
+    get: () => formData.value.selectedHealthFields,
+    set: (value) => formData.value.selectedHealthFields = value
+});
+
+const includeHealthExam = computed({
+    get: () => formData.value.includeHealthExam,
+    set: (value) => formData.value.includeHealthExam = value
+});
+
+const includeHealthTreatment = computed({
+    get: () => formData.value.includeHealthTreatment,
+    set: (value) => formData.value.includeHealthTreatment = value
+});
+
+const includeOralHealth = computed({
+    get: () => formData.value.includeOralHealth,
+    set: (value) => formData.value.includeOralHealth = value
+});
+
+const includeIncidents = computed({
+    get: () => formData.value.includeIncidents,
+    set: (value) => formData.value.includeIncidents = value
+});
+
 // All student fields will be included by default
 const selectedFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age', 'birthdate'];
 
 // Health examination fields
-const selectedHealthFields = ref([]);
 const healthExamFields = [
     { label: 'Height', value: 'height' },
     { label: 'Weight', value: 'weight' },
@@ -407,13 +540,19 @@ const addStudent = (student) => {
     // Check if student is already selected
     const exists = selectedStudents.value.find(s => s.id === student.id);
     if (!exists) {
-        selectedStudents.value.push({
+        const newStudent = {
             ...student,
             checked: true
-        });
+        };
+        selectedStudents.value.push(newStudent);
+        console.log('Health Report - Added student:', newStudent);
+        console.log('Health Report - All selected students:', selectedStudents.value);
+        
         // Clear search after adding
         searchQuery.value = '';
         studentOptions.value = [];
+    } else {
+        console.log('Health Report - Student already exists:', student);
     }
 };
 
@@ -601,8 +740,31 @@ const generatePrintHTML = () => {
     return html;
 };
 
+const clearDraft = () => {
+    if (confirm('Are you sure you want to clear your saved draft? This action cannot be undone.')) {
+        clearSavedFormData();
+        // Reset form to defaults
+        formData.value = {
+            selectedGrade: '',
+            section: '',
+            genderFilter: 'All',
+            minAge: null,
+            maxAge: null,
+            sortBy: 'Name (A-Z)',
+            selectedStudents: [],
+            selectedHealthFields: [],
+            includeHealthExam: false,
+            includeHealthTreatment: false,
+            includeOralHealth: false,
+            includeIncidents: false
+        };
+    }
+};
+
 onMounted(() => {
-    // Component mounted - no additional setup needed
+    // Initialize form persistence
+    initializeForm();
+    setupAutoSave();
 });
 </script>
 

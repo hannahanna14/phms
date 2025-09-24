@@ -280,13 +280,22 @@ const viewTreatment = (treatment) => {
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-3 text-sm flex justify-between items-center">
                             <span>Pupil Health Examination</span>
-                            <Button 
-                                v-if="!currentRecord && userRole !== 'teacher'"
-                                label="Add Record" 
-                                icon="pi pi-plus" 
-                                class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
-                                @click="$inertia.visit(`/pupil-health/health-examination/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
-                            />
+                            <div class="flex gap-2">
+                                <Button 
+                                    v-if="!currentRecord && userRole !== 'teacher'"
+                                    label="Add Record" 
+                                    icon="pi pi-plus" 
+                                    class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
+                                    @click="$inertia.visit(`/pupil-health/health-examination/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
+                                />
+                                <Button 
+                                    v-if="currentRecord && userRole !== 'teacher'"
+                                    label="Edit Record" 
+                                    icon="pi pi-pencil" 
+                                    class="p-button-sm !bg-orange-600 !text-white !border-orange-600 hover:!bg-orange-700" 
+                                    @click="$inertia.visit(`/pupil-health/health-examination/${currentRecord.id}/edit?grade=${selectedGrade.replace('Grade ', '')}`)"
+                                />
+                            </div>
                         </div>
                         <div class="p-6 text-center text-gray-500" v-if="!currentRecord">
                             <p>No health examination records found for {{ selectedGrade }}. Click the "Add Record" button to create one.</p>

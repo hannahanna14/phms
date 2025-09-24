@@ -374,6 +374,116 @@ class PupilHealthController extends Controller
         }
     }
     
+    /**
+     * Show the form for editing a health examination
+     */
+    public function editHealthExam(HealthExamination $healthExamination, Request $request)
+    {
+        $grade = $request->query('grade');
+        
+        return Inertia::render('HealthExamination/Edit', [
+            'healthExamination' => $healthExamination,
+            'student' => $healthExamination->student,
+            'selectedGrade' => $grade
+        ]);
+    }
+
+    /**
+     * Update the health examination
+     */
+    public function updateHealthExam(Request $request, HealthExamination $healthExamination)
+    {
+        $validated = $request->validate([
+            'height' => 'nullable|numeric',
+            'weight' => 'nullable|numeric',
+            'bmi' => 'nullable|numeric',
+            'temperature' => 'nullable|numeric',
+            'blood_pressure' => 'nullable|string',
+            'heart_rate' => 'nullable|integer',
+            'vision' => 'nullable|string',
+            'hearing' => 'nullable|string',
+            'skin' => 'nullable|string',
+            'scalp' => 'nullable|string',
+            'eyes' => 'nullable|string',
+            'ears' => 'nullable|string',
+            'nose' => 'nullable|string',
+            'mouth' => 'nullable|string',
+            'throat' => 'nullable|string',
+            'neck' => 'nullable|string',
+            'lungs' => 'nullable|string',
+            'heart' => 'nullable|string',
+            'abdomen' => 'nullable|string',
+            'deformities' => 'nullable|string',
+            'grade_level' => 'required|string',
+            'school_year' => 'required|string',
+        ]);
+
+        $healthExamination->update($validated);
+
+        return redirect()->route('pupil-health.health-exam.show', [
+            'student' => $healthExamination->student_id,
+            'grade' => $validated['grade_level']
+        ])->with('success', 'Health examination updated successfully.');
+    }
+
+    /**
+     * Show the form for editing an oral health examination
+     */
+    public function editOralHealth($id, Request $request)
+    {
+        $grade = $request->query('grade');
+        
+        \Log::info('EditOralHealth - Looking for examination with ID:', ['id' => $id, 'grade' => $grade]);
+        
+        // Find the oral health examination
+        $oralHealthExamination = OralHealthExamination::with('student')->find($id);
+        
+        if (!$oralHealthExamination) {
+            \Log::error('EditOralHealth - Examination not found:', ['id' => $id]);
+            return redirect()->back()->with('error', 'Oral health examination not found.');
+        }
+        
+        \Log::info('EditOralHealth - Examination found:', [
+            'id' => $oralHealthExamination->id,
+            'student_id' => $oralHealthExamination->student_id,
+            'student_name' => $oralHealthExamination->student->full_name ?? 'Unknown'
+        ]);
+        
+        return Inertia::render('OralHealth/Edit', [
+            'oralHealthExamination' => $oralHealthExamination,
+            'student' => $oralHealthExamination->student,
+            'selectedGrade' => $grade ?: $oralHealthExamination->grade_level
+        ]);
+    }
+
+    /**
+     * Update the oral health examination
+     */
+    public function updateOralHealth(Request $request, OralHealthExamination $oralHealthExamination)
+    {
+        $validated = $request->validate([
+            'permanent_index_dft' => 'nullable|numeric',
+            'permanent_teeth_decayed' => 'nullable|integer',
+            'permanent_teeth_filled' => 'nullable|integer',
+            'permanent_for_extraction' => 'nullable|integer',
+            'permanent_for_filling' => 'nullable|integer',
+            'temporary_index_dft' => 'nullable|numeric',
+            'temporary_teeth_decayed' => 'nullable|integer',
+            'temporary_teeth_filled' => 'nullable|integer',
+            'temporary_for_extraction' => 'nullable|integer',
+            'temporary_for_filling' => 'nullable|integer',
+            'grade_level' => 'required|string',
+            'school_year' => 'required|string',
+        ]);
+
+        $oralHealthExamination->update($validated);
+
+        return redirect()->route('pupil-health.oral-health.show', [
+            'student' => $oralHealthExamination->student_id,
+            'grade' => $validated['grade_level']
+        ])->with('success', 'Oral health examination updated successfully.');
+    }
+
     private function getSchoolYearForGrade($grade)
     {
         $gradeToYear = [

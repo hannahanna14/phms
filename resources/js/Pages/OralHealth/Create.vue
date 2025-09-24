@@ -8,6 +8,19 @@
                     <p class="text-gray-600">Naawan Central School</p>
                     <p class="text-sm text-gray-500">Student: {{ student.full_name }} | Grade: {{ gradeLevel }}</p>
                 </div>
+
+                <!-- Draft Restored Notification -->
+                <div v-if="showDraftNotification" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                        <span class="text-blue-800 text-sm">
+                            <strong>Draft restored:</strong> Your previous oral health examination data has been recovered.
+                        </span>
+                        <button @click="showDraftNotification = false" class="ml-auto text-blue-600 hover:text-blue-800">
+                            <i class="pi pi-times"></i>
+                        </button>
+                    </div>
+                </div>
                 
                 <!-- Interactive Dental Chart -->
                 <div class="mb-8">
@@ -284,6 +297,7 @@ import { Head, useForm, usePage } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { computed, ref, onMounted, nextTick } from 'vue'
+import { useFormPersistence } from '@/composables/useFormPersistence'
 
 const props = defineProps({
     student: {
@@ -327,6 +341,20 @@ const form = useForm({
     tooth_symbols: {}
 })
 
+// Set up form persistence
+const {
+    showDraftNotification,
+    initializeForm,
+    setupAutoSave,
+    onSubmitSuccess,
+    onCancel,
+    hasUnsavedChanges
+} = useFormPersistence(`oral_health_exam_create_${props.student.id}`, form, {
+    excludeFields: ['student_id'], // Don't save student_id as it's always the same
+    autoSave: true,
+    showNotification: true
+})
+
 // Determine which teeth to show based on grade level
 const shouldShowPrimaryTeeth = computed(() => {
     const grade = parseInt(gradeLevel.value) || 0
@@ -339,6 +367,10 @@ const toggleChartType = (type) => {
 
 // Dental chart functionality
 onMounted(() => {
+    // Initialize form persistence
+    initializeForm()
+    setupAutoSave()
+    
     nextTick(() => {
         initializeDentalChart()
     })
@@ -601,12 +633,22 @@ const submit = () => {
         preserveScroll: true,
         onSuccess: () => {
             console.log('Form submitted successfully')
+            // Clear saved form data on successful submission
+            onSubmitSuccess()
             sessionStorage.setItem(`currentGrade_${props.student.id}`, `Grade ${gradeLevel.value}`)
         },
         onError: (errors) => {
             console.error('Form submission errors:', errors)
+            // Keep saved data if there's an error
         }
     })
+}
+
+const cancel = () => {
+    // Check if there are unsaved changes
+    const hasChanges = hasUnsavedChanges()
+    onCancel(hasChanges)
+    window.history.back()
 }
 </script>
 

@@ -348,7 +348,7 @@ class StudentController extends Controller
             ];
         });
 
-        return Inertia::render('Pupil Health/Incident/Show', [
+        return Inertia::render('Incident/Show', [
             'student' => $student,
             'incidents' => $incidents,
             'currentGrade' => $grade,
@@ -359,7 +359,7 @@ class StudentController extends Controller
 
     public function createIncident(Student $student)
     {
-        return Inertia::render('Pupil Health/Incident/Create', [
+        return Inertia::render('Incident/Create', [
             'student' => $student
         ]);
     }
@@ -422,7 +422,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function getIncidentsByStudent($studentId)
+    public function getIncidentsByStudent(Request $request, $studentId)
     {
         $user = auth()->user();
         
@@ -434,9 +434,41 @@ class StudentController extends Controller
             }
         }
 
+        $student = Student::findOrFail($studentId);
+        $grade = $request->query('grade', $student->grade_level);
+        
+        // Get school year based on grade level
+        $schoolYear = $this->getSchoolYearForGrade($grade);
+
         $incidents = Incident::where('student_id', $studentId)
+            ->where('grade_level', $grade)
+            ->where('school_year', $schoolYear)
             ->latest()
             ->get();
+
+        // Add timer information to each incident
+        $incidents = $incidents->map(function ($incident) {
+            $timerStatus = $incident->getTimerStatus();
+            return [
+                'id' => $incident->id,
+                'student_id' => $incident->student_id,
+                'date' => $incident->date,
+                'complaint' => $incident->complaint,
+                'actions_taken' => $incident->actions_taken,
+                'status' => $incident->status,
+                'timer_status' => $incident->timer_status,
+                'grade_level' => $incident->grade_level,
+                'school_year' => $incident->school_year,
+                'started_at' => $incident->started_at,
+                'expires_at' => $incident->expires_at,
+                'is_expired' => $incident->is_expired,
+                'can_edit' => $incident->canEdit(),
+                'remaining_minutes' => $incident->getRemainingMinutes(),
+                'timer_display' => $timerStatus,
+                'created_at' => $incident->created_at,
+                'updated_at' => $incident->updated_at,
+            ];
+        });
 
         return response()->json($incidents);
     }

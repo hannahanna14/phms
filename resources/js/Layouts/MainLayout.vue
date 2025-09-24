@@ -33,6 +33,15 @@
                                 <span :class="item.icon" />
                                 <span class="ml-2">{{ item.label }}</span>
                             </Link>
+                            <button
+                                v-else-if="item.command"
+                                @click="item.command"
+                                class="w-full text-left p-3 hover:bg-gray-100 flex items-center no-underline border-none bg-transparent cursor-pointer"
+                                v-bind="props.action"
+                            >
+                                <span :class="item.icon" />
+                                <span class="ml-2">{{ item.label }}</span>
+                            </button>
                         </template>
                     </TieredMenu>
                 </div>
@@ -135,11 +144,6 @@ const userMenuItems = ref([
             // Navigate to profile page if needed
             // router.visit('/profile');
         }
-    },
-    {
-        label: 'Logout',
-        icon: 'pi pi-sign-out',
-        command: logout
     }
 ]);
 
@@ -167,8 +171,16 @@ const sideBarItems = ref([
     },
     {
         label: 'Oral Health Report',
-        icon: 'pi pi-teeth',
+        icon: 'pi pi-file-check',
         route: '/oral-health-report'
+    },
+    {
+        separator: true
+    },
+    {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: logout
     }
 ])
 </script>

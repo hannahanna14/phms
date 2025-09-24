@@ -7,6 +7,19 @@
                 <p class="text-gray-600">Naawan Central School</p>
             </div>
 
+            <!-- Draft Restored Notification -->
+            <div v-if="showDraftNotification" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                    <span class="text-blue-800 text-sm">
+                        <strong>Draft restored:</strong> Your previous form data has been recovered.
+                    </span>
+                    <button @click="showDraftNotification = false" class="ml-auto text-blue-600 hover:text-blue-800">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- Student Info -->
             <Card class="mb-6">
                 <template #content>
@@ -123,22 +136,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Select from 'primevue/select';
 import Card from 'primevue/card';
+import { useFormPersistence } from '@/composables/useFormPersistence';
 
 const { student } = usePage().props;
 
+// Initialize form
 const form = useForm({
     student_id: student.id,
     date: new Date(),
     complaint: '',
     actions_taken: '',
     status: 'pending'
+});
+
+// Set up form persistence
+const {
+    showDraftNotification,
+    initializeForm,
+    setupAutoSave,
+    onSubmitSuccess,
+    onCancel,
+    hasUnsavedChanges
+} = useFormPersistence(`incident_form_${student.id}`, form, {
+    excludeFields: ['student_id'], // Don't save student_id as it's always the same
+    autoSave: true,
+    showNotification: true
 });
 
 const statusOptions = [
@@ -148,16 +177,31 @@ const statusOptions = [
     { label: 'Closed', value: 'closed' }
 ];
 
+// Initialize form persistence
+onMounted(() => {
+    initializeForm();
+    setupAutoSave();
+});
+
 const submit = () => {
     form.post(route('incident.store'), {
         onSuccess: () => {
+            // Clear saved form data on successful submission
+            onSubmitSuccess();
             // Redirect back to incident page
             window.history.back();
+        },
+        onError: () => {
+            // Keep saved data if there's an error
+            console.log('Form submission failed, keeping saved data');
         }
     });
 };
 
 const cancel = () => {
+    // Check if there are unsaved changes
+    const hasChanges = form.complaint || form.actions_taken;
+    onCancel(hasChanges);
     window.history.back();
 };
 </script>

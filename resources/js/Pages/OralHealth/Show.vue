@@ -129,13 +129,22 @@
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-3 text-sm flex justify-between items-center">
                             <span>Pupil Oral Health Examination</span>
-                            <Button 
-                                v-if="!currentExam"
-                                label="Add Record" 
-                                icon="pi pi-plus" 
-                                class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
-                                @click="$inertia.visit(`/pupil-health/oral-health/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
-                            />
+                            <div class="flex gap-2">
+                                <Button 
+                                    v-if="!currentExam && userRole !== 'teacher'"
+                                    label="Add Record" 
+                                    icon="pi pi-plus" 
+                                    class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
+                                    @click="$inertia.visit(`/pupil-health/oral-health/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
+                                />
+                                <Button 
+                                    v-if="currentExam && userRole !== 'teacher'"
+                                    label="Edit Record" 
+                                    icon="pi pi-pencil" 
+                                    class="p-button-sm !bg-orange-600 !text-white !border-orange-600 hover:!bg-orange-700" 
+                                    @click="$inertia.visit(`/pupil-health/oral-health/${currentExam.id}/edit?grade=${selectedGrade.replace('Grade ', '')}`)"
+                                />
+                            </div>
                         </div>
                         <div class="p-6">
                             <div v-if="oralHealthRecords.length === 0" class="text-center py-8 text-gray-500">

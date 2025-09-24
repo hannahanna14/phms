@@ -11,6 +11,19 @@
                 </div>
             </div>
 
+            <!-- Draft Restored Notification -->
+            <div v-if="showDraftNotification" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="pi pi-info-circle text-blue-600 mr-2"></i>
+                    <span class="text-blue-800 text-sm">
+                        <strong>Draft restored:</strong> Your previous oral health report settings have been recovered.
+                    </span>
+                    <button @click="showDraftNotification = false" class="ml-auto text-blue-600 hover:text-blue-800">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- Student Selection Card -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4">
@@ -306,7 +319,7 @@
                             label="Generate Report" 
                             icon="pi pi-file-export"
                             :loading="form.processing"
-                            :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
+                            :disabled="buttonDisabled"
                             class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                         />
                         <Button 
@@ -316,8 +329,18 @@
                             severity="secondary"
                             outlined
                             @click="previewReport"
-                            :disabled="userRole === 'teacher' ? (selectedStudents.filter(s => s && s.checked).length || 0) === 0 : ((selectedStudents.length || 0) === 0 ? !form.grade_level : (selectedStudents.filter(s => s && s.checked).length || 0) === 0) || form.processing"
+                            :disabled="buttonDisabled"
                             class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
+                        />
+                        <Button
+                            v-if="showDraftNotification"
+                            type="button"
+                            label="Clear Draft"
+                            icon="pi pi-trash"
+                            @click="clearDraft"
+                            outlined
+                            severity="danger"
+                            size="small"
                         />
                     </div>
                 </form>
@@ -329,7 +352,7 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
@@ -338,6 +361,7 @@ import Slider from 'primevue/slider'
 import Button from 'primevue/button'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import { useFormPersistence } from '@/composables/useFormPersistence';
 import axios from 'axios';
 
 const props = defineProps({
@@ -411,14 +435,34 @@ const form = useForm({
     min_age: null,
     max_age: null,
     sort_by: 'Name (A-Z)',
-    selected_students: []
+    selected_students: [],
+    selectedStudents: []
 });
 
-// Student search data
-const selectedStudents = ref([]);
+// Student search data - sync with form for persistence
+const selectedStudents = computed({
+    get: () => form.selectedStudents || [],
+    set: (value) => form.selectedStudents = value
+});
 const studentOptions = ref([]);
 const searchLoading = ref(false);
 const searchQuery = ref('');
+
+// Simple reactive variable for button state
+const buttonDisabled = ref(true);
+
+// Set up form persistence
+const {
+    showDraftNotification,
+    initializeForm,
+    setupAutoSave,
+    onSubmitSuccess,
+    clearSavedFormData
+} = useFormPersistence('oral_health_report_form', form, {
+    excludeFields: [], // Save all form fields
+    autoSave: true,
+    showNotification: true
+});
 
 // Grade options will come from the controller
 const gradeOptions = props.gradeLevels || [];
@@ -445,12 +489,83 @@ const temporaryTeethFields = [
 const sectionOptions = ['A', 'B', 'C', 'D', 'E'];
 
 const genderOptions = ['All', 'Male', 'Female'];
+const sortOptions = ['Name (A-Z)', 'Name (Z-A)', 'Age (Youngest First)', 'Age (Oldest First)'];
 
-const sortOptions = [
-    'Name (A-Z)', 'Name (Z-A)', 
-    'Age (Youngest First)', 'Age (Oldest First)'
-];
+// Computed property for button disabled state
+const isGenerateDisabled = computed(() => {
+    try {
+        console.log('Oral Health - Computing button state...');
+        console.log('Oral Health - Form processing:', form.processing);
+        
+        if (form.processing) return true;
+        
+        // Force reactivity by accessing the length property
+        const studentsCount = selectedStudents.value?.length || 0;
+        console.log('Oral Health - Students count:', studentsCount);
+        
+        // If students are selected, check if any are checked
+        if (studentsCount > 0) {
+            const checkedStudents = selectedStudents.value.filter(s => s && s.checked === true);
+            console.log('Oral Health - Selected students:', selectedStudents.value);
+            console.log('Oral Health - Checked students:', checkedStudents);
+            console.log('Oral Health - Checked count:', checkedStudents.length);
+            const shouldEnable = checkedStudents.length > 0;
+            console.log('Oral Health - Button should be enabled:', shouldEnable);
+            return !shouldEnable; // Return opposite because this is "disabled"
+        }
+        
+        // If no students selected, require grade level
+        const hasGradeLevel = !!form.grade_level;
+        console.log('Oral Health - No students selected, grade level:', form.grade_level);
+        console.log('Oral Health - Has grade level:', hasGradeLevel);
+        console.log('Oral Health - Button should be enabled:', hasGradeLevel);
+        return !hasGradeLevel; // Return opposite because this is "disabled"
+    } catch (error) {
+        console.error('Error in isGenerateDisabled computed:', error);
+        return true; // Disable button if there's an error
+    }
+});
 
+// Function to update button state
+const updateButtonState = () => {
+    console.log('Oral Health - Updating button state...');
+    
+    if (form.processing) {
+        buttonDisabled.value = true;
+        console.log('Oral Health - Button disabled: form processing');
+        return;
+    }
+    
+    if (selectedStudents.value.length > 0) {
+        const checkedCount = selectedStudents.value.filter(s => s.checked === true).length;
+        buttonDisabled.value = checkedCount === 0;
+        console.log('Oral Health - Students selected, checked count:', checkedCount);
+        console.log('Oral Health - Button disabled:', buttonDisabled.value);
+    } else {
+        buttonDisabled.value = !form.grade_level;
+        console.log('Oral Health - No students, grade level:', form.grade_level);
+        console.log('Oral Health - Button disabled:', buttonDisabled.value);
+    }
+};
+
+// Watch selectedStudents for changes
+watch(selectedStudents, (newStudents) => {
+    console.log('Oral Health - Students changed:', newStudents);
+    console.log('Oral Health - Students length:', newStudents.length);
+    updateButtonState();
+}, { deep: true });
+
+// Watch form.grade_level for changes
+watch(() => form.grade_level, (newGrade) => {
+    console.log('Oral Health - Grade level changed:', newGrade);
+    updateButtonState();
+});
+
+// Watch form.processing for changes
+watch(() => form.processing, (newProcessing) => {
+    console.log('Oral Health - Form processing changed:', newProcessing);
+    updateButtonState();
+});
 
 // Student search functionality
 const onStudentSearch = async () => {
@@ -484,12 +599,21 @@ const onStudentSearch = async () => {
 // Add student to selection
 const addStudent = (student) => {
     // Check if student is already selected
-    const exists = selectedStudents.value.find(s => s.id === student.id);
+    const currentStudents = selectedStudents.value || [];
+    const exists = currentStudents.find(s => s.id === student.id);
     if (!exists) {
-        selectedStudents.value.push({
+        const newStudent = {
             ...student,
             checked: true
-        });
+        };
+        // Create new array to trigger reactivity
+        selectedStudents.value = [...currentStudents, newStudent];
+        console.log('Oral Health - Added student:', newStudent);
+        console.log('Oral Health - All selected students:', selectedStudents.value);
+        
+        // Update button state immediately
+        updateButtonState();
+        
         // Clear search after adding
         searchQuery.value = '';
         studentOptions.value = [];
@@ -631,6 +755,8 @@ const generateReport = () => {
     
     form.post('/oral-health-report/generate', {
         onSuccess: (page) => {
+            // Clear saved form data on successful submission
+            onSubmitSuccess();
             // Handle success - redirect to results page
         },
         onError: (errors) => {
@@ -638,6 +764,31 @@ const generateReport = () => {
         }
     });
 };
+
+const clearDraft = () => {
+    if (confirm('Are you sure you want to clear your saved draft? This action cannot be undone.')) {
+        clearSavedFormData();
+        // Reset form to defaults
+        form.reset();
+        // Reset selected students
+        selectedStudents.value = [];
+        // Update button state
+        updateButtonState();
+    }
+};
+
+onMounted(() => {
+    // Initialize form persistence
+    initializeForm();
+    setupAutoSave();
+    
+    // Reset form processing state on mount
+    form.processing = false;
+    console.log('Oral Health - Reset form processing state');
+    
+    // Initial button state update
+    updateButtonState();
+});
 </script>
 
 <style scoped>

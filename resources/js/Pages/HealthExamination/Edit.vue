@@ -119,7 +119,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(route('health-examination.show', student.id))" />
+                    <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${selectedGrade.replace('Grade ', '')}`)" />
                     <Button type="submit" label="Update" :loading="form.processing" />
                 </div>
             </form>
@@ -139,9 +139,13 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    examination: {
+    healthExamination: {
         type: Object,
         required: true
+    },
+    selectedGrade: {
+        type: String,
+        default: ''
     },
     errors: {
         type: Object,
@@ -165,28 +169,32 @@ const heightOptions = [
 ]
 
 const form = useForm({
-    temperature: props.examination.temperature,
-    heart_rate: props.examination.heart_rate,
-    height: props.examination.height,
-    weight: props.examination.weight,
-    nutritional_status_bmi: props.examination.nutritional_status_bmi,
-    nutritional_status_height: props.examination.nutritional_status_height,
-    vision_screening: props.examination.vision_screening,
-    auditory_screening: props.examination.auditory_screening,
-    skin: props.examination.skin,
-    scalp: props.examination.scalp,
-    eye: props.examination.eye,
-    ear: props.examination.ear,
-    nose: props.examination.nose,
-    mouth: props.examination.mouth,
-    lungs_heart: props.examination.lungs_heart,
-    abdomen: props.examination.abdomen,
-    deformities: props.examination.deformities,
-    remarks: props.examination.remarks
+    temperature: props.healthExamination.temperature,
+    heart_rate: props.healthExamination.heart_rate,
+    height: props.healthExamination.height,
+    weight: props.healthExamination.weight,
+    bmi: props.healthExamination.bmi,
+    blood_pressure: props.healthExamination.blood_pressure,
+    vision: props.healthExamination.vision,
+    hearing: props.healthExamination.hearing,
+    skin: props.healthExamination.skin,
+    scalp: props.healthExamination.scalp,
+    eyes: props.healthExamination.eyes,
+    ears: props.healthExamination.ears,
+    nose: props.healthExamination.nose,
+    mouth: props.healthExamination.mouth,
+    throat: props.healthExamination.throat,
+    neck: props.healthExamination.neck,
+    lungs: props.healthExamination.lungs,
+    heart: props.healthExamination.heart,
+    abdomen: props.healthExamination.abdomen,
+    deformities: props.healthExamination.deformities,
+    grade_level: props.selectedGrade || props.healthExamination.grade_level,
+    school_year: props.healthExamination.school_year
 })
 
 const submit = () => {
-    form.put(route('health-examination.update', props.examination.id))
+    form.put(route('health-examination.update', props.healthExamination.id))
 }
 </script>
 
