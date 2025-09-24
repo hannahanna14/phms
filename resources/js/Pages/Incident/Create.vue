@@ -75,7 +75,7 @@
                             </div>
                         </div>
 
-                        <!-- Status and Date in one row -->
+                        <!-- Status -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -89,6 +89,14 @@
                                     :class="{ 'p-invalid': form.errors.status }"
                                 />
                                 <small v-if="form.errors.status" class="text-red-500">{{ form.errors.status }}</small>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div class="flex items-center text-blue-700">
+                                        <i class="pi pi-clock mr-2"></i>
+                                        <span class="text-sm font-medium">Timer will start automatically (2 hours)</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

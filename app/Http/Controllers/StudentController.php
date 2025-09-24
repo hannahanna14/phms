@@ -324,6 +324,30 @@ class StudentController extends Controller
             ->latest()
             ->get();
 
+        // Add timer information to each incident
+        $incidents = $incidents->map(function ($incident) {
+            $timerStatus = $incident->getTimerStatus();
+            return [
+                'id' => $incident->id,
+                'student_id' => $incident->student_id,
+                'date' => $incident->date,
+                'complaint' => $incident->complaint,
+                'actions_taken' => $incident->actions_taken,
+                'status' => $incident->status,
+                'timer_status' => $incident->timer_status,
+                'grade_level' => $incident->grade_level,
+                'school_year' => $incident->school_year,
+                'started_at' => $incident->started_at,
+                'expires_at' => $incident->expires_at,
+                'is_expired' => $incident->is_expired,
+                'can_edit' => $incident->canEdit(),
+                'remaining_minutes' => $incident->getRemainingMinutes(),
+                'timer_display' => $timerStatus,
+                'created_at' => $incident->created_at,
+                'updated_at' => $incident->updated_at,
+            ];
+        });
+
         return Inertia::render('Pupil Health/Incident/Show', [
             'student' => $student,
             'incidents' => $incidents,
@@ -347,19 +371,74 @@ class StudentController extends Controller
             'date' => 'required|date',
             'complaint' => 'required|string',
             'actions_taken' => 'required|string',
+            'timer_status' => 'nullable|in:not_started,active,paused,completed,expired',
             'grade_level' => 'required|string',
             'school_year' => 'required|string'
         ]);
 
         // Set default status to pending
         $validated['status'] = 'pending';
+        
+        // Set default timer status if not provided
+        if (!isset($validated['timer_status'])) {
+            $validated['timer_status'] = 'not_started';
+        }
 
-        Incident::create($validated);
+        $incident = Incident::create($validated);
+        
+        // Start the timer automatically when incident is created
+        $incident->startTimer();
 
         return redirect()->route('pupil-health.incident', [
             'student' => $validated['student_id'],
             'grade' => $validated['grade_level']
         ])->with('success', 'Incident report created successfully.');
+    }
+
+    public function updateTimerStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'timer_status' => 'required|in:not_started,active,paused,completed,expired'
+        ]);
+
+        $incident = Incident::findOrFail($id);
+        
+        // Check if user has permission to update this incident
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            // Teachers can only update incidents for their assigned students
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($incident->student_id)) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
+        $incident->update(['timer_status' => $validated['timer_status']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer status updated successfully',
+            'timer_status' => $validated['timer_status']
+        ]);
+    }
+
+    public function getIncidentsByStudent($studentId)
+    {
+        $user = auth()->user();
+        
+        // Check if user has access to this student
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($studentId)) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
+        $incidents = Incident::where('student_id', $studentId)
+            ->latest()
+            ->get();
+
+        return response()->json($incidents);
     }
 
     private function getSchoolYearForGrade($grade)

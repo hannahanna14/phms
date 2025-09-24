@@ -19,22 +19,12 @@ class DentalChartSeeder extends Seeder
         if ($johnExam) {
             $johnExam->update([
                 'tooth_symbols' => [
-                    // Upper permanent teeth - fewer markers for cleaner look
-                    '18' => ['X'], // Decayed wisdom tooth
-                    '16' => ['D'], // Decayed molar
-                    '11' => ['X'], // Decayed central incisor
-                    '24' => ['RF'], // Root fragment premolar
-                    '28' => ['M'], // Missing wisdom tooth
+                    // Only 1-2 permanent teeth with issues
+                    '16' => ['X'], // Decayed molar
+                    '46' => ['F'], // Filled molar
                     
-                    // Lower permanent teeth - fewer markers
-                    '48' => ['M'], // Missing wisdom tooth
-                    '46' => ['X'], // Decayed molar
-                    '31' => ['D'], // Decayed central incisor
-                    '37' => ['X'], // Decayed molar
-                    '38' => ['M'], // Missing wisdom tooth
-                    
-                    // Temporary teeth (baby teeth) for Grade 6
-                    '75' => ['D'], // Decayed temporary molar
+                    // 1 temporary tooth with issue
+                    '75' => ['X'], // Decayed temporary molar (using same symbol as permanent)
                 ]
             ]);
             echo "Updated dental chart for John Smith - Grade 6\n";
@@ -62,22 +52,11 @@ class DentalChartSeeder extends Seeder
         if ($sarahExam) {
             $sarahExam->update([
                 'tooth_symbols' => [
-                    // Upper permanent teeth - cleaner pattern
-                    '17' => ['F2'], // Treatment molar
-                    '16' => ['D'], // Decayed molar
-                    '12' => ['X'], // Decayed incisor
-                    '25' => ['D'], // Decayed premolar
-                    '28' => ['M'], // Missing wisdom tooth
+                    // Only 1 permanent tooth with multiple issues
+                    '12' => ['X', 'F'], // Decayed and filled incisor (2 conditions)
                     
-                    // Lower permanent teeth - cleaner pattern
-                    '48' => ['M'], // Missing wisdom tooth
-                    '47' => ['X'], // Decayed molar
-                    '32' => ['D'], // Decayed incisor
-                    '36' => ['F2'], // Treatment molar
-                    '38' => ['M'], // Missing wisdom tooth
-                    
-                    // Temporary teeth
-                    '74' => ['D'], // Decayed temporary molar
+                    // 1 temporary tooth with issue  
+                    '64' => ['X'], // Decayed temporary molar
                 ]
             ]);
             echo "Updated dental chart for Sarah Johnson - Grade 6\n";

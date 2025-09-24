@@ -56,6 +56,11 @@
                             </div>
                             <div v-else class="space-y-4">
                                 <div v-for="incident in incidents" :key="incident.id" class="border rounded-lg p-4 bg-gray-50">
+                                    <!-- Timer Status Display -->
+                                    <div v-if="incident.timer_display" class="mb-4 p-3 rounded-lg" :class="getTimerAlertClass(incident.timer_display)">
+                                        <strong>Timer:</strong> {{ incident.timer_display.display }}
+                                    </div>
+                                    
                                     <div class="grid grid-cols-2 gap-4 text-sm">
                                         <div>
                                             <span class="font-medium">Date:</span>
@@ -141,6 +146,23 @@ const getStatusSeverity = (status) => {
         case 'closed': return 'secondary'
         default: return 'info'
     }
+}
+
+const getTimerStatusLabel = (timerStatus) => {
+    switch (timerStatus) {
+        case 'not_started': return 'Not Started'
+        case 'active': return 'Active'
+        case 'paused': return 'Paused'
+        case 'completed': return 'Completed'
+        case 'expired': return 'Expired'
+        default: return 'Not Started'
+    }
+}
+
+const getTimerAlertClass = (timerDisplay) => {
+    if (timerDisplay?.status === 'expired') return 'bg-red-100 text-red-800';
+    if (timerDisplay?.status === 'active') return 'bg-yellow-100 text-yellow-800';
+    return 'bg-gray-100 text-gray-800';
 }
 </script>
 

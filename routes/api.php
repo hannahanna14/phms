@@ -23,4 +23,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/students/search', [HealthReportController::class, 'searchStudents']);
     Route::post('/health-report/generate', [HealthReportController::class, 'generate']);
     Route::post('/health-report/export-pdf', [HealthReportController::class, 'exportPdf']);
+    
+    // Incident API Routes
+    Route::get('/incidents/student/{studentId}', [StudentController::class, 'getIncidentsByStudent']);
+    Route::put('/incidents/{id}/timer-status', [StudentController::class, 'updateTimerStatus']);
 });

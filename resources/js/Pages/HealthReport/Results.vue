@@ -365,12 +365,37 @@ const goBack = () => {
 
 const printReport = async () => {
     try {
-        // Get CSRF token from Inertia
-        const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
+        // Function to get fresh CSRF token
+        const getFreshCSRFToken = async () => {
+            try {
+                const response = await window.axios.get('/');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(response.data, 'text/html');
+                const token = doc.querySelector('meta[name="csrf-token"]')?.content;
+                if (token) {
+                    // Update the current page's CSRF token
+                    const currentMeta = document.head.querySelector('meta[name="csrf-token"]');
+                    if (currentMeta) {
+                        currentMeta.content = token;
+                    }
+                    return token;
+                }
+            } catch (error) {
+                console.error('Failed to refresh CSRF token:', error);
+            }
+            return null;
+        };
+
+        // Get CSRF token from multiple sources
+        let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
 
         if (!csrfToken) {
-            alert('CSRF token not found. Please refresh the page and try again.');
-            return;
+            // Try to get a fresh token
+            csrfToken = await getFreshCSRFToken();
+            if (!csrfToken) {
+                alert('Unable to get CSRF token. Please refresh the page and try again.');
+                return;
+            }
         }
 
         // Prepare form data
@@ -417,14 +442,36 @@ const printReport = async () => {
             });
         }
 
-        // Get data from server for browser-based PDF generation
-        const response = await window.axios.post('/health-report/export-pdf', formData, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
+        // Function to make the request with retry logic
+        const makeRequest = async (token) => {
+            return await window.axios.post('/health-report/export-pdf', formData, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                }
+            });
+        };
+
+        // Try the request with current token
+        let response;
+        try {
+            response = await makeRequest(csrfToken);
+        } catch (error) {
+            // If we get a 419 error (CSRF token mismatch), try to refresh token and retry
+            if (error.response && error.response.status === 419) {
+                console.log('CSRF token expired, attempting to refresh...');
+                const freshToken = await getFreshCSRFToken();
+                if (freshToken) {
+                    console.log('Got fresh CSRF token, retrying request...');
+                    response = await makeRequest(freshToken);
+                } else {
+                    throw new Error('Unable to refresh CSRF token');
+                }
+            } else {
+                throw error;
             }
-        });
+        }
 
         if (response.data.success) {
             // Use browser's print functionality to generate PDF
@@ -435,7 +482,16 @@ const printReport = async () => {
 
     } catch (error) {
         console.error('PDF export failed:', error);
-        alert('Failed to generate PDF. Please try again.');
+        
+        if (error.response && error.response.status === 419) {
+            alert('Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
+        } else if (error.response && error.response.status === 422) {
+            alert('Validation error. Please check your filters and try again.');
+        } else if (error.response && error.response.data && error.response.data.message) {
+            alert('Error: ' + error.response.data.message);
+        } else {
+            alert('Failed to generate PDF. Please try again.');
+        }
     }
 };
 

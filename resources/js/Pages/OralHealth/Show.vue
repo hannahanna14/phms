@@ -405,9 +405,13 @@ const createPermanentTeethDisplay = (upperContainer, lowerContainer) => {
         tooth.setAttribute('data-number', number);
         tooth.setAttribute('data-type', upperTypes[index]);
         
-        const curve = Math.sin((index / (upperNumbers.length - 1)) * Math.PI) * 8;
-        tooth.style.left = `${index * 35 + 20}px`;
-        tooth.style.top = `${15 - curve}px`;
+        // Better spacing calculation - center the teeth properly
+        const spacing = 35; // Further reduced spacing to fit all teeth
+        const startOffset = 85; // Increased for better centering
+        const curve = Math.sin((index / (upperNumbers.length - 1)) * Math.PI) * 12; // Increased curve
+        
+        tooth.style.left = `${index * spacing + startOffset}px`;
+        tooth.style.top = `${20 - curve}px`; // Adjusted base position
         
         upperContainer.appendChild(tooth);
     });
@@ -423,9 +427,13 @@ const createPermanentTeethDisplay = (upperContainer, lowerContainer) => {
         tooth.setAttribute('data-number', number);
         tooth.setAttribute('data-type', lowerTypes[index]);
         
-        const curve = Math.sin((index / (lowerNumbers.length - 1)) * Math.PI) * 8;
-        tooth.style.left = `${index * 35 + 20}px`;
-        tooth.style.top = `${15 + curve}px`;
+        // Better spacing calculation - same as upper teeth
+        const spacing = 35;
+        const startOffset = 85;
+        const curve = Math.sin((index / (lowerNumbers.length - 1)) * Math.PI) * 12;
+        
+        tooth.style.left = `${index * spacing + startOffset}px`;
+        tooth.style.top = `${20 + curve}px`; // Adjusted base position
         
         lowerContainer.appendChild(tooth);
     });
@@ -444,9 +452,13 @@ const createTemporaryTeethDisplay = (upperContainer, lowerContainer) => {
         tooth.setAttribute('data-type', upperTypes[index]);
         tooth.setAttribute('data-category', 'Temporary');
         
-        const curve = Math.sin((index / (upperNumbers.length - 1)) * Math.PI) * 6;
-        tooth.style.left = `${index * 35 + 120}px`;
-        tooth.style.top = `${15 - curve}px`;
+        // Better spacing for temporary teeth - centered positioning
+        const spacing = 42; // Proper spacing for temporary teeth
+        const startOffset = 140; // Better centering for temporary teeth
+        const curve = Math.sin((index / (upperNumbers.length - 1)) * Math.PI) * 8;
+        
+        tooth.style.left = `${index * spacing + startOffset}px`;
+        tooth.style.top = `${20 - curve}px`;
         
         upperContainer.appendChild(tooth);
     });
@@ -463,9 +475,13 @@ const createTemporaryTeethDisplay = (upperContainer, lowerContainer) => {
         tooth.setAttribute('data-type', lowerTypes[index]);
         tooth.setAttribute('data-category', 'Temporary');
         
-        const curve = Math.sin((index / (lowerNumbers.length - 1)) * Math.PI) * 6;
-        tooth.style.left = `${index * 35 + 120}px`;
-        tooth.style.top = `${15 + curve}px`;
+        // Better spacing for temporary teeth - same as upper
+        const spacing = 42;
+        const startOffset = 140;
+        const curve = Math.sin((index / (lowerNumbers.length - 1)) * Math.PI) * 8;
+        
+        tooth.style.left = `${index * spacing + startOffset}px`;
+        tooth.style.top = `${20 + curve}px`;
         
         lowerContainer.appendChild(tooth);
     });
@@ -491,8 +507,18 @@ const addSymbolsToTeeth = () => {
             // Add symbol badge
             const symbolBadge = document.createElement('div');
             symbolBadge.className = 'tooth-symbol';
-            symbolBadge.textContent = symbols[0]; // Show the actual symbol text, not the length
-            symbolBadge.title = symbols.join(', ');
+            
+            if (symbols.length === 1) {
+                // Single condition - show the original symbol
+                symbolBadge.textContent = symbols[0];
+            } else if (symbols.length > 1) {
+                // Multiple conditions - show count as number
+                symbolBadge.textContent = symbols.length;
+                symbolBadge.classList.add('multiple-conditions');
+            }
+            
+            // Store original symbols for tooltip
+            symbolBadge.setAttribute('data-symbols', symbols.join(', '));
             tooth.appendChild(symbolBadge);
         }
     });
@@ -526,6 +552,20 @@ const addTooltipFunctionality = () => {
             
             const symbols = currentExam.value?.tooth_symbols?.[number] || [];
             
+            // Symbol descriptions
+            const symbolDescriptions = {
+                'X': 'Decayed',
+                'D': 'Decayed',
+                'F': 'Filled',
+                'F2': 'Treatment/Filled',
+                'M': 'Missing',
+                'RF': 'Root Fragment',
+                'E': 'Extraction needed',
+                'C': 'Caries',
+                'R': 'Root canal',
+                'I': 'Impacted'
+            };
+            
             // Remove any existing tooltips
             const existingTooltips = document.querySelectorAll('.tooltip');
             existingTooltips.forEach(t => t.remove());
@@ -547,11 +587,15 @@ const addTooltipFunctionality = () => {
                 opacity: 1 !important;
             `;
             
+            const conditionsText = symbols.length > 0 
+                ? symbols.map(symbol => symbolDescriptions[symbol] || symbol).join(', ')
+                : 'No conditions';
+            
             tooltip.innerHTML = `
                 <div style="text-align: center;">
                     <div style="font-weight: bold; margin-bottom: 2px;">${category} Tooth ${number}</div>
                     <div style="font-size: 11px; color: #ccc; margin-bottom: 2px;">${type}</div>
-                    <div style="font-size: 11px; color: #ff6b9d; font-weight: bold;">${symbols.length > 0 ? symbols.join(', ') : 'No symbols'}</div>
+                    <div style="font-size: 11px; color: #ff6b9d; font-weight: bold;">${conditionsText}</div>
                 </div>
             `;
             
@@ -650,11 +694,11 @@ const formatDate = (date) => {
 
 /* Dental Chart Display Styles */
 .dental-chart-container {
-    background: #f8f9fa;
+    background: transparent;
     border-radius: 12px;
     padding: 20px;
     margin: 0 auto;
-    max-width: 800px;
+    max-width: 1000px;
 }
 
 .dental-chart.compact {
@@ -673,12 +717,13 @@ const formatDate = (date) => {
 
 .teeth-row.compact {
     position: relative;
-    width: 600px;
-    height: 60px;
+    width: 720px;
+    height: 80px;
 }
 
 .teeth-row.primary.compact {
-    width: 580px;
+    width: 680px;
+    height: 80px;
 }
 
 .arch-label {
@@ -693,16 +738,17 @@ const formatDate = (date) => {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
-    border: 2px solid #ccc;
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    border: 2px solid #d1d5db;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 10px;
     font-weight: bold;
-    color: #333;
+    color: #374151;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .tooth:hover {
@@ -712,15 +758,16 @@ const formatDate = (date) => {
 }
 
 .primary-tooth {
-    background: linear-gradient(145deg, #ff9a9e, #fecfef);
-    border: 2px solid #ff6b9d;
-    width: 28px;
-    height: 28px;
+    background: linear-gradient(145deg, #fef3c7, #fde68a);
+    border: 2px solid #f59e0b;
+    width: 30px;
+    height: 30px;
     font-size: 9px;
+    color: #92400e;
 }
 
 .primary-tooth:hover {
-    box-shadow: 0 2px 8px rgba(255, 107, 157, 0.4);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
 .tooth.has-symbol {
@@ -729,12 +776,12 @@ const formatDate = (date) => {
 
 .tooth-symbol {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ff4757;
+    top: -6px;
+    right: -6px;
+    background: #3b82f6;
     color: white;
-    border-radius: 4px;
-    min-width: 20px;
+    border-radius: 50%;
+    min-width: 16px;
     height: 16px;
     display: flex;
     align-items: center;
@@ -743,15 +790,72 @@ const formatDate = (date) => {
     font-weight: bold;
     z-index: 5;
     pointer-events: none;
-    padding: 0 2px;
-    border: 1px solid white;
+    border: 2px solid white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.tooth-symbol.multiple-conditions {
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Legend Styles */
+.dental-legend {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.legend-symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.legend-symbol.multiple {
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+.legend-symbol-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: bold;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    padding: 0 2px;
 }
 
 .chart-selector {
     display: flex;
     gap: 8px;
-    background: #e9ecef;
+    background: transparent;
     padding: 4px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -759,8 +863,8 @@ const formatDate = (date) => {
 
 .chart-btn {
     padding: 8px 16px;
-    border: none;
-    background: transparent;
+    border: 2px solid #e2e8f0;
+    background: white;
     color: #666;
     border-radius: 6px;
     cursor: pointer;
@@ -770,13 +874,15 @@ const formatDate = (date) => {
 }
 
 .chart-btn:hover {
-    background: rgba(255, 255, 255, 0.5);
+    border-color: #3b82f6;
+    color: #3b82f6;
 }
 
 .chart-btn.active {
-    background: white;
-    color: #667eea;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 /* Tooltip Styles */

@@ -163,6 +163,27 @@ const goBack = () => {
 
 const printReport = async () => {
     try {
+        // Function to get fresh CSRF token
+        const getFreshCSRFToken = async () => {
+            try {
+                const response = await window.axios.get('/');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(response.data, 'text/html');
+                const token = doc.querySelector('meta[name="csrf-token"]')?.content;
+                if (token) {
+                    // Update the current page's CSRF token
+                    const currentMeta = document.head.querySelector('meta[name="csrf-token"]');
+                    if (currentMeta) {
+                        currentMeta.content = token;
+                    }
+                    return token;
+                }
+            } catch (error) {
+                console.error('Failed to refresh CSRF token:', error);
+            }
+            return null;
+        };
+
         // Get CSRF token from multiple sources
         let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || 
                        document.querySelector('meta[name="csrf-token"]')?.content ||
@@ -174,8 +195,12 @@ const printReport = async () => {
         }
 
         if (!csrfToken) {
-            alert('CSRF token not found. Please refresh the page and try again.');
-            return;
+            // Try to get a fresh token
+            csrfToken = await getFreshCSRFToken();
+            if (!csrfToken) {
+                alert('Unable to get CSRF token. Please refresh the page and try again.');
+                return;
+            }
         }
 
         // Prepare form data
@@ -255,16 +280,36 @@ const printReport = async () => {
             });
         }
 
-        // Set CSRF token in axios defaults
-        window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-        
-        // Get data from server for browser-based PDF generation
-        const response = await window.axios.post('/oral-health-report/export-pdf', formData, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'multipart/form-data'
+        // Function to make the request with retry logic
+        const makeRequest = async (token) => {
+            return await window.axios.post('/oral-health-report/export-pdf', formData, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': token,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+        };
+
+        // Try the request with current token
+        let response;
+        try {
+            response = await makeRequest(csrfToken);
+        } catch (error) {
+            // If we get a 419 error (CSRF token mismatch), try to refresh token and retry
+            if (error.response && error.response.status === 419) {
+                console.log('CSRF token expired, attempting to refresh...');
+                const freshToken = await getFreshCSRFToken();
+                if (freshToken) {
+                    console.log('Got fresh CSRF token, retrying request...');
+                    response = await makeRequest(freshToken);
+                } else {
+                    throw new Error('Unable to refresh CSRF token');
+                }
+            } else {
+                throw error;
             }
-        });
+        }
 
         if (response.data.success) {
             // Debug logging
@@ -282,7 +327,7 @@ const printReport = async () => {
         console.error('PDF export failed:', error);
         
         if (error.response && error.response.status === 419) {
-            alert('Session expired. Please refresh the page and try again.');
+            alert('Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
         } else if (error.response && error.response.status === 422) {
             alert('Validation error. Please check your filters and try again.');
         } else if (error.response && error.response.data && error.response.data.message) {
