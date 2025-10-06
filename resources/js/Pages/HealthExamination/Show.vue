@@ -329,20 +329,44 @@ const viewTreatment = (treatment) => {
                                 <h3 class="text-lg font-semibold text-center mb-4">Physical Examination</h3>
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
-                                        <span>Skin/Scalp:</span>
+                                        <span>Skin:</span>
                                         <span class="font-medium">{{ currentRecord.skin || 'Not examined' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span>Eyes/Ears/Nose:</span>
+                                        <span>Scalp:</span>
+                                        <span class="font-medium">{{ currentRecord.scalp || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Eyes:</span>
                                         <span class="font-medium">{{ currentRecord.eye || 'Not examined' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span>Mouth/Throat/Neck:</span>
+                                        <span>Ears:</span>
+                                        <span class="font-medium">{{ currentRecord.ear || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Nose:</span>
+                                        <span class="font-medium">{{ currentRecord.nose || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Mouth:</span>
                                         <span class="font-medium">{{ currentRecord.mouth || 'Not examined' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span>Lungs/Heart:</span>
-                                        <span class="font-medium">{{ currentRecord.lungs_heart || 'Not examined' }}</span>
+                                        <span>Throat:</span>
+                                        <span class="font-medium">{{ currentRecord.throat || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Neck:</span>
+                                        <span class="font-medium">{{ currentRecord.neck || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Lungs:</span>
+                                        <span class="font-medium">{{ currentRecord.lungs || currentRecord.lungs_heart || 'Not examined' }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Heart:</span>
+                                        <span class="font-medium">{{ currentRecord.heart || currentRecord.lungs_heart || 'Not examined' }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Abdomen:</span>

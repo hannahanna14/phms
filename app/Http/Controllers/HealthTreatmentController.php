@@ -174,4 +174,62 @@ class HealthTreatmentController extends Controller
             'is_expired' => $healthTreatment->isExpired()
         ]);
     }
+
+    /**
+     * Start the treatment timer
+     */
+    public function startTimer(HealthTreatment $healthTreatment)
+    {
+        $healthTreatment->startTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer started successfully',
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'remaining_minutes' => $healthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Pause the treatment timer
+     */
+    public function pauseTimer(HealthTreatment $healthTreatment)
+    {
+        $healthTreatment->pauseTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer paused successfully',
+            'timer_status' => $healthTreatment->getTimerStatus()
+        ]);
+    }
+
+    /**
+     * Resume the treatment timer
+     */
+    public function resumeTimer(HealthTreatment $healthTreatment)
+    {
+        $healthTreatment->resumeTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer resumed successfully',
+            'timer_status' => $healthTreatment->getTimerStatus(),
+            'remaining_minutes' => $healthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Complete the treatment timer
+     */
+    public function completeTimer(HealthTreatment $healthTreatment)
+    {
+        $healthTreatment->completeTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer completed successfully',
+            'timer_status' => $healthTreatment->getTimerStatus()
+        ]);
+    }
 }

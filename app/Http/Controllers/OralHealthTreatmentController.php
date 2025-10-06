@@ -170,4 +170,62 @@ class OralHealthTreatmentController extends Controller
             'remaining_minutes' => $oralHealthTreatment->getRemainingMinutes()
         ]);
     }
+
+    /**
+     * Start the treatment timer
+     */
+    public function startTimer(OralHealthTreatment $oralHealthTreatment)
+    {
+        $oralHealthTreatment->startTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer started successfully',
+            'timer_status' => $oralHealthTreatment->getTimerStatus(),
+            'remaining_minutes' => $oralHealthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Pause the treatment timer
+     */
+    public function pauseTimer(OralHealthTreatment $oralHealthTreatment)
+    {
+        $oralHealthTreatment->pauseTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer paused successfully',
+            'timer_status' => $oralHealthTreatment->getTimerStatus()
+        ]);
+    }
+
+    /**
+     * Resume the treatment timer
+     */
+    public function resumeTimer(OralHealthTreatment $oralHealthTreatment)
+    {
+        $oralHealthTreatment->resumeTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer resumed successfully',
+            'timer_status' => $oralHealthTreatment->getTimerStatus(),
+            'remaining_minutes' => $oralHealthTreatment->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Complete the treatment timer
+     */
+    public function completeTimer(OralHealthTreatment $oralHealthTreatment)
+    {
+        $oralHealthTreatment->completeTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer completed successfully',
+            'timer_status' => $oralHealthTreatment->getTimerStatus()
+        ]);
+    }
 }

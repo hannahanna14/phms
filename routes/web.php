@@ -26,6 +26,7 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
 Route::middleware(['auth'])->group(function () {
     //Dashboard
     Route::get('/', [StudentController::class, 'dashboard'])->name('dashboard');
+    Route::get('/api/dashboard-data', [StudentController::class, 'dashboard'])->name('dashboard.api');
 
     // Logout Route
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -121,8 +122,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
     Route::get('/users/{user}/show', [UserController::class, 'show'])->name('users.show');
+    
+    // Schedule Calendar Routes
+    Route::resource('schedule-calendar', App\Http\Controllers\ScheduleController::class);
+    Route::get('/api/schedule/events', [App\Http\Controllers\ScheduleController::class, 'getEvents'])->name('schedule.events');
+    
+    // Chat Routes (Modern Messaging)
+    Route::get('/chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/start', [App\Http\Controllers\ChatController::class, 'startConversation'])->name('chat.start');
+    Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/chat/{conversation}/messages', [App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/{conversation}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
 });

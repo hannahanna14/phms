@@ -16,25 +16,55 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a test user with all required fields
+        // Create Admin User
         User::create([
-            'username' => 'testuser',
-            'full_name' => 'Tnurse',
-            'email' => 'test@example.com', // Added email field
-            'password' => Hash::make('password'),
-            'role' => 'nurse',
-            'email_verified_at' => now() // Optional, but can help
-        ]);
-
-        // Create teacher user
-        User::create([
-            'username' => 'teacher',
-            'full_name' => 'Teacher User',
-            'email' => 'teacher@example.com',
-            'password' => Hash::make('teacher'),
-            'role' => 'teacher',
+            'username' => 'admin',
+            'full_name' => 'Administrator',
+            'email' => 'admin@phms.edu.ph',
+            'password' => Hash::make('admin123'),
+            'role' => 'admin',
             'email_verified_at' => now()
         ]);
+
+        // Create Teachers (7 teachers for each grade level)
+        $teachers = [
+            ['name' => 'Maria Santos Rodriguez', 'grade' => 'Kinder 2'],
+            ['name' => 'Jose Miguel Dela Cruz', 'grade' => 'Grade 1'],
+            ['name' => 'Ana Luz Villanueva', 'grade' => 'Grade 2'],
+            ['name' => 'Roberto Carlos Mendoza', 'grade' => 'Grade 3'],
+            ['name' => 'Carmen Rosa Fernandez', 'grade' => 'Grade 4'],
+            ['name' => 'Eduardo Ramos Pascual', 'grade' => 'Grade 5'],
+            ['name' => 'Luz Marina Gonzales', 'grade' => 'Grade 6'],
+        ];
+
+        foreach ($teachers as $teacher) {
+            User::create([
+                'username' => strtolower(str_replace(' ', '', explode(' ', $teacher['name'])[0] . explode(' ', $teacher['name'])[1])),
+                'full_name' => $teacher['name'],
+                'email' => strtolower(str_replace(' ', '.', $teacher['name'])) . '@phms.edu.ph',
+                'password' => Hash::make('teacher123'),
+                'role' => 'teacher',
+                'email_verified_at' => now()
+            ]);
+        }
+
+        // Create Nurses (3 nurses)
+        $nurses = [
+            ['name' => 'Liza Dela Cruz', 'contact' => '09171234567'],
+            ['name' => 'Ramon Santos', 'contact' => '09182345678'],
+            ['name' => 'Grace Mendoza', 'contact' => '09193456789'],
+        ];
+
+        foreach ($nurses as $nurse) {
+            User::create([
+                'username' => strtolower(str_replace(' ', '', $nurse['name'])),
+                'full_name' => 'Nurse ' . $nurse['name'],
+                'email' => strtolower(str_replace(' ', '.', $nurse['name'])) . '@phms.edu.ph',
+                'password' => Hash::make('nurse123'),
+                'role' => 'nurse',
+                'email_verified_at' => now()
+            ]);
+        }
 
         $this->call([
             StudentSeeder::class,

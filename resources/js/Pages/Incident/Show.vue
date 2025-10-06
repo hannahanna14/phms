@@ -70,7 +70,49 @@
                                 <div v-for="incident in incidents" :key="incident.id" class="border rounded-lg p-4 bg-gray-50">
                                     <!-- Timer Status Display -->
                                     <div v-if="incident.timer_display" class="mb-4 p-3 rounded-lg" :class="getTimerAlertClass(incident.timer_display)">
-                                        <strong>Timer:</strong> {{ incident.timer_display.display }}
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <strong>Timer:</strong> {{ incident.timer_display.display }}
+                                                <div v-if="incident.remaining_minutes > 0" class="text-sm text-gray-600 mt-1">
+                                                    {{ incident.remaining_minutes }} minutes remaining
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Timer Controls -->
+                                            <div class="flex gap-2" v-if="incident.timer_display.status !== 'expired'">
+                                                <Button 
+                                                    v-if="incident.timer_display.status === 'not_started'"
+                                                    label="Start Timer" 
+                                                    icon="pi pi-play" 
+                                                    size="small"
+                                                    @click="startIncidentTimer(incident)"
+                                                />
+                                                <Button 
+                                                    v-if="incident.timer_display.status === 'active'"
+                                                    label="Pause" 
+                                                    icon="pi pi-pause" 
+                                                    size="small"
+                                                    severity="warning"
+                                                    @click="pauseIncidentTimer(incident)"
+                                                />
+                                                <Button 
+                                                    v-if="incident.timer_display.status === 'paused'"
+                                                    label="Resume" 
+                                                    icon="pi pi-play" 
+                                                    size="small"
+                                                    severity="success"
+                                                    @click="resumeIncidentTimer(incident)"
+                                                />
+                                                <Button 
+                                                    v-if="incident.timer_display.status === 'active' || incident.timer_display.status === 'paused'"
+                                                    label="Complete" 
+                                                    icon="pi pi-check" 
+                                                    size="small"
+                                                    severity="success"
+                                                    @click="completeIncidentTimer(incident)"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -109,11 +151,13 @@
 
 <script setup>
 import { Head, Link, usePage } from '@inertiajs/vue3'
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import axios from 'axios'
+import { useTimerNotifications } from '@/Utils/timerMixin.js'
+import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
 
 const { student, userRole, currentGrade } = usePage().props
 
@@ -229,6 +273,125 @@ const getTimerAlertClass = (timerDisplay) => {
     if (timerDisplay?.status === 'active') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
 }
+
+// Initialize timer notifications for incidents
+const { startTimerMonitoring, stopTimerMonitoring } = useTimerNotifications('incident')
+const activeTimers = ref(new Map()) // Track active timers
+
+// Timer control methods
+const startIncidentTimer = async (incident) => {
+    try {
+        const response = await fetch(`/api/incidents/${incident.id}/start-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            // Start monitoring this incident timer
+            startTimerMonitoring(student, incident, 120) // 2 hours = 120 minutes
+            activeTimers.value.set(incident.id, true)
+            
+            // Refresh incidents to show updated timer status
+            await fetchIncidents()
+        }
+    } catch (error) {
+        console.error('Error starting incident timer:', error);
+    }
+};
+
+const pauseIncidentTimer = async (incident) => {
+    try {
+        const response = await fetch(`/api/incidents/${incident.id}/pause-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            // Stop monitoring when paused
+            if (activeTimers.value.has(incident.id)) {
+                stopTimerMonitoring()
+                activeTimers.value.delete(incident.id)
+            }
+            await fetchIncidents()
+        }
+    } catch (error) {
+        console.error('Error pausing incident timer:', error);
+    }
+};
+
+const resumeIncidentTimer = async (incident) => {
+    try {
+        const response = await fetch(`/api/incidents/${incident.id}/resume-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            // Resume monitoring
+            startTimerMonitoring(student, incident, incident.remaining_minutes || 120)
+            activeTimers.value.set(incident.id, true)
+            await fetchIncidents()
+        }
+    } catch (error) {
+        console.error('Error resuming incident timer:', error);
+    }
+};
+
+const completeIncidentTimer = async (incident) => {
+    try {
+        const response = await fetch(`/api/incidents/${incident.id}/complete-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            // Trigger completion notification
+            const integration = integrateIncidentNotifications()
+            integration.handleTimerStatusUpdate('completed', student, incident)
+            
+            // Stop monitoring
+            if (activeTimers.value.has(incident.id)) {
+                stopTimerMonitoring()
+                activeTimers.value.delete(incident.id)
+            }
+            await fetchIncidents()
+        }
+    } catch (error) {
+        console.error('Error completing incident timer:', error);
+    }
+};
+
+// Start monitoring active timers when component mounts
+onMounted(() => {
+    fetchIncidents().then(() => {
+        // Check for active timers and start monitoring
+        incidents.value.forEach(incident => {
+            if (incident.timer_display?.status === 'active' && incident.remaining_minutes > 0) {
+                console.log('Starting timer monitoring for incident:', incident.complaint);
+                startTimerMonitoring(student, incident, incident.remaining_minutes)
+                activeTimers.value.set(incident.id, true)
+            }
+        })
+    })
+});
+
+// Stop all timer monitoring when component unmounts
+onUnmounted(() => {
+    stopTimerMonitoring()
+    activeTimers.value.clear()
+});
 </script>
 
 <style scoped>

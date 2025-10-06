@@ -226,7 +226,32 @@
 
                 <!-- Health Examination Fields -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Health Examination Fields</label>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-sm font-medium text-gray-700">Health Examination Fields</label>
+                        <div class="flex items-center gap-3">
+                            <div class="text-sm text-gray-600">
+                                Selected: {{ totalFieldCount }} fields
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    label="Clear All"
+                                    size="small"
+                                    outlined
+                                    severity="secondary"
+                                    @click="clearAllHealthFields"
+                                    class="text-xs"
+                                />
+                                <Button
+                                    label="Essential"
+                                    size="small"
+                                    outlined
+                                    severity="info"
+                                    @click="selectEssentialFields"
+                                    class="text-xs"
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Button
                             v-for="field in healthExamFields"
@@ -243,6 +268,43 @@
                                     : '!bg-white !border-gray-300 !text-gray-700 hover:!bg-gray-50'
                             ]"
                         />
+                    </div>
+                    
+                    <!-- Field Count Recommendations and Warnings -->
+                    <div class="mt-4 space-y-2">
+                        <!-- Optimal Range -->
+                        <div v-if="totalFieldCount >= 8 && totalFieldCount <= 12" class="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-check-circle"></i>
+                            <span><strong>Optimal:</strong> {{ totalFieldCount }} fields - Perfect for PDF printing with excellent readability</span>
+                        </div>
+                        
+                        <!-- Good Range -->
+                        <div v-else-if="totalFieldCount >= 13 && totalFieldCount <= 16" class="flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-exclamation-triangle"></i>
+                            <span><strong>Caution:</strong> {{ totalFieldCount }} fields - Text will be smaller but still readable</span>
+                        </div>
+                        
+                        <!-- Too Many Fields -->
+                        <div v-else-if="totalFieldCount > 16" class="flex items-center gap-2 text-sm text-red-700 bg-red-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-times-circle"></i>
+                            <span><strong>Warning:</strong> {{ totalFieldCount }} fields - May cause layout issues and poor readability in PDF</span>
+                        </div>
+                        
+                        <!-- Too Few Fields -->
+                        <div v-else-if="totalFieldCount > 0 && totalFieldCount < 8" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-info-circle"></i>
+                            <span><strong>Tip:</strong> {{ totalFieldCount }} fields selected - You can add more fields for a comprehensive report</span>
+                        </div>
+                        
+                        <!-- Recommendations -->
+                        <div v-if="totalFieldCount === 0" class="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
+                            <strong>Recommendations:</strong>
+                            <ul class="mt-1 ml-4 list-disc text-xs">
+                                <li><strong>Essential (8-12 fields):</strong> Height, Weight, BMI, Vision, Temperature, Heart Rate</li>
+                                <li><strong>Physical (9-11 fields):</strong> Add Auditory Screening, Deformities</li>
+                                <li><strong>Medical (8-10 fields):</strong> Iron Supplementation, Deworming, SBFP, 4Ps</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -433,6 +495,14 @@ const selectedHealthFields = computed({
     set: (value) => formData.value.selectedHealthFields = value
 });
 
+// Calculate total field count for recommendations
+const totalFieldCount = computed(() => {
+    // Student fields that are always included: name, lrn, grade_level, section, gender, age
+    const studentFieldCount = 6;
+    const healthFieldCount = selectedHealthFields.value.length;
+    return studentFieldCount + healthFieldCount;
+});
+
 const includeHealthExam = computed({
     get: () => formData.value.includeHealthExam,
     set: (value) => formData.value.includeHealthExam = value
@@ -454,30 +524,36 @@ const includeIncidents = computed({
 });
 
 // All student fields will be included by default
-const selectedFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age', 'birthdate'];
+const selectedFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
 
 // Health examination fields
 const healthExamFields = [
+    { label: 'Temperature', value: 'temperature' },
+    { label: 'Heart Rate', value: 'heart_rate' },
     { label: 'Height', value: 'height' },
     { label: 'Weight', value: 'weight' },
-    { label: 'BMI', value: 'bmi' },
-    { label: 'Temperature', value: 'temperature' },
-    { label: 'Blood Pressure', value: 'blood_pressure' },
-    { label: 'Heart Rate', value: 'heart_rate' },
-    { label: 'Vision', value: 'vision' },
-    { label: 'Hearing', value: 'hearing' },
+    { label: 'Nutritional Status (BMI)', value: 'nutritional_status_bmi' },
+    { label: 'Nutritional Status (Height)', value: 'nutritional_status_height' },
+    { label: 'Vision Screening', value: 'vision_screening' },
+    { label: 'Auditory Screening', value: 'auditory_screening' },
     { label: 'Skin', value: 'skin' },
     { label: 'Scalp', value: 'scalp' },
-    { label: 'Eyes', value: 'eyes' },
-    { label: 'Ears', value: 'ears' },
+    { label: 'Eye', value: 'eye' },
+    { label: 'Ear', value: 'ear' },
     { label: 'Nose', value: 'nose' },
     { label: 'Mouth', value: 'mouth' },
     { label: 'Throat', value: 'throat' },
     { label: 'Neck', value: 'neck' },
-    { label: 'Lungs', value: 'lungs' },
-    { label: 'Heart', value: 'heart' },
+    { label: 'Lungs/Heart', value: 'lungs_heart' },
     { label: 'Abdomen', value: 'abdomen' },
-    { label: 'Deformities', value: 'deformities' }
+    { label: 'Deformities', value: 'deformities' },
+    { label: 'Deworming Status', value: 'deworming_status' },
+    { label: 'Iron Supplementation', value: 'iron_supplementation' },
+    { label: 'SBFP Beneficiary', value: 'sbfp_beneficiary' },
+    { label: '4Ps Beneficiary', value: 'four_ps_beneficiary' },
+    { label: 'Immunization', value: 'immunization' },
+    { label: 'Other Specify', value: 'other_specify' },
+    { label: 'Remarks', value: 'remarks' }
 ];
 
 // School year mapping
@@ -504,6 +580,19 @@ const toggleHealthField = (fieldValue) => {
         selectedHealthFields.value.push(fieldValue);
     }
     console.log('Selected fields:', selectedHealthFields.value);
+};
+
+// Clear all health fields
+const clearAllHealthFields = () => {
+    selectedHealthFields.value = [];
+};
+
+// Select essential fields (optimal for PDF)
+const selectEssentialFields = () => {
+    selectedHealthFields.value = [
+        'height', 'weight', 'nutritional_status_bmi', 
+        'vision_screening', 'temperature', 'heart_rate'
+    ];
 };
 
 // Student search functionality

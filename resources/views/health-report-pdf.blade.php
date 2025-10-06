@@ -60,20 +60,56 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            table-layout: fixed;
         }
         .data-table th,
         .data-table td {
             border: 1px solid #000;
-            padding: 6px 3px;
+            padding: 4px 2px;
             text-align: left;
-            font-size: 9px;
+            font-size: 8px;
             word-wrap: break-word;
-            max-width: 60px;
+            overflow: hidden;
+            vertical-align: top;
         }
         .data-table th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: center;
+            font-size: 7px;
+            line-height: 1.1;
+        }
+        
+        /* Specific column widths based on content */
+        .col-name { width: 14%; }  /* Increased from 12% */
+        .col-lrn { width: 10%; }   /* Increased from 8% */
+        .col-grade { width: 5%; }  /* Increased from 4% */
+        .col-section { width: 6%; } /* Increased from 5% */
+        .col-gender { width: 5%; }  /* Increased from 4% */
+        .col-age { width: 4%; }     /* Increased from 3% */
+        .col-health { width: 6%; }  /* Increased from 5% */
+        .col-health-wide { width: 8%; } /* Increased from 7% */
+        .col-health-narrow { width: 5%; } /* Increased from 4% */
+        
+        /* Responsive adjustments for many columns */
+        @media print {
+            .data-table {
+                font-size: 7px;
+            }
+            .data-table th {
+                font-size: 6px;
+                padding: 2px 1px;
+            }
+            .data-table td {
+                padding: 2px 1px;
+            }
+        }
+        
+        /* Text truncation for long content */
+        .col-health-wide,
+        .col-health {
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         .footer {
             margin-top: 30px;
@@ -132,30 +168,44 @@
     <table class="data-table">
         <thead>
             <tr>
-                @if(in_array('name', $fields)) <th>Name</th> @endif
-                @if(in_array('lrn', $fields)) <th>LRN</th> @endif
-                @if(in_array('grade_level', $fields)) <th>Grade</th> @endif
-                @if(in_array('section', $fields)) <th>Section</th> @endif
-                @if(in_array('gender', $fields)) <th>Gender</th> @endif
-                @if(in_array('age', $fields)) <th>Age</th> @endif
-                @if(in_array('birthdate', $fields)) <th>Birthdate</th> @endif
+                @if(in_array('name', $fields)) <th class="col-name">Name</th> @endif
+                @if(in_array('lrn', $fields)) <th class="col-lrn">LRN</th> @endif
+                @if(in_array('grade_level', $fields)) <th class="col-grade">Grade</th> @endif
+                @if(in_array('section', $fields)) <th class="col-section">Section</th> @endif
+                @if(in_array('gender', $fields)) <th class="col-gender">Gender</th> @endif
+                @if(in_array('age', $fields)) <th class="col-age">Age</th> @endif
                 @foreach($health_exam_fields as $field)
-                    <th>{{ ucwords(str_replace('_', ' ', $field)) }}</th>
+                    @php
+                        $columnClass = 'col-health';
+                        if (in_array($field, ['nutritional_status_bmi', 'nutritional_status_height', 'vision_screening', 'auditory_screening'])) {
+                            $columnClass = 'col-health-wide';
+                        } elseif (in_array($field, ['age', 'weight', 'height', 'temperature', 'heart_rate'])) {
+                            $columnClass = 'col-health-narrow';
+                        }
+                    @endphp
+                    <th class="{{ $columnClass }}">{{ ucwords(str_replace('_', ' ', $field)) }}</th>
                 @endforeach
             </tr>
         </thead>
         <tbody>
             @foreach($reportData as $student)
                 <tr>
-                    @if(in_array('name', $fields)) <td>{{ $student['name'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('lrn', $fields)) <td>{{ $student['lrn'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('grade_level', $fields)) <td>{{ $student['grade_level'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('section', $fields)) <td>{{ $student['section'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('gender', $fields)) <td>{{ $student['gender'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('age', $fields)) <td>{{ $student['age'] ?? 'N/A' }}</td> @endif
-                    @if(in_array('birthdate', $fields)) <td>{{ $student['birthdate'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('name', $fields)) <td class="col-name">{{ $student['name'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('lrn', $fields)) <td class="col-lrn">{{ $student['lrn'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('grade_level', $fields)) <td class="col-grade">{{ $student['grade_level'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('section', $fields)) <td class="col-section">{{ $student['section'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('gender', $fields)) <td class="col-gender">{{ $student['gender'] ?? 'N/A' }}</td> @endif
+                    @if(in_array('age', $fields)) <td class="col-age">{{ $student['age'] ?? 'N/A' }}</td> @endif
                     @foreach($health_exam_fields as $field)
-                        <td>{{ $student['health_exam'][$field] ?? 'N/A' }}</td>
+                        @php
+                            $columnClass = 'col-health';
+                            if (in_array($field, ['nutritional_status_bmi', 'nutritional_status_height', 'vision_screening', 'auditory_screening'])) {
+                                $columnClass = 'col-health-wide';
+                            } elseif (in_array($field, ['age', 'weight', 'height', 'temperature', 'heart_rate'])) {
+                                $columnClass = 'col-health-narrow';
+                            }
+                        @endphp
+                        <td class="{{ $columnClass }}">{{ $student['health_exam'][$field] ?? 'N/A' }}</td>
                     @endforeach
                 </tr>
             @endforeach

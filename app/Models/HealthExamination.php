@@ -29,6 +29,8 @@ class HealthExamination extends Model
         'neck',
         'throat',
         'lungs_heart',
+        'lungs',
+        'heart',
         'abdomen',
         'deformities',
         'deworming_status',

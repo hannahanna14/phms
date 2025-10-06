@@ -65,8 +65,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import Button from 'primevue/button';
+import { useTimerNotifications } from '@/Utils/timerMixin.js';
+import { integrateHealthTreatmentNotifications } from '@/Utils/notificationIntegration.js';
 
 const props = defineProps({
     treatment: Object,
@@ -88,4 +90,64 @@ const editTreatment = () => {
 const goBack = () => {
     window.history.back();
 };
+
+// Initialize timer notifications with error handling
+let startTimerMonitoring, stopTimerMonitoring;
+
+try {
+    const timerNotifications = useTimerNotifications('health');
+    startTimerMonitoring = timerNotifications.startTimerMonitoring;
+    stopTimerMonitoring = timerNotifications.stopTimerMonitoring;
+    console.log('✅ Timer notifications imported successfully');
+} catch (error) {
+    console.error('❌ Failed to import timer notifications:', error);
+}
+
+// Start monitoring timer when component mounts
+onMounted(() => {
+    console.log('🚀 Health Treatment Show mounted');
+    console.log('Timer status:', props.timer_status);
+    console.log('Remaining minutes:', props.remaining_minutes);
+    console.log('Student:', props.student?.full_name);
+    console.log('Treatment:', props.treatment?.title);
+    
+    // Test if we can trigger a manual notification
+    try {
+        const integration = integrateHealthTreatmentNotifications();
+        console.log('✅ Notification integration loaded successfully');
+        
+        // If timer is at 30 minutes or less, trigger notification immediately for testing
+        if (props.remaining_minutes <= 30 && props.remaining_minutes > 0) {
+            console.log('🔔 Timer is at 30 minutes or less - triggering notification');
+            integration.handleTimerCheck(props.remaining_minutes, props.student, props.treatment);
+        }
+    } catch (error) {
+        console.error('❌ Failed to load notification integration:', error);
+    }
+    
+    // Start timer monitoring if timer is active and functions are available
+    if (props.timer_status?.status === 'active' && props.remaining_minutes > 0 && startTimerMonitoring) {
+        console.log('✅ Starting timer monitoring for health treatment:', props.treatment?.title);
+        try {
+            startTimerMonitoring(props.student, props.treatment, props.remaining_minutes);
+            console.log('Timer monitoring started successfully');
+        } catch (error) {
+            console.error('❌ Failed to start timer monitoring:', error);
+        }
+    } else {
+        console.log('❌ Timer monitoring not started. Status:', props.timer_status?.status, 'Minutes:', props.remaining_minutes, 'Function available:', !!startTimerMonitoring);
+    }
+});
+
+// Stop monitoring when component unmounts
+onUnmounted(() => {
+    console.log('🛑 Stopping timer monitoring');
+    if (stopTimerMonitoring) {
+        try {
+            stopTimerMonitoring();
+        } catch (error) {
+            console.error('Error stopping timer monitoring:', error);
+        }
+    }
+});
 </script>

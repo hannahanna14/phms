@@ -64,7 +64,14 @@
                             </button>
                         </template>
                         <template #end>
-                            <div class="flex items-center">
+                            <div class="flex items-center space-x-3">
+                                <!-- Notification Dropdown -->
+                                <NotificationDropdown 
+                                    :notifications="notifications"
+                                    @mark-as-read="markNotificationAsRead"
+                                    @mark-all-as-read="markAllNotificationsAsRead"
+                                />
+                                
                                 <button
                                     @click="toggleUserMenu"
                                     v-ripple
@@ -91,22 +98,41 @@
                 </div>
             </main>
         </div>
+
+        <!-- Toast Notifications -->
+        <ToastNotification 
+            :toasts="toasts"
+            @remove-toast="removeToast"
+        />
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import TieredMenu from 'primevue/tieredmenu'
 import Menubar from 'primevue/menubar'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
-
 // Import the logo
 import logoSrc from '@/assets/logo.png'
 
+// Import notification components
+import NotificationDropdown from '@/Components/NotificationDropdown.vue'
+import { useNotificationStore } from '@/Stores/notificationStore.js'
+import { useToastStore } from '@/Stores/toastStore.js'
+import { integrateHealthTreatmentNotifications, integrateOralHealthTreatmentNotifications, integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
+
 const page = usePage()
+
+// Health alerts data - you can move this to a composable later
+const urgentAlertsCount = computed(() => {
+    // This should come from your dashboard data or a separate API call
+    const dashboardData = page.props.dashboardData || {}
+    const healthAlerts = dashboardData.healthAlerts || []
+    return healthAlerts.filter(alert => alert.severity === 'danger').length
+})
 
 const user = computed(() => {
     const authUser = page.props.auth?.user
@@ -115,6 +141,40 @@ const user = computed(() => {
         role: authUser?.role || 'Not Logged In'
     }
 })
+
+// Notification store
+const { 
+    notifications, 
+    initializeNotifications, 
+    markAsRead, 
+    markAllAsRead,
+    addNotification,
+    createHealthExamNotification,
+    createTreatmentNotification,
+    createReportNotification
+} = useNotificationStore()
+
+// Notification methods
+const markNotificationAsRead = (notificationId) => {
+    markAsRead(notificationId)
+}
+
+const markAllNotificationsAsRead = () => {
+    markAllAsRead()
+}
+
+// Toast store
+const { 
+    toasts, 
+    removeToast, 
+    showSuccess, 
+    showInfo, 
+    showHealthExamComplete,
+    showTreatmentScheduled,
+    showReportGenerated
+} = useToastStore()
+
+// Production notification functions will be added here as needed
 
 const menuBarItems = ref([])
 
@@ -178,11 +238,126 @@ const sideBarItems = ref([
         separator: true
     },
     {
+        label: 'Schedule Calendar',
+        icon: 'pi pi-calendar',
+        route: '/schedule-calendar'
+    },
+    {
+        label: 'Chat',
+        icon: 'pi pi-comments',
+        route: '/chat'
+    },
+    {
+        separator: true
+    },
+    {
         label: 'Logout',
         icon: 'pi pi-sign-out',
         command: logout
     }
 ])
+
+// Check for unrecorded students notifications
+const checkUnrecordedStudents = async () => {
+    try {
+        const response = await fetch('/api/notifications/check-unrecorded')
+        const data = await response.json()
+        
+        if (data.notifications && data.notifications.length > 0) {
+            data.notifications.forEach(notification => {
+                if (notification.type === 'unrecorded_student') {
+                    addNotification(createUnrecordedStudentNotification(
+                        notification.student_name, 
+                        notification.missing_type
+                    ))
+                } else if (notification.type === 'batch_unrecorded') {
+                    addNotification(createBatchUnrecordedNotification(
+                        notification.count,
+                        notification.record_type
+                    ))
+                }
+            })
+        }
+    } catch (error) {
+        console.error('Error checking unrecorded students:', error)
+    }
+}
+
+// Global timer monitoring system
+const globalTimerInterval = ref(null)
+
+const startGlobalTimerMonitoring = () => {
+    console.log('🌍 Starting global timer monitoring...')
+    
+    // Check all active timers every minute
+    globalTimerInterval.value = setInterval(async () => {
+        try {
+            console.log('🔍 Checking all active timers...')
+            
+            // Check Health Treatments
+            const healthResponse = await fetch('/api/notifications/check-timers')
+            if (healthResponse.ok) {
+                const healthData = await healthResponse.json()
+                
+                if (healthData.treatments && healthData.treatments.length > 0) {
+                    const healthIntegration = integrateHealthTreatmentNotifications()
+                    
+                    healthData.treatments.forEach(treatment => {
+                        const remainingMinutes = treatment.remaining_minutes
+                        
+                        // 30-minute warning
+                        if (remainingMinutes <= 30 && remainingMinutes > 29 && !treatment.thirty_min_notified) {
+                            console.log(`🔔 30-minute warning for Health Treatment: ${treatment.title}`)
+                            healthIntegration.handleTimerCheck(30, treatment.student, treatment)
+                        }
+                        
+                        // 15-minute warning  
+                        if (remainingMinutes <= 15 && remainingMinutes > 14 && !treatment.fifteen_min_notified) {
+                            console.log(`🚨 15-minute warning for Health Treatment: ${treatment.title}`)
+                            healthIntegration.handleTimerCheck(15, treatment.student, treatment)
+                        }
+                        
+                        // Expired
+                        if (remainingMinutes <= 0 && !treatment.expired_notified) {
+                            console.log(`⏰ Timer expired for Health Treatment: ${treatment.title}`)
+                            healthIntegration.handleStatusChange('expired', treatment.student, treatment)
+                        }
+                    })
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error in global timer monitoring:', error)
+        }
+    }, 60000) // Check every minute
+}
+
+const stopGlobalTimerMonitoring = () => {
+    if (globalTimerInterval.value) {
+        console.log('🛑 Stopping global timer monitoring')
+        clearInterval(globalTimerInterval.value)
+        globalTimerInterval.value = null
+    }
+}
+
+// Initialize notifications when component mounts
+onMounted(() => {
+    initializeNotifications()
+    
+    // Check for unrecorded students on load
+    checkUnrecordedStudents()
+    
+    // Check for unrecorded students every 10 minutes
+    setInterval(checkUnrecordedStudents, 600000)
+    
+    // Start global timer monitoring
+    startGlobalTimerMonitoring()
+})
+
+// Stop monitoring when component unmounts
+onUnmounted(() => {
+    stopGlobalTimerMonitoring()
+})
 </script>
 
 <style scoped>

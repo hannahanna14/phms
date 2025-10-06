@@ -86,7 +86,10 @@ const submit = () => {
 };
 
 const cancel = () => {
-    window.history.back();
+    // Navigate back to health treatment list for the student
+    const grade = getGradeContext();
+    const gradeParam = grade ? grade.replace('Grade ', '') : '';
+    window.location.href = `/pupil-health/health-treatment/${student.id}?grade=${gradeParam}`;
 };
 </script>
 

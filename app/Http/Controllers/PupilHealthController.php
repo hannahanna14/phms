@@ -194,31 +194,44 @@ class PupilHealthController extends Controller
 
     public function getHealthExaminationByGradeYear($studentId, Request $request)
     {
-        // Log the incoming request parameters
-        \Log::info('getHealthExaminationByGradeYear - Request Data:', [
-            'student_id' => $studentId,
-            'query_params' => $request->query(),
-            'grade_level' => $request->query('grade_level')
-        ]);
+        try {
+            // Log the incoming request parameters
+            \Log::info('getHealthExaminationByGradeYear - Request Data:', [
+                'student_id' => $studentId,
+                'query_params' => $request->query(),
+                'grade_level' => $request->query('grade_level')
+            ]);
 
-        $gradeLevel = $request->query('grade_level');
+            $gradeLevel = $request->query('grade_level');
 
-        // Find health examination for this student with matching grade level
-        $healthExamination = HealthExamination::where('student_id', $studentId)
-            ->where('grade_level', $gradeLevel)
-            ->latest()
-            ->first();
+            // Find health examination for this student with matching grade level
+            $healthExamination = HealthExamination::where('student_id', $studentId)
+                ->where('grade_level', $gradeLevel)
+                ->latest()
+                ->first();
 
-        \Log::info('Query Result:', [
-            'student_id' => $studentId,
-            'grade_level' => $gradeLevel,
-            'found' => $healthExamination ? true : false
-        ]);
+            \Log::info('Query Result:', [
+                'student_id' => $studentId,
+                'grade_level' => $gradeLevel,
+                'found' => $healthExamination ? true : false
+            ]);
 
-        if ($healthExamination) {
-            return response()->json($healthExamination);
-        } else {
-            return response()->json(['message' => 'No record found'], 200);
+            if ($healthExamination) {
+                return response()->json($healthExamination);
+            } else {
+                return response()->json(['message' => 'No record found'], 200);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error in getHealthExaminationByGradeYear:', [
+                'student_id' => $studentId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Internal server error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -270,6 +283,7 @@ class PupilHealthController extends Controller
             'temporary_for_extraction' => 'nullable|integer|min:0',
             'temporary_for_filling' => 'nullable|integer|min:0',
             'tooth_symbols' => 'nullable|array',
+            'conditions' => 'nullable|array',
         ]);
 
         OralHealthExamination::create($validated);

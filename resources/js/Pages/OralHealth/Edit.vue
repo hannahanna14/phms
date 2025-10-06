@@ -80,45 +80,49 @@
                         <h2 class="text-lg font-semibold text-center mb-6">Permanent Teeth</h2>
                         <div class="grid grid-cols-3 gap-6">
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t.</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t. <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.permanent_index_dft" 
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    required
                                 />
                                 <small v-if="errors?.permanent_index_dft" class="text-red-500">{{ errors.permanent_index_dft }}</small>
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.permanent_teeth_decayed" 
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    required
                                 />
                                 <small v-if="errors?.permanent_teeth_decayed" class="text-red-500">{{ errors.permanent_teeth_decayed }}</small>
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.permanent_teeth_filled" 
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    required
                                 />
                                 <small v-if="errors?.permanent_teeth_filled" class="text-red-500">{{ errors.permanent_teeth_filled }}</small>
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.permanent_total_dft" 
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    required
                                 />
                                 <small v-if="errors?.permanent_total_dft" class="text-red-500">{{ errors.permanent_total_dft }}</small>
                             </div>
@@ -291,6 +295,79 @@
                 </div>
             </div>
         </div>
+
+        <!-- Oral Health Conditions Section -->
+        <div class="bg-white shadow rounded-lg p-6 mt-6">
+            <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="border border-gray-300 px-3 py-2 text-left font-medium">Condition</th>
+                            <th v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center font-medium text-xs">
+                                {{ gradeRange.label }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="condition in oralHealthConditions" :key="condition.key">
+                            <td class="border border-gray-300 px-3 py-2 font-medium">{{ condition.label }}</td>
+                            <td v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center">
+                                <div class="flex flex-col items-center space-y-1">
+                                    <!-- Checkbox -->
+                                    <label class="flex items-center space-x-1 text-xs">
+                                        <input 
+                                            v-model="form.conditions[condition.key][gradeRange.key].present"
+                                            type="checkbox" 
+                                            class="w-3 h-3"
+                                        >
+                                        <span>Present</span>
+                                    </label>
+                                    
+                                    <!-- Date Input (only show if present is checked) -->
+                                    <input 
+                                        v-if="form.conditions[condition.key][gradeRange.key].present"
+                                        v-model="form.conditions[condition.key][gradeRange.key].date"
+                                        type="date" 
+                                        class="w-20 text-xs border border-gray-300 rounded px-1 py-0.5"
+                                    >
+                                    
+                                    <!-- Text Input for "Others, specify" (only show if present is checked and it's the others_specify condition) -->
+                                    <input 
+                                        v-if="condition.key === 'others_specify' && form.conditions[condition.key][gradeRange.key].present"
+                                        v-model="form.conditions[condition.key][gradeRange.key].specification"
+                                        type="text" 
+                                        placeholder="Specify..."
+                                        class="w-24 text-xs border border-gray-300 rounded px-1 py-0.5"
+                                    >
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-4 mt-6">
+            <button 
+                type="button" 
+                @click="onCancel"
+                class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+                Cancel
+            </button>
+            <button 
+                type="button" 
+                @click="submitForm"
+                :disabled="form.processing"
+                class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+                <span v-if="form.processing">Updating...</span>
+                <span v-else>Update Examination</span>
+            </button>
+        </div>
     </div>
 </template>
 
@@ -335,13 +412,64 @@ const form = useForm({
     temporary_for_filling: props.oralHealthExamination?.temporary_for_filling || 0,
     grade_level: props.selectedGrade || props.oralHealthExamination?.grade_level || '',
     school_year: props.oralHealthExamination?.school_year || '2024-2025',
-    tooth_symbols: props.oralHealthExamination?.tooth_symbols || {}
+    tooth_symbols: props.oralHealthExamination?.tooth_symbols || {},
+    conditions: props.oralHealthExamination?.conditions || initializeConditions()
 })
 
 // Dental chart state
 const showPermanent = ref(true)
 let selectedTooth = null
 let toothSymbols = {}
+
+// Oral Health Conditions data
+const oralHealthConditions = [
+    { key: 'gingivitis', label: 'Gingivitis' },
+    { key: 'periodontal_disease', label: 'Periodontal Disease' },
+    { key: 'malocclusion', label: 'Malocclusion' },
+    { key: 'supernumerary_teeth', label: 'Supernumerary teeth' },
+    { key: 'retained_deciduous_teeth', label: 'Retained deciduous teeth' },
+    { key: 'decubital_ulcer', label: 'Decubital ulcer' },
+    { key: 'calculus', label: 'Calculus' },
+    { key: 'cleft_lip_palate', label: 'Cleft lip / palate' },
+    { key: 'root_fragment', label: 'Root fragment' },
+    { key: 'fluorosis', label: 'Fluorosis' },
+    { key: 'others_specify', label: 'Others, specify' }
+]
+
+// Grade level logic
+const gradeLevel = computed(() => props.selectedGrade || props.oralHealthExamination?.grade_level || '')
+
+const getCurrentGradeRange = (grade) => {
+    const gradeRanges = {
+        'Kinder': [{ key: 'kinder', label: 'Kinder' }],
+        'Grade 1': [{ key: 'grade_1_7', label: 'Grade 1/7' }],
+        'Grade 2': [{ key: 'grade_2_8', label: 'Grade 2/8' }],
+        'Grade 3': [{ key: 'grade_3_9', label: 'Grade 3/9' }],
+        'Grade 4': [{ key: 'grade_4_10', label: 'Grade 4/10' }],
+        'Grade 5': [{ key: 'grade_5_11', label: 'Grade 5/11' }],
+        'Grade 6': [{ key: 'grade_6_12', label: 'Grade 6/12' }]
+    }
+    return gradeRanges[grade] || [{ key: 'grade_1_7', label: 'Grade 1/7' }]
+}
+
+const relevantGradeRanges = computed(() => getCurrentGradeRange(gradeLevel.value))
+
+// Initialize conditions structure
+const initializeConditions = () => {
+    const allGradeRanges = ['kinder', 'grade_1_7', 'grade_2_8', 'grade_3_9', 'grade_4_10', 'grade_5_11', 'grade_6_12']
+    const conditions = {}
+    oralHealthConditions.forEach(condition => {
+        conditions[condition.key] = {}
+        allGradeRanges.forEach(grade => {
+            conditions[condition.key][grade] = {
+                present: false,
+                date: '',
+                specification: '' // For "Others, specify" text input
+            }
+        })
+    })
+    return conditions
+}
 
 const toggleChartType = (type) => {
     showPermanent.value = type === 'permanent'
@@ -360,6 +488,21 @@ const {
     autoSave: true,
     showNotification: true
 })
+
+// Submit function
+const submitForm = () => {
+    // Update tooth symbols from the dental chart
+    form.tooth_symbols = toothSymbols
+    
+    form.put(`/oral-health-examination/${props.oralHealthExamination.id}`, {
+        onSuccess: () => {
+            onSubmitSuccess()
+        },
+        onError: (errors) => {
+            console.error('Form submission errors:', errors)
+        }
+    })
+}
 
 // Debug logging
 console.log('OralHealth Edit - Props received:', {
@@ -614,9 +757,67 @@ const renderToothSymbols = () => {
     })
 }
 
+// Validation rules for oral health examination
+const validateForm = () => {
+    const errors = {}
+    
+    // Required permanent teeth fields
+    if (form.permanent_index_dft === '' || form.permanent_index_dft === null) {
+        errors.permanent_index_dft = 'Permanent Index D.F.T. is required'
+    }
+    if (form.permanent_teeth_decayed === '' || form.permanent_teeth_decayed === null) {
+        errors.permanent_teeth_decayed = 'Permanent teeth decayed count is required'
+    }
+    if (form.permanent_teeth_filled === '' || form.permanent_teeth_filled === null) {
+        errors.permanent_teeth_filled = 'Permanent teeth filled count is required'
+    }
+    if (form.permanent_total_dft === '' || form.permanent_total_dft === null) {
+        errors.permanent_total_dft = 'Permanent total D.F.T. is required'
+    }
+    if (form.permanent_for_extraction === '' || form.permanent_for_extraction === null) {
+        errors.permanent_for_extraction = 'Permanent teeth for extraction count is required'
+    }
+    if (form.permanent_for_filling === '' || form.permanent_for_filling === null) {
+        errors.permanent_for_filling = 'Permanent teeth for filling count is required'
+    }
+    
+    // Required temporary teeth fields
+    if (form.temporary_index_dft === '' || form.temporary_index_dft === null) {
+        errors.temporary_index_dft = 'Temporary Index d.f.t. is required'
+    }
+    if (form.temporary_teeth_decayed === '' || form.temporary_teeth_decayed === null) {
+        errors.temporary_teeth_decayed = 'Temporary teeth decayed count is required'
+    }
+    if (form.temporary_teeth_filled === '' || form.temporary_teeth_filled === null) {
+        errors.temporary_teeth_filled = 'Temporary teeth filled count is required'
+    }
+    if (form.temporary_total_dft === '' || form.temporary_total_dft === null) {
+        errors.temporary_total_dft = 'Temporary total d.f.t. is required'
+    }
+    if (form.temporary_for_extraction === '' || form.temporary_for_extraction === null) {
+        errors.temporary_for_extraction = 'Temporary teeth for extraction count is required'
+    }
+    if (form.temporary_for_filling === '' || form.temporary_for_filling === null) {
+        errors.temporary_for_filling = 'Temporary teeth for filling count is required'
+    }
+    
+    return errors
+}
+
+const errors = ref({})
+
 const submit = () => {
     if (!props.oralHealthExamination?.id) {
         console.error('Cannot submit: No examination ID available')
+        return
+    }
+    
+    // Validate form
+    const validationErrors = validateForm()
+    errors.value = validationErrors
+    
+    if (Object.keys(validationErrors).length > 0) {
+        console.log('Form validation failed:', validationErrors)
         return
     }
     
@@ -625,11 +826,13 @@ const submit = () => {
         onSuccess: () => {
             // Clear saved form data on successful submission
             onSubmitSuccess()
+            errors.value = {} // Clear validation errors on success
             // Redirect back to student's oral health examination page
             window.location.href = `/pupil-health/oral-health/${props.student.id}?grade=${props.selectedGrade.replace('Grade ', '')}`
         },
-        onError: () => {
-            // Keep saved data if there's an error
+        onError: (serverErrors) => {
+            // Merge server errors with client validation errors
+            errors.value = { ...errors.value, ...serverErrors }
             console.log('Form submission failed, keeping saved data')
         }
     })

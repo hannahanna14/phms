@@ -22,6 +22,7 @@ class HealthTreatment extends Model
         'started_at',
         'expires_at',
         'is_expired',
+        'timer_status',
     ];
 
     protected $casts = [
@@ -42,8 +43,9 @@ class HealthTreatment extends Model
     public function startTimer()
     {
         $this->started_at = now();
-        $this->expires_at = now()->addHours(2);
+        $this->expires_at = now()->addHours(2); // Standard 2-hour timer
         $this->is_expired = false;
+        $this->timer_status = 'active';
         $this->status = 'in_progress';
         $this->save();
     }
@@ -62,6 +64,7 @@ class HealthTreatment extends Model
         // Auto-update expired status if needed
         if ($expired && !$this->is_expired) {
             $this->is_expired = true;
+            $this->timer_status = 'expired';
             $this->status = 'completed';
             $this->save();
         }
@@ -172,5 +175,33 @@ class HealthTreatment extends Model
             'display' => $this->getRemainingTimeFormatted(),
             'color' => 'warning'
         ];
+    }
+
+    /**
+     * Complete the treatment timer
+     */
+    public function completeTimer()
+    {
+        $this->timer_status = 'completed';
+        $this->status = 'completed';
+        $this->save();
+    }
+
+    /**
+     * Pause the treatment timer
+     */
+    public function pauseTimer()
+    {
+        $this->timer_status = 'paused';
+        $this->save();
+    }
+
+    /**
+     * Resume the treatment timer
+     */
+    public function resumeTimer()
+    {
+        $this->timer_status = 'active';
+        $this->save();
     }
 }

@@ -22,9 +22,27 @@ class TeacherMiddleware
             abort(403, 'Access denied. Teacher role required.');
         }
         
-        // Block POST, PUT, PATCH, DELETE requests for teachers (view-only access)
-        if (in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
-            abort(403, 'Teachers have view-only access.');
+        // Allow teachers to manage chat only, block other modifications
+        $allowedRoutes = [
+            'chat',
+            'messages'
+        ];
+        
+        $currentRoute = $request->route() ? $request->route()->getName() : '';
+        $currentPath = $request->path();
+        
+        // Check if the request is for an allowed route
+        $isAllowedRoute = false;
+        foreach ($allowedRoutes as $allowedRoute) {
+            if (str_contains($currentRoute, $allowedRoute) || str_contains($currentPath, $allowedRoute)) {
+                $isAllowedRoute = true;
+                break;
+            }
+        }
+        
+        // Block POST, PUT, PATCH, DELETE requests for teachers except for allowed routes
+        if (in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE']) && !$isAllowedRoute) {
+            abort(403, 'Teachers have view-only access to this resource.');
         }
         
         return $next($request);

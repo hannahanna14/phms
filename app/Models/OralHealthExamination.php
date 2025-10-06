@@ -25,10 +25,12 @@ class OralHealthExamination extends Model
         'temporary_for_extraction',
         'temporary_for_filling',
         'tooth_symbols',
+        'conditions',
     ];
 
     protected $casts = [
         'tooth_symbols' => 'array',
+        'conditions' => 'array',
         'examination_date' => 'date',
     ];
 

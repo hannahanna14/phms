@@ -9,6 +9,7 @@ use App\Models\HealthTreatment;
 use App\Models\OralHealthTreatment;
 use App\Models\Incident;
 use App\Models\HealthExamination;
+use App\Models\OralHealthExamination;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use PDF;
@@ -573,7 +574,70 @@ class HealthReportController extends Controller
     {
         $student = Student::findOrFail($studentId);
         
-        $pdf = PDF::loadView('oral-health-examination-pdf', compact('student'));
+        // Get oral health data for all grade levels
+        $oralHealthDataByGrade = [];
+        $gradeNames = ['Kinder', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+        $gradeNumbers = ['K', '1', '2', '3', '4', '5', '6'];
+        
+        foreach ($gradeNumbers as $index => $gradeNum) {
+            $gradeName = $gradeNames[$index];
+            
+            // Try different grade level formats that might be stored in database
+            $oralHealthData = OralHealthExamination::where('student_id', $studentId)
+                ->where(function($query) use ($gradeNum, $gradeName) {
+                    $query->where('grade_level', $gradeNum)
+                          ->orWhere('grade_level', $gradeName)
+                          ->orWhere('grade_level', strtolower($gradeName))
+                          ->orWhere('grade_level', ucfirst(strtolower($gradeName)));
+                })
+                ->first();
+            
+            // Process the tooth_symbols JSON data if it exists
+            if ($oralHealthData && $oralHealthData->tooth_symbols) {
+                $toothSymbols = is_string($oralHealthData->tooth_symbols) 
+                    ? json_decode($oralHealthData->tooth_symbols, true) 
+                    : $oralHealthData->tooth_symbols;
+                
+                // Map tooth symbols to individual tooth fields
+                if ($toothSymbols) {
+                    foreach ($toothSymbols as $toothNumber => $symbols) {
+                        $symbolValue = is_array($symbols) ? implode('', $symbols) : $symbols;
+                        
+                        // Determine if it's permanent or temporary tooth
+                        if (in_array($toothNumber, ['55', '54', '53', '52', '51', '61', '62', '63', '64', '65', '85', '84', '83', '82', '81', '71', '72', '73', '74', '75'])) {
+                            $oralHealthData->{"temp_$toothNumber"} = $symbolValue;
+                        } else {
+                            $oralHealthData->{"perm_$toothNumber"} = $symbolValue;
+                        }
+                    }
+                }
+            }
+                
+            $oralHealthDataByGrade[$gradeNum] = $oralHealthData;
+        }
+        
+        // Get oral health treatments for all grade levels
+        $oralHealthTreatmentsByGrade = [];
+        foreach ($gradeNumbers as $index => $gradeNum) {
+            $gradeName = $gradeNames[$index];
+            
+            $treatments = \App\Models\OralHealthTreatment::where('student_id', $studentId)
+                ->where(function($query) use ($gradeNum, $gradeName) {
+                    $query->where('grade_level', $gradeNum)
+                          ->orWhere('grade_level', $gradeName)
+                          ->orWhere('grade_level', strtolower($gradeName))
+                          ->orWhere('grade_level', ucfirst(strtolower($gradeName)));
+                })
+                ->orderBy('date', 'asc')
+                ->get();
+                
+            $oralHealthTreatmentsByGrade[$gradeNum] = $treatments;
+        }
+        
+        Log::info('Oral Health Data Retrieved:', $oralHealthDataByGrade);
+        Log::info('Oral Health Treatments Retrieved:', $oralHealthTreatmentsByGrade);
+        
+        $pdf = PDF::loadView('oral-health-examination-pdf', compact('student', 'oralHealthDataByGrade', 'oralHealthTreatmentsByGrade'));
         
         return $pdf->stream('oral-health-examination-' . $student->lrn . '.pdf');
     }

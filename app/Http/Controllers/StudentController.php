@@ -41,9 +41,10 @@ class StudentController extends Controller
         ]);
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = auth()->user();
+        $selectedYear = $request->get('year', 'All');
         
         // Filter students based on user role
         if ($user->role === 'teacher') {
@@ -66,33 +67,130 @@ class StudentController extends Controller
                 $dewormingNotDewormed = 0;
                 $ironPositive = 0;
                 $ironNegative = 0;
+                $deformitiesNone = 0;
+                $deformitiesCongenital = 0;
+                $deformitiesAcquired = 0;
+                $deformitiesOther = 0;
+                $skinNormal = 0; $skinAbnormal = 0;
+                $scalpNormal = 0; $scalpAbnormal = 0;
+                $eyesNormal = 0; $eyesAbnormal = 0;
+                $earsNormal = 0; $earsAbnormal = 0;
+                $noseNormal = 0; $noseAbnormal = 0;
+                $mouthNormal = 0; $mouthAbnormal = 0;
+                
+                // Initialize empty collections for examination stats
+                $skinStats = collect();
+                $scalpStats = collect();
+                $eyeStats = collect();
+                $earStats = collect();
+                $noseStats = collect();
+                $mouthStats = collect();
+                $throatStats = collect();
+                $neckStats = collect();
+                $lungsStats = collect();
+                $heartStats = collect();
+                $abdomenStats = collect();
+                $throatNormal = 0; $throatAbnormal = 0;
+                $neckNormal = 0; $neckAbnormal = 0;
+                $lungsNormal = 0; $lungsAbnormal = 0;
+                $heartNormal = 0; $heartAbnormal = 0;
+                $abdomenNormal = 0; $abdomenDistended = 0; $abdomenAbnormal = 0;
+                $oralHealthExaminations = 0;
+                $oralHealthTreatments = 0;
+                $oralHealthConditions = collect();
             } else {
                 // Filter by assigned students
                 $totalStudents = Student::whereIn('id', $assignedStudentIds)->count();
                 $femaleStudents = Student::whereIn('id', $assignedStudentIds)->where('sex', 'Female')->count();
                 $maleStudents = Student::whereIn('id', $assignedStudentIds)->where('sex', 'Male')->count();
 
+                // Build base query with year filter
+                $baseQuery = HealthExamination::whereIn('student_id', $assignedStudentIds);
+                if ($selectedYear !== 'All') {
+                    $baseQuery->where('school_year', $selectedYear);
+                }
+
                 // Nutritional Status BMI Distribution for assigned students
-                $nutritionalStatusBMI = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $nutritionalStatusBMI = (clone $baseQuery)
                     ->selectRaw('nutritional_status_bmi, COUNT(*) as count')
                     ->groupBy('nutritional_status_bmi')->get();
 
                 // Nutritional Status Height Distribution for assigned students
-                $nutritionalStatusHeight = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $nutritionalStatusHeight = (clone $baseQuery)
                     ->selectRaw('nutritional_status_height, COUNT(*) as count')
                     ->groupBy('nutritional_status_height')->get();
 
                 // Deworming stats for assigned students
-                $dewormingDewormed = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $dewormingDewormed = (clone $baseQuery)
                     ->where('deworming_status', 'dewormed')->count();
-                $dewormingNotDewormed = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $dewormingNotDewormed = (clone $baseQuery)
                     ->where('deworming_status', 'not_dewormed')->count();
 
                 // Iron supplement stats for assigned students
-                $ironPositive = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $ironPositive = (clone $baseQuery)
                     ->where('iron_supplementation', 'positive')->count();
-                $ironNegative = HealthExamination::whereIn('student_id', $assignedStudentIds)
+                $ironNegative = (clone $baseQuery)
                     ->where('iron_supplementation', 'negative')->count();
+
+
+                // Deformities stats for assigned students with flexible value matching
+                $deformitiesNone = (clone $baseQuery)
+                    ->whereIn('deformities', ['None', 'none', 'Normal', 'normal'])->count();
+                $deformitiesCongenital = (clone $baseQuery)
+                    ->whereIn('deformities', ['Congenital', 'congenital'])->count();
+                $deformitiesAcquired = (clone $baseQuery)
+                    ->whereIn('deformities', ['Acquired', 'acquired'])->count();
+                $deformitiesOther = (clone $baseQuery)
+                    ->whereNotNull('deformities')
+                    ->whereNotIn('deformities', ['None', 'none', 'Normal', 'normal', 'Congenital', 'congenital', 'Acquired', 'acquired'])
+                    ->count();
+
+                // Individual examination stats for assigned students - return actual data
+                $skinStats = (clone $baseQuery)->whereNotNull('skin')->selectRaw('skin, COUNT(*) as count')->groupBy('skin')->get();
+                $scalpStats = (clone $baseQuery)->whereNotNull('scalp')->selectRaw('scalp, COUNT(*) as count')->groupBy('scalp')->get();
+                $eyeStats = (clone $baseQuery)->whereNotNull('eye')->selectRaw('eye, COUNT(*) as count')->groupBy('eye')->get();
+                $earStats = (clone $baseQuery)->whereNotNull('ear')->selectRaw('ear, COUNT(*) as count')->groupBy('ear')->get();
+                $noseStats = (clone $baseQuery)->whereNotNull('nose')->selectRaw('nose, COUNT(*) as count')->groupBy('nose')->get();
+                $mouthStats = (clone $baseQuery)->whereNotNull('mouth')->selectRaw('mouth, COUNT(*) as count')->groupBy('mouth')->get();
+                $throatStats = (clone $baseQuery)->whereNotNull('throat')->selectRaw('throat, COUNT(*) as count')->groupBy('throat')->get();
+                $neckStats = (clone $baseQuery)->whereNotNull('neck')->selectRaw('neck, COUNT(*) as count')->groupBy('neck')->get();
+                $abdomenStats = (clone $baseQuery)->whereNotNull('abdomen')->selectRaw('abdomen, COUNT(*) as count')->groupBy('abdomen')->get();
+                
+                // Handle lungs and heart with fallback to lungs_heart
+                $lungsStats = (clone $baseQuery)->where(function($q) {
+                    $q->whereNotNull('lungs')->orWhereNotNull('lungs_heart');
+                })->selectRaw('COALESCE(lungs, lungs_heart) as lungs_value, COUNT(*) as count')->groupBy('lungs_value')->get();
+                
+                $heartStats = (clone $baseQuery)->where(function($q) {
+                    $q->whereNotNull('heart')->orWhereNotNull('lungs_heart');
+                })->selectRaw('COALESCE(heart, lungs_heart) as heart_value, COUNT(*) as count')->groupBy('heart_value')->get();
+                
+                // Oral Health Examination stats for assigned students
+                $oralHealthExaminations = \App\Models\OralHealthExamination::whereIn('student_id', $assignedStudentIds)->count();
+                $oralHealthTreatments = \App\Models\OralHealthTreatment::whereIn('student_id', $assignedStudentIds)->count();
+                
+                // Oral Health Conditions stats for assigned students
+                $oralHealthConditions = \App\Models\OralHealthExamination::whereIn('student_id', $assignedStudentIds)
+                    ->whereNotNull('conditions')
+                    ->get()
+                    ->flatMap(function ($exam) {
+                        $conditions = [];
+                        if ($exam->conditions) {
+                            foreach ($exam->conditions as $conditionKey => $gradeData) {
+                                foreach ($gradeData as $grade => $data) {
+                                    if (isset($data['present']) && $data['present']) {
+                                        $conditions[] = $conditionKey;
+                                    }
+                                }
+                            }
+                        }
+                        return $conditions;
+                    })
+                    ->countBy()
+                    ->map(function ($count, $condition) {
+                        return ['condition' => $condition, 'count' => $count];
+                    })
+                    ->values();
             }
         } else {
             // Admins can see all students
@@ -100,22 +198,83 @@ class StudentController extends Controller
             $femaleStudents = Student::where('sex', 'Female')->count();
             $maleStudents = Student::where('sex', 'Male')->count();
 
+            // Build base query with year filter for all students
+            $baseQuery = HealthExamination::query();
+            if ($selectedYear !== 'All') {
+                $baseQuery->where('school_year', $selectedYear);
+            }
+
             // Nutritional Status BMI Distribution
-            $nutritionalStatusBMI = HealthExamination::selectRaw('
+            $nutritionalStatusBMI = (clone $baseQuery)->selectRaw('
                 nutritional_status_bmi,
                 COUNT(*) as count
             ')->groupBy('nutritional_status_bmi')->get();
 
             // Nutritional Status Height Distribution
-            $nutritionalStatusHeight = HealthExamination::selectRaw('
+            $nutritionalStatusHeight = (clone $baseQuery)->selectRaw('
                 nutritional_status_height,
                 COUNT(*) as count
             ')->groupBy('nutritional_status_height')->get();
 
-            $dewormingDewormed = HealthExamination::where('deworming_status', 'dewormed')->count();
-            $dewormingNotDewormed = HealthExamination::where('deworming_status', 'not_dewormed')->count();
-            $ironPositive = HealthExamination::where('iron_supplementation', 'positive')->count();
-            $ironNegative = HealthExamination::where('iron_supplementation', 'negative')->count();
+            $dewormingDewormed = (clone $baseQuery)->where('deworming_status', 'dewormed')->count();
+            $dewormingNotDewormed = (clone $baseQuery)->where('deworming_status', 'not_dewormed')->count();
+            $ironPositive = (clone $baseQuery)->where('iron_supplementation', 'positive')->count();
+            $ironNegative = (clone $baseQuery)->where('iron_supplementation', 'negative')->count();
+
+
+            // Deformities stats for all students with flexible value matching
+            $deformitiesNone = (clone $baseQuery)->whereIn('deformities', ['None', 'none', 'Normal', 'normal'])->count();
+            $deformitiesCongenital = (clone $baseQuery)->whereIn('deformities', ['Congenital', 'congenital'])->count();
+            $deformitiesAcquired = (clone $baseQuery)->whereIn('deformities', ['Acquired', 'acquired'])->count();
+            $deformitiesOther = (clone $baseQuery)->whereNotNull('deformities')
+                ->whereNotIn('deformities', ['None', 'none', 'Normal', 'normal', 'Congenital', 'congenital', 'Acquired', 'acquired'])
+                ->count();
+
+            // Individual examination stats for all students - return actual data
+            $skinStats = (clone $baseQuery)->whereNotNull('skin')->selectRaw('skin, COUNT(*) as count')->groupBy('skin')->get();
+            $scalpStats = (clone $baseQuery)->whereNotNull('scalp')->selectRaw('scalp, COUNT(*) as count')->groupBy('scalp')->get();
+            $eyeStats = (clone $baseQuery)->whereNotNull('eye')->selectRaw('eye, COUNT(*) as count')->groupBy('eye')->get();
+            $earStats = (clone $baseQuery)->whereNotNull('ear')->selectRaw('ear, COUNT(*) as count')->groupBy('ear')->get();
+            $noseStats = (clone $baseQuery)->whereNotNull('nose')->selectRaw('nose, COUNT(*) as count')->groupBy('nose')->get();
+            $mouthStats = (clone $baseQuery)->whereNotNull('mouth')->selectRaw('mouth, COUNT(*) as count')->groupBy('mouth')->get();
+            $throatStats = (clone $baseQuery)->whereNotNull('throat')->selectRaw('throat, COUNT(*) as count')->groupBy('throat')->get();
+            $neckStats = (clone $baseQuery)->whereNotNull('neck')->selectRaw('neck, COUNT(*) as count')->groupBy('neck')->get();
+            $abdomenStats = (clone $baseQuery)->whereNotNull('abdomen')->selectRaw('abdomen, COUNT(*) as count')->groupBy('abdomen')->get();
+            
+            // Handle lungs and heart with fallback to lungs_heart
+            $lungsStats = (clone $baseQuery)->where(function($q) {
+                $q->whereNotNull('lungs')->orWhereNotNull('lungs_heart');
+            })->selectRaw('COALESCE(lungs, lungs_heart) as lungs_value, COUNT(*) as count')->groupBy('lungs_value')->get();
+            
+            $heartStats = (clone $baseQuery)->where(function($q) {
+                $q->whereNotNull('heart')->orWhereNotNull('lungs_heart');
+            })->selectRaw('COALESCE(heart, lungs_heart) as heart_value, COUNT(*) as count')->groupBy('heart_value')->get();
+            
+            // Oral Health Examination stats for all students
+            $oralHealthExaminations = \App\Models\OralHealthExamination::count();
+            $oralHealthTreatments = \App\Models\OralHealthTreatment::count();
+            
+            // Oral Health Conditions stats for all students
+            $oralHealthConditions = \App\Models\OralHealthExamination::whereNotNull('conditions')
+                ->get()
+                ->flatMap(function ($exam) {
+                    $conditions = [];
+                    if ($exam->conditions) {
+                        foreach ($exam->conditions as $conditionKey => $gradeData) {
+                            foreach ($gradeData as $grade => $data) {
+                                if (isset($data['present']) && $data['present']) {
+                                    $conditions[] = $conditionKey;
+                                }
+                            }
+                        }
+                    }
+                    return $conditions;
+                })
+                ->countBy()
+                ->map(function ($count, $condition) {
+                    return ['condition' => $condition, 'count' => $count];
+                })
+                ->values();
         }
 
         \Log::info('Dashboard stats:', [
@@ -125,22 +284,57 @@ class StudentController extends Controller
             'male_students' => $maleStudents
         ]);
 
-        return Inertia::render('Home', [
-            'dashboardData' => [
-                'totalStudents' => $totalStudents,
-                'femaleStudents' => $femaleStudents,
-                'maleStudents' => $maleStudents,
-                'nutritionalStatusBMI' => $nutritionalStatusBMI,
-                'nutritionalStatusHeight' => $nutritionalStatusHeight,
-                'deworming' => [
-                    'dewormed' => $dewormingDewormed,
-                    'notDewormed' => $dewormingNotDewormed
-                ],
-                'ironSupplement' => [
-                    'positive' => $ironPositive,
-                    'negative' => $ironNegative
-                ]
+        $dashboardData = [
+            'totalStudents' => $totalStudents,
+            'femaleStudents' => $femaleStudents,
+            'maleStudents' => $maleStudents,
+            'nutritionalStatusBMI' => $nutritionalStatusBMI,
+            'nutritionalStatusHeight' => $nutritionalStatusHeight,
+            'deworming' => [
+                'dewormed' => $dewormingDewormed,
+                'notDewormed' => $dewormingNotDewormed
             ],
+            'ironSupplement' => [
+                'positive' => $ironPositive,
+                'negative' => $ironNegative
+            ],
+            'deformities' => [
+                'none' => $deformitiesNone,
+                'congenital' => $deformitiesCongenital,
+                'acquired' => $deformitiesAcquired,
+                'other' => $deformitiesOther
+            ],
+            'examinations' => [
+                'skin' => $skinStats->pluck('count', 'skin')->toArray(),
+                'scalp' => $scalpStats->pluck('count', 'scalp')->toArray(),
+                'eyes' => $eyeStats->pluck('count', 'eye')->toArray(),
+                'ears' => $earStats->pluck('count', 'ear')->toArray(),
+                'nose' => $noseStats->pluck('count', 'nose')->toArray(),
+                'mouth' => $mouthStats->pluck('count', 'mouth')->toArray(),
+                'throat' => $throatStats->pluck('count', 'throat')->toArray(),
+                'neck' => $neckStats->pluck('count', 'neck')->toArray(),
+                'lungs' => $lungsStats->pluck('count', 'lungs_value')->toArray(),
+                'heart' => $heartStats->pluck('count', 'heart_value')->toArray(),
+                'abdomen' => $abdomenStats->pluck('count', 'abdomen')->toArray()
+            ],
+            'oralHealth' => [
+                'examinations' => $oralHealthExaminations,
+                'treatments' => $oralHealthTreatments,
+                'conditions' => $oralHealthConditions
+            ]
+        ];
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                'dashboardData' => $dashboardData,
+                'userRole' => $user->role
+            ]);
+        }
+
+        // Return Inertia view for regular requests
+        return Inertia::render('Home', [
+            'dashboardData' => $dashboardData,
             'userRole' => $user->role
         ]);
     }
@@ -488,5 +682,81 @@ class StudentController extends Controller
         ];
         
         return $gradeToYear[$grade] ?? '2024-2025';
+    }
+
+    /**
+     * Start the incident timer
+     */
+    public function startIncidentTimer(Incident $incident)
+    {
+        $incident->startTimer();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Incident timer started successfully',
+            'timer_status' => $incident->timer_status,
+            'remaining_minutes' => $incident->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Pause the incident timer
+     */
+    public function pauseIncidentTimer(Incident $incident)
+    {
+        $incident->timer_status = 'paused';
+        $incident->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Incident timer paused successfully',
+            'timer_status' => $incident->timer_status
+        ]);
+    }
+
+    /**
+     * Resume the incident timer
+     */
+    public function resumeIncidentTimer(Incident $incident)
+    {
+        $incident->timer_status = 'active';
+        $incident->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Incident timer resumed successfully',
+            'timer_status' => $incident->timer_status,
+            'remaining_minutes' => $incident->getRemainingMinutes()
+        ]);
+    }
+
+    /**
+     * Complete the incident timer
+     */
+    public function completeIncidentTimer(Incident $incident)
+    {
+        $incident->timer_status = 'completed';
+        $incident->status = 'resolved';
+        $incident->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Incident timer completed successfully',
+            'timer_status' => $incident->timer_status
+        ]);
+    }
+
+    /**
+     * Get incident timer status for notifications
+     */
+    public function getIncidentTimerStatus($id)
+    {
+        $incident = Incident::findOrFail($id);
+        
+        return response()->json([
+            'timer_status' => $incident->timer_status,
+            'remaining_minutes' => $incident->getRemainingMinutes(),
+            'is_expired' => $incident->isExpired()
+        ]);
     }
 }

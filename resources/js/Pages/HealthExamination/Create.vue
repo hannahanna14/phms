@@ -1,329 +1,402 @@
 <template>
-    <div class="bg-[#f4f4f4] min-h-screen flex items-start justify-center p-4">
-        <Card class="w-full max-w-5xl shadow-xl">
-            <template #title>
-                <div class="text-center">
-                    <h2 class="text-lg font-bold">Pupil Health Examination</h2>
-                    <p class="text-sm text-gray-500">Naawan Central School</p>
-                    <hr class="my-2" />
+    <Head title="Create Health Examination" />
+    <div class="health-examination-form">
+        <div class="white-container">
+            <h2 class="text-lg font-semibold mb-4">Create Student Health Examination</h2>
+            
+            <form @submit.prevent="submit" class="space-y-6">
+                <!-- Vital Signs -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="form-group">
+                        <label>Temperature (°C) <span class="text-red-500">*</span></label>
+                        <InputText v-model="form.temperature" class="w-full" type="number" step="0.1" required />
+                        <small class="text-red-500" v-if="errors.temperature">{{ errors.temperature }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Heart Rate (bpm) <span class="text-red-500">*</span></label>
+                        <InputText v-model="form.heart_rate" class="w-full" type="number" required />
+                        <small class="text-red-500" v-if="errors.heart_rate">{{ errors.heart_rate }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Height (cm) <span class="text-red-500">*</span></label>
+                        <InputText v-model="form.height" class="w-full" type="number" step="0.1" @input="calculateBMI" required />
+                        <small class="text-red-500" v-if="errors.height">{{ errors.height }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (kg) <span class="text-red-500">*</span></label>
+                        <InputText v-model="form.weight" class="w-full" type="number" step="0.1" @input="calculateBMI" required />
+                        <small class="text-red-500" v-if="errors.weight">{{ errors.weight }}</small>
+                    </div>
                 </div>
-            </template>
-            <template #content>
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- HEIGHT FIELD -->
-                    <div>
-                        <label class="text-sm font-semibold">Height (cm)</label>
-                        <InputText
-                            v-model="form.height"
-                            class="w-full"
-                            :class="{ 'p-invalid border-2 border-red-500': heightError }"
-                            @input="validateHeight"
-                            type="number"
-                            min="50"
-                            max="200"
-                        />
-                        <small v-if="heightError" class="text-red-500">{{ heightError }}</small>
-                    </div>
 
-                    <!-- WEIGHT FIELD -->
-                    <div>
-                        <label class="text-sm font-semibold">Weight (kg)</label>
-                        <InputText
-                            v-model="form.weight"
-                            class="w-full"
-                            :class="{ 'p-invalid border-2 border-red-500': weightError }"
-                            @input="validateWeight"
-                            type="number"
-                            min="10"
-                            max="200"
-                        />
-                        <small v-if="weightError" class="text-red-500">{{ weightError }}</small>
+                <!-- Nutritional Status -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label>Nutritional Status(BMI) <span class="text-red-500">*</span></label>
+                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.nutritional_status_bmi">{{ errors.nutritional_status_bmi }}</small>
                     </div>
-
-
-                    <!-- TEMPERATURE FIELD -->
-                    <div>
-                        <label class="text-sm font-semibold">Temperature/BP</label>
-                        <InputText v-model="form.temperature" class="w-full" type="number" />
+                    <div class="form-group">
+                        <label>Nutritional Status(Height for Age) <span class="text-red-500">*</span></label>
+                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.nutritional_status_height">{{ errors.nutritional_status_height }}</small>
                     </div>
-
-                    <!-- HEART RATE FIELD -->
-                    <div>
-                        <label class="text-sm font-semibold">Heart Rate</label>
-                        <InputText v-model="form.heartRate" class="w-full" type="number" />
-                    </div>
-
-                    <!-- NUTRITIONAL STATUS FIELDS -->
-                    <div>
-                        <label class="text-sm font-semibold">Nutritional Status (BMI)</label>
-                        <InputText v-model="form.nutritionalStatusBMI" class="w-full" disabled />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Nutritional Status (Height for Age)</label>
-                        <InputText v-model="form.nutritionalStatusHeight" class="w-full" disabled />
-                    </div>
-
-                    <!-- DROPDOWNS -->
-                    <div>
-                        <label class="text-sm font-semibold">Vision Screening</label>
-                        <Select v-model="form.visionScreening" :options="visionOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Auditory Screening</label>
-                        <Select v-model="form.auditoryScreening" :options="auditoryOptions" class="w-full" />
-                    </div>
-
-                    <!-- MULTISELECT FIELDS -->
-                    <div>
-                        <label class="text-sm font-semibold">Skin/Scalp</label>
-                        <MultiSelect v-model="form.skinScalp" :options="scalpOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Eyes/Ears/Nose</label>
-                        <MultiSelect v-model="form.eyesEarsNose" :options="eyesEarsNoseOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Mouth/Throat/Neck</label>
-                        <MultiSelect v-model="form.mouthThroatNeck" :options="mouthThroatNeckOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Lungs/Heart</label>
-                        <MultiSelect v-model="form.lungsHeart" :options="lungsHeartOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Abdomen</label>
-                        <MultiSelect v-model="form.abdomen" :options="abdomenOptions" class="w-full" />
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold">Deformities</label>
-                        <MultiSelect v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
-                    </div>
-
-                    <div>
-                        <label class="text-sm font-semibold">Immunization</label>
-                        <InputText v-model="form.immunization" class="w-full" />
-                    </div>
-
-                    <!-- SINGLE "OTHER'S, SPECIFY" FIELD -->
-                    <div>
-                        <label class="text-sm font-semibold">Other's, specify</label>
-                        <InputText v-model="form.otherSpecify" class="w-full mt-1" placeholder="Specify other conditions" />
-                    </div>
-
-                    <!-- CHECKBOXES -->
-                    <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.iron_supplementation" :binary="true" />
-                        <label>Iron Supplementation</label>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.deworming_status" :binary="true" />
-                        <label>Dewormed</label>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.sbfp_beneficiary" :binary="true" />
-                        <label>SBFP Beneficiary</label>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <Checkbox v-model="form.four_ps_beneficiary" :binary="true" />
-                        <label>4Ps Beneficiary</label>
-                    </div>
-
                 </div>
-            </template>
-            <template #footer>
-                <hr class="my-2" />
+
+                <!-- Screenings -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label>Vision Screening <span class="text-red-500">*</span></label>
+                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.vision_screening">{{ errors.vision_screening }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Auditory Screening <span class="text-red-500">*</span></label>
+                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.auditory_screening">{{ errors.auditory_screening }}</small>
+                    </div>
+                </div>
+
+                <!-- Physical Assessment -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label>Skin <span class="text-red-500">*</span></label>
+                        <Select v-model="form.skin" :options="skinOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.skin">{{ errors.skin }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Scalp <span class="text-red-500">*</span></label>
+                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.scalp">{{ errors.scalp }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Eye <span class="text-red-500">*</span></label>
+                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.eye">{{ errors.eye }}</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label>Ear <span class="text-red-500">*</span></label>
+                        <Select v-model="form.ear" :options="earOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.ear">{{ errors.ear }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Nose <span class="text-red-500">*</span></label>
+                        <Select v-model="form.nose" :options="noseOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.nose">{{ errors.nose }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Mouth <span class="text-red-500">*</span></label>
+                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.mouth">{{ errors.mouth }}</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="form-group">
+                        <label>Lungs <span class="text-red-500">*</span></label>
+                        <Select v-model="form.lungs" :options="normalAbnormalOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Heart <span class="text-red-500">*</span></label>
+                        <Select v-model="form.heart" :options="normalAbnormalOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Abdomen <span class="text-red-500">*</span></label>
+                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.abdomen">{{ errors.abdomen }}</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Deformities <span class="text-red-500">*</span></label>
+                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" required />
+                        <small class="text-red-500" v-if="errors.deformities">{{ errors.deformities }}</small>
+                    </div>
+                </div>
+
+                <!-- Immunization & Benefits Section -->
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 class="text-md font-semibold mb-4 text-blue-800">Immunization & Benefits</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="form-group">
+                            <label>Iron Supplementation</label>
+                            <div class="flex items-center gap-2">
+                                <Checkbox v-model="form.iron_supplementation_check" :binary="true" />
+                                <span class="text-sm">Yes</span>
+                            </div>
+                            <small class="text-red-500" v-if="errors.iron_supplementation">{{ errors.iron_supplementation }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Dewormed</label>
+                            <div class="flex items-center gap-2">
+                                <Checkbox v-model="form.deworming_check" :binary="true" />
+                                <span class="text-sm">Yes</span>
+                            </div>
+                            <small class="text-red-500" v-if="errors.deworming_status">{{ errors.deworming_status }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label>SBFP Beneficiary</label>
+                            <div class="flex items-center gap-2">
+                                <Checkbox v-model="form.sbfp_beneficiary" :binary="true" />
+                                <span class="text-sm">Yes</span>
+                            </div>
+                            <small class="text-red-500" v-if="errors.sbfp_beneficiary">{{ errors.sbfp_beneficiary }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label>4Ps Beneficiary</label>
+                            <div class="flex items-center gap-2">
+                                <Checkbox v-model="form.four_ps_beneficiary" :binary="true" />
+                                <span class="text-sm">Yes</span>
+                            </div>
+                            <small class="text-red-500" v-if="errors.four_ps_beneficiary">{{ errors.four_ps_beneficiary }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <InputText v-model="form.remarks" class="w-full" />
+                    <small class="text-red-500" v-if="errors.remarks">{{ errors.remarks }}</small>
+                </div>
+
                 <div class="flex justify-end gap-2">
-                    <Button label="Cancel"  @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${gradeLevel.value}`)"
-                            severity="secondary" class="p-button-secondary" />
-                    <Button label="Add" class="p-button-primary" @click="submitForm" />
+                    <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${props.grade_level || props.selectedGrade?.replace('Grade ', '') || '6'}`)" />
+                    <Button type="submit" label="Create" :loading="form.processing" />
                 </div>
-            </template>
-        </Card>
+            </form>
+        </div>
     </div>
 </template>
 
-<script>
-import { ref, watch } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
-import Card from "primevue/card";
-import InputText from "primevue/inputtext";
-import MultiSelect from "primevue/multiselect";
-import Select from "primevue/select";
-import Checkbox from "primevue/checkbox";
-import Button from "primevue/button";
+<script setup>
+import { Head, useForm } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 
-export default {
-    components: { Card, InputText, MultiSelect, Select, Checkbox, Button },
-    setup() {
-        const form = useForm({
-            height: "",
-            weight: "",
-            nutritional_status_bmi: "",
-            nutritional_status_height: "",
-            vision_screening: null,
-            auditory_screening: null,
-            skin: "",
-            scalp: "",
-            eye: "",
-            ear: "",
-            nose: "",
-            mouth: "",
-            throat: "",
-            neck: "",
-            lungs_heart: "",
-            abdomen: "",
-            deformities: "",
-            deworming_status: false,
-            iron_supplementation: false,
-            sbfp_beneficiary: false,
-            four_ps_beneficiary: false,
-            temperature: "",
-            heart_rate: "",
-            remarks: "",
-            immunization: "",
-            other_specify: "",
-            student_id: usePage().props.student.id,
-            grade_level: usePage().props.grade_level || '6',
-            examination_date: new Date().toISOString().split('T')[0],
-            school_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-            // Frontend display fields (not sent to backend)
-            skinScalp: [],
-            eyesEarsNose: [],
-            mouthThroatNeck: [],
-            lungsHeart: [],
-            nutritionalStatusBMI: "",
-            nutritionalStatusHeight: "",
-            heartRate: "",
-            otherSpecify: ""
-        });
-
-        const visionOptions = ["Passed", "Failed"];
-        const auditoryOptions = ["Passed", "Failed"];
-        const scalpOptions = ["Presence of Lice", "Redness of Skin", "White Spots", "Flaky Skin", "Impetigo/Boil", "Hematoma", "Bruises/Injuries", "Itchiness", "Skin Lesions", "Acne/Pimple"];
-        const eyesEarsNoseOptions = ["Normal", "Stye", "Eye Redness", "Ocular Misalignment", "Pale Conjunctiva", "Ear Discharge", "Impacted Cerumen", "Mucus Discharge", "Nose Bleeding (Epistaxis)", "Eye Discharge", "Matted Eyelashes"];
-        const mouthThroatNeckOptions = ["Normal", "Enlarged Tonsil", "Presence of Lesions", "Inflamed Pharynx", "Enlarged Lymph Nodes", "Others"];
-        const lungsHeartOptions = ["Normal", "Rales", "Wheeze", "Murmur", "Irregular Heart Rate", "Others"];
-        const abdomenOptions = ["Normal", "Distended", "Abdominal Pain", "Tenderness", "Dysmenorrhea", "Others"];
-        const deformitiesOptions = ["Acquired", "Congenital"];
-
-        const heightError = ref("");
-        const weightError = ref("");
-
-        const validateHeight = () => {
-            if (!form.height || form.height < 50 || form.height > 200) {
-                heightError.value = "Height must be between 50 cm and 200 cm.";
-            } else {
-                heightError.value = "";
-            }
-        };
-
-        const validateWeight = () => {
-            if (!form.weight || form.weight < 10 || form.weight > 200) {
-                weightError.value = "Weight must be between 10 kg and 200 kg.";
-            } else {
-                weightError.value = "";
-            }
-        };
-
-        watch([() => form.height, () => form.weight], () => {
-            validateHeight();
-            validateWeight();
-
-            const heightMeters = form.height / 100;
-            if (heightMeters > 0 && form.weight > 0) {
-                const bmi = (form.weight / (heightMeters ** 2)).toFixed(2);
-                const bmiStatus = bmi < 18.5 ? "Underweight" : bmi < 24.9 ? "Normal" : bmi < 29.9 ? "Overweight" : "Obese";
-                form.nutritional_status_bmi = bmiStatus;
-                form.nutritionalStatusBMI = bmiStatus; // For display
-            } else {
-                form.nutritional_status_bmi = "";
-                form.nutritionalStatusBMI = "";
-            }
-            const heightStatus = form.height < 120 ? "Short Stature" : "Normal";
-            form.nutritional_status_height = heightStatus;
-            form.nutritionalStatusHeight = heightStatus; // For display
-        });
-
-        const page = usePage();
-        const studentId = page.props.student?.id;
-        const gradeLevel = page.props.grade_level;
-
-        console.log('Student ID:', studentId, 'Grade Level:', gradeLevel, 'Student:', page.props.student);
-
-        const submitForm = () => {
-            // Convert multiselect arrays to individual fields
-            if (form.skinScalp && Array.isArray(form.skinScalp)) {
-                form.skin = form.skinScalp.filter(item => ['Presence of Lice', 'Redness of Skin', 'White Spots', 'Flaky Skin', 'Impetigo/Boil', 'Hematoma', 'Bruises/Injuries', 'Itchiness', 'Skin Lesions', 'Acne/Pimple'].includes(item)).join(', ');
-                form.scalp = form.skinScalp.filter(item => ['Presence of Lice', 'Redness of Skin', 'White Spots', 'Flaky Skin'].includes(item)).join(', ');
-            }
-
-            if (form.eyesEarsNose && Array.isArray(form.eyesEarsNose)) {
-                form.eye = form.eyesEarsNose.filter(item => ['Stye', 'Eye Redness', 'Ocular Misalignment', 'Pale Conjunctiva', 'Eye Discharge', 'Matted Eyelashes'].includes(item)).join(', ');
-                form.ear = form.eyesEarsNose.filter(item => ['Ear Discharge', 'Impacted Cerumen'].includes(item)).join(', ');
-                form.nose = form.eyesEarsNose.filter(item => ['Mucus Discharge', 'Nose Bleeding (Epistaxis)'].includes(item)).join(', ');
-            }
-
-            if (form.mouthThroatNeck && Array.isArray(form.mouthThroatNeck)) {
-                form.mouth = form.mouthThroatNeck.filter(item => ['Enlarged Tonsil', 'Presence of Lesions'].includes(item)).join(', ');
-                form.throat = form.mouthThroatNeck.filter(item => ['Inflamed Pharynx'].includes(item)).join(', ');
-                form.neck = form.mouthThroatNeck.filter(item => ['Enlarged Lymph Nodes'].includes(item)).join(', ');
-            }
-
-            if (form.lungsHeart && Array.isArray(form.lungsHeart)) {
-                form.lungs_heart = form.lungsHeart.join(', ');
-            }
-
-            if (form.abdomen && Array.isArray(form.abdomen)) {
-                form.abdomen = form.abdomen.join(', ');
-            }
-
-            if (form.deformities && Array.isArray(form.deformities)) {
-                form.deformities = form.deformities.join(', ');
-            }
-
-            // Map frontend field names to backend field names
-            form.heart_rate = form.heartRate || form.heart_rate;
-            form.other_specify = form.otherSpecify || form.other_specify;
-            form.nutritional_status_bmi = form.nutritionalStatusBMI || form.nutritional_status_bmi;
-            form.nutritional_status_height = form.nutritionalStatusHeight || form.nutritional_status_height;
-
-            // Convert boolean checkboxes to Yes/No strings
-            form.deworming_status = form.deworming_status ? 'Yes' : 'No';
-            form.iron_supplementation = form.iron_supplementation ? 'Yes' : 'No';
-
-            console.log('Submitting form data:', form);
-
-            // Submit the form data using the correct route name
-            form.post(route('health-examination.store'), {
-                onSuccess: () => {
-                    // The server will handle the redirect with the success message
-                    console.log('Form submitted successfully, waiting for redirect...');
-                },
-                onError: (errors) => {
-                    console.error('Form submission errors:', errors);
-                },
-                preserveScroll: true,
-                preserveState: true
-            });
-        };
-
-        return {
-            form,
-            visionOptions,
-            auditoryOptions,
-            scalpOptions,
-            eyesEarsNoseOptions,
-            mouthThroatNeckOptions,
-            lungsHeartOptions,
-            abdomenOptions,
-            deformitiesOptions,
-            submitForm,
-            heightError,
-            weightError,
-            validateHeight,
-            validateWeight
-        };
+const props = defineProps({
+    student: {
+        type: Object,
+        required: true
+    },
+    selectedGrade: {
+        type: String,
+        default: ''
+    },
+    grade_level: {  // Add this prop that comes from backend
+        type: String,
+        default: ''
+    },
+    errors: {
+        type: Object,
+        default: () => ({})
     }
-};
+})
+
+// Debug grade level
+console.log('Create form - selectedGrade prop:', props.selectedGrade)
+console.log('Create form - grade_level prop:', props.grade_level)
+console.log('Create form - student:', props.student)
+
+// Form options
+const bmiOptions = [
+    'Normal (18.5-24.9)',
+    'Underweight (16.0-18.4)', 
+    'Severely Underweight (<16.0)',
+    'Overweight (25.0-29.9)',
+    'Obese (≥30.0)'
+]
+
+const heightOptions = [
+    'Normal (≥-2 SD)',
+    'Mild Stunting (-2 to -3 SD)',
+    'Severe Stunting (<-3 SD)'
+]
+
+const screeningOptions = ['Normal', 'Abnormal']
+
+const skinOptions = ['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin']
+const scalpOptions = ['Normal', 'Presence of Lice']
+const eyeOptions = ['Normal', 'Eye Redness', 'Pale Conjunctiva']
+const earOptions = ['Normal', 'Ear discharge']
+const noseOptions = ['Normal', 'Mucus discharge', 'Nose Bleeding']
+const mouthOptions = ['Normal', 'Enlarged tonsil', 'Inflamed pharynx']
+const lungsHeartOptions = ['Normal', 'Rales', 'Wheeze', 'Murmur', 'Irregular heart rate']
+const abdomenOptions = ['Normal', 'Distended', 'Tenderness']
+const deformitiesOptions = ['None', 'Acquired', 'Congenital']
+
+const yesNoOptions = ['Yes', 'No']
+const dewormingOptions = ['dewormed', 'not_dewormed']
+
+// Form setup
+const form = useForm({
+    temperature: '',
+    heart_rate: '',
+    height: '',
+    weight: '',
+    nutritional_status_bmi: '',
+    nutritional_status_height: '',
+    vision_screening: '',
+    auditory_screening: '',
+    skin: '',
+    scalp: '',
+    eye: '',
+    ear: '',
+    nose: '',
+    mouth: '',
+    lungs: '',
+    heart: '',
+    abdomen: '',
+    deformities: '',
+    // Checkbox fields for UI
+    iron_supplementation_check: false,
+    deworming_check: false,
+    sbfp_beneficiary: false,
+    four_ps_beneficiary: false,
+    // Backend fields (will be set from checkboxes)
+    iron_supplementation: '',
+    deworming_status: '',
+    immunization: '',
+    other_specify: '',
+    remarks: '',
+    student_id: props.student.id,
+    grade_level: props.grade_level || props.selectedGrade?.replace('Grade ', '') || '6',
+    school_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+    examination_date: new Date().toISOString().split('T')[0]
+})
+
+// BMI calculation
+const calculateBMI = () => {
+    const height = parseFloat(form.height)
+    const weight = parseFloat(form.weight)
+    
+    if (height && weight && height > 0 && weight > 0) {
+        const heightInMeters = height / 100
+        const bmi = weight / (heightInMeters * heightInMeters)
+        
+        if (bmi < 16.0) {
+            form.nutritional_status_bmi = 'Severely Underweight (<16.0)'
+        } else if (bmi < 18.5) {
+            form.nutritional_status_bmi = 'Underweight (16.0-18.4)'
+        } else if (bmi < 25.0) {
+            form.nutritional_status_bmi = 'Normal (18.5-24.9)'
+        } else if (bmi < 30.0) {
+            form.nutritional_status_bmi = 'Overweight (25.0-29.9)'
+        } else {
+            form.nutritional_status_bmi = 'Obese (≥30.0)'
+        }
+    }
+}
+
+// Validation rules
+const validateForm = () => {
+    const errors = {}
+    
+    // Required vital signs
+    if (!form.temperature) errors.temperature = 'Temperature is required'
+    if (!form.heart_rate) errors.heart_rate = 'Heart rate is required'
+    if (!form.height) errors.height = 'Height is required'
+    if (!form.weight) errors.weight = 'Weight is required'
+    
+    // Required nutritional status
+    if (!form.nutritional_status_bmi) errors.nutritional_status_bmi = 'BMI nutritional status is required'
+    if (!form.nutritional_status_height) errors.nutritional_status_height = 'Height for age nutritional status is required'
+    
+    // Required screenings
+    if (!form.vision_screening) errors.vision_screening = 'Vision screening is required'
+    if (!form.auditory_screening) errors.auditory_screening = 'Auditory screening is required'
+    
+    // Required physical examination fields
+    if (!form.skin) errors.skin = 'Skin examination is required'
+    if (!form.scalp) errors.scalp = 'Scalp examination is required'
+    if (!form.eye) errors.eye = 'Eye examination is required'
+    if (!form.ear) errors.ear = 'Ear examination is required'
+    if (!form.nose) errors.nose = 'Nose examination is required'
+    if (!form.mouth) errors.mouth = 'Mouth examination is required'
+    if (!form.lungs) errors.lungs = 'Lungs examination is required'
+    if (!form.heart) errors.heart = 'Heart examination is required'
+    if (!form.abdomen) errors.abdomen = 'Abdomen examination is required'
+    if (!form.deformities) errors.deformities = 'Deformities examination is required'
+    
+    return errors
+}
+
+const errors = ref({})
+
+const submit = () => {
+    // Validate form
+    const validationErrors = validateForm()
+    errors.value = validationErrors
+    
+    if (Object.keys(validationErrors).length > 0) {
+        console.log('Form validation failed:', validationErrors)
+        return
+    }
+    
+    // Convert checkbox values to backend format
+    form.iron_supplementation = form.iron_supplementation_check ? 'Yes' : 'No'
+    form.deworming_status = form.deworming_check ? 'dewormed' : 'not_dewormed'
+    
+    console.log('Submitting form with data:', form.data())
+    
+    form.post(route('health-examination.store'), {
+        onSuccess: (response) => {
+            console.log('Form submitted successfully:', response)
+            errors.value = {} // Clear validation errors on success
+        },
+        onError: (serverErrors) => {
+            console.error('Form submission errors:', serverErrors)
+            // Merge server errors with client validation errors
+            errors.value = { ...errors.value, ...serverErrors }
+        },
+        onFinish: () => {
+            console.log('Form submission finished')
+        }
+    })
+}
 </script>
+
+<style scoped>
+.health-examination-form {
+    padding: 20px;
+    background-color: #f5f7f9;
+    min-height: 100vh;
+}
+
+.white-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #374151;
+}
+
+:deep(.p-inputtext) {
+    width: 100%;
+}
+
+:deep(.p-dropdown) {
+    width: 100%;
+}
+
+:deep(.p-button) {
+    min-width: 100px;
+}
+</style>

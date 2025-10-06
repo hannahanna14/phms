@@ -15,35 +15,62 @@ class StudentTeacherAssignmentSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get the teacher user
-        $teacher = User::where('username', 'teacher')->first();
+        // Clear all existing assignments
+        StudentTeacherAssignment::truncate();
+
+        // Get all teachers
+        $teachers = User::where('role', 'teacher')->get();
         
-        if (!$teacher) {
-            $this->command->info('Teacher user not found. Please create teacher user first.');
+        if ($teachers->isEmpty()) {
+            $this->command->info('No teachers found in database.');
             return;
         }
 
-        // Clear existing assignments for this teacher
-        StudentTeacherAssignment::where('teacher_id', $teacher->id)->delete();
+        // Define grade level mapping for teachers
+        $gradeTeacherMapping = [
+            'Kinder 2' => 'mariasantos',
+            'Grade 1' => 'josemiguel', 
+            'Grade 2' => 'analuz',
+            'Grade 3' => 'robertocarlos',
+            'Grade 4' => 'carmenrosa',
+            'Grade 5' => 'eduardoramos',
+            'Grade 6' => 'luzmarina'
+        ];
 
-        // Get first 2 students to assign to the teacher
-        $students = Student::take(2)->get();
-        
-        if ($students->isEmpty()) {
-            $this->command->info('No students found in database.');
-            return;
+        $totalAssignments = 0;
+
+        foreach ($gradeTeacherMapping as $gradeLevel => $teacherUsername) {
+            // Find the teacher
+            $teacher = User::where('username', $teacherUsername)->where('role', 'teacher')->first();
+            
+            if (!$teacher) {
+                $this->command->info("Teacher {$teacherUsername} not found, skipping {$gradeLevel}");
+                continue;
+            }
+
+            // Get all students for this grade level
+            $students = Student::where('grade_level', $gradeLevel)->get();
+            
+            if ($students->isEmpty()) {
+                $this->command->info("No students found for {$gradeLevel}");
+                continue;
+            }
+
+            // Assign all students of this grade to their teacher
+            foreach ($students as $student) {
+                StudentTeacherAssignment::create([
+                    'student_id' => $student->id,
+                    'teacher_id' => $teacher->id,
+                    'grade_level' => $student->grade_level,
+                    'section' => $student->section ?? 'A',
+                    'school_year' => $student->school_year ?? '2024-2025'
+                ]);
+                $totalAssignments++;
+            }
+            
+            $this->command->info("Assigned {$students->count()} {$gradeLevel} students to {$teacher->full_name}");
         }
         
-        foreach ($students as $student) {
-            StudentTeacherAssignment::create([
-                'student_id' => $student->id,
-                'teacher_id' => $teacher->id,
-                'grade_level' => $student->grade_level,
-                'section' => $student->section,
-                'school_year' => $student->school_year ?? '2024-2025'
-            ]);
-        }
-        
-        $this->command->info('Assigned ' . $students->count() . ' students to teacher: ' . $students->pluck('full_name')->join(', '));
+        $this->command->info("Total assignments created: {$totalAssignments}");
     }
 }

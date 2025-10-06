@@ -99,8 +99,14 @@
                             <th v-if="health_exam_fields.includes('neck')">Neck</th>
                             <th v-if="health_exam_fields.includes('lungs_heart')">Lungs/Heart</th>
                             <th v-if="health_exam_fields.includes('abdomen')">Abdomen</th>
+                            <th v-if="health_exam_fields.includes('deformities')">Deformities</th>
                             <th v-if="health_exam_fields.includes('deworming_status')">Deworming</th>
                             <th v-if="health_exam_fields.includes('iron_supplementation')">Iron Supplementation</th>
+                            <th v-if="health_exam_fields.includes('sbfp_beneficiary')">SBFP Beneficiary</th>
+                            <th v-if="health_exam_fields.includes('four_ps_beneficiary')">4Ps Beneficiary</th>
+                            <th v-if="health_exam_fields.includes('immunization')">Immunization</th>
+                            <th v-if="health_exam_fields.includes('other_specify')">Other Specify</th>
+                            <th v-if="health_exam_fields.includes('remarks')">Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -130,8 +136,14 @@
                             <td v-if="health_exam_fields.includes('neck')">{{ student.health_exam?.neck || 'N/A' }}</td>
                             <td v-if="health_exam_fields.includes('lungs_heart')">{{ student.health_exam?.lungs_heart || 'N/A' }}</td>
                             <td v-if="health_exam_fields.includes('abdomen')">{{ student.health_exam?.abdomen || 'N/A' }}</td>
+                            <td v-if="health_exam_fields.includes('deformities')">{{ student.health_exam?.deformities || 'N/A' }}</td>
                             <td v-if="health_exam_fields.includes('deworming_status')">{{ student.health_exam?.deworming_status || 'N/A' }}</td>
                             <td v-if="health_exam_fields.includes('iron_supplementation')">{{ student.health_exam?.iron_supplementation || 'N/A' }}</td>
+                            <td v-if="health_exam_fields.includes('sbfp_beneficiary')">{{ student.health_exam?.sbfp_beneficiary ? 'Yes' : 'No' }}</td>
+                            <td v-if="health_exam_fields.includes('four_ps_beneficiary')">{{ student.health_exam?.four_ps_beneficiary ? 'Yes' : 'No' }}</td>
+                            <td v-if="health_exam_fields.includes('immunization')">{{ student.health_exam?.immunization || 'N/A' }}</td>
+                            <td v-if="health_exam_fields.includes('other_specify')">{{ student.health_exam?.other_specify || 'N/A' }}</td>
+                            <td v-if="health_exam_fields.includes('remarks')">{{ student.health_exam?.remarks || 'N/A' }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -260,13 +272,7 @@
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('lungs')" header="Lungs/Heart">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.lungs_heart || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('heart')" header="Lungs/Heart">
+                        <Column v-if="health_exam_fields.includes('lungs_heart')" header="Lungs/Heart">
                             <template #body="{ data }">
                                 <span>{{ data.health_exam?.lungs_heart || 'N/A' }}</span>
                             </template>
@@ -293,6 +299,36 @@
                         <Column v-if="health_exam_fields.includes('iron_supplementation')" header="Iron Supplementation">
                             <template #body="{ data }">
                                 <span>{{ data.health_exam?.iron_supplementation || 'N/A' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="health_exam_fields.includes('sbfp_beneficiary')" header="SBFP Beneficiary">
+                            <template #body="{ data }">
+                                <span>{{ data.health_exam?.sbfp_beneficiary ? 'Yes' : 'No' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="health_exam_fields.includes('four_ps_beneficiary')" header="4Ps Beneficiary">
+                            <template #body="{ data }">
+                                <span>{{ data.health_exam?.four_ps_beneficiary ? 'Yes' : 'No' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="health_exam_fields.includes('immunization')" header="Immunization">
+                            <template #body="{ data }">
+                                <span>{{ data.health_exam?.immunization || 'N/A' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="health_exam_fields.includes('other_specify')" header="Other Specify">
+                            <template #body="{ data }">
+                                <span>{{ data.health_exam?.other_specify || 'N/A' }}</span>
+                            </template>
+                        </Column>
+
+                        <Column v-if="health_exam_fields.includes('remarks')" header="Remarks">
+                            <template #body="{ data }">
+                                <span>{{ data.health_exam?.remarks || 'N/A' }}</span>
                             </template>
                         </Column>
                 </DataTable>

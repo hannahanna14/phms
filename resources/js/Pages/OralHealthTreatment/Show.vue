@@ -16,7 +16,49 @@
 
             <!-- Timer Status -->
             <div v-if="timer_status" class="mb-6 p-4 rounded-lg" :class="getAlertClass()">
-                <strong>Timer:</strong> {{ timer_status.display }}
+                <div class="flex justify-between items-center">
+                    <div>
+                        <strong>Timer:</strong> {{ timer_status.display }}
+                        <div v-if="remaining_minutes > 0" class="text-sm text-gray-600 mt-1">
+                            {{ remaining_minutes }} minutes remaining
+                        </div>
+                    </div>
+                    
+                    <!-- Timer Controls -->
+                    <div class="flex gap-2" v-if="timer_status.status !== 'expired'">
+                        <Button 
+                            v-if="timer_status.status === 'not_started'"
+                            label="Start Timer" 
+                            icon="pi pi-play" 
+                            size="small"
+                            @click="startTimer"
+                        />
+                        <Button 
+                            v-if="timer_status.status === 'active'"
+                            label="Pause" 
+                            icon="pi pi-pause" 
+                            size="small"
+                            severity="warning"
+                            @click="pauseTimer"
+                        />
+                        <Button 
+                            v-if="timer_status.status === 'paused'"
+                            label="Resume" 
+                            icon="pi pi-play" 
+                            size="small"
+                            severity="success"
+                            @click="resumeTimer"
+                        />
+                        <Button 
+                            v-if="timer_status.status === 'active' || timer_status.status === 'paused'"
+                            label="Complete" 
+                            icon="pi pi-check" 
+                            size="small"
+                            severity="success"
+                            @click="completeTimer"
+                        />
+                    </div>
+                </div>
             </div>
 
             <!-- Treatment Details -->
@@ -65,8 +107,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import Button from 'primevue/button';
+import { useTimerNotifications } from '@/Utils/timerMixin.js';
+import { integrateOralHealthTreatmentNotifications } from '@/Utils/notificationIntegration.js';
 
 const props = defineProps({
     treatment: Object,
@@ -74,6 +118,9 @@ const props = defineProps({
     timer_status: Object,
     remaining_minutes: Number
 });
+
+// Initialize timer notifications for oral health treatments
+const { startTimerMonitoring, stopTimerMonitoring } = useTimerNotifications('oral_health');
 
 const getAlertClass = () => {
     if (props.timer_status?.status === 'expired') return 'bg-red-100 text-red-800';
@@ -88,4 +135,96 @@ const editTreatment = () => {
 const goBack = () => {
     window.history.back();
 };
+
+// Timer control methods
+const startTimer = async () => {
+    try {
+        const response = await fetch(`/api/oral-health-treatment/${props.treatment.id}/start-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error starting timer:', error);
+    }
+};
+
+const pauseTimer = async () => {
+    try {
+        const response = await fetch(`/api/oral-health-treatment/${props.treatment.id}/pause-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            stopTimerMonitoring();
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error pausing timer:', error);
+    }
+};
+
+const resumeTimer = async () => {
+    try {
+        const response = await fetch(`/api/oral-health-treatment/${props.treatment.id}/resume-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error resuming timer:', error);
+    }
+};
+
+const completeTimer = async () => {
+    try {
+        const response = await fetch(`/api/oral-health-treatment/${props.treatment.id}/complete-timer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        if (response.ok) {
+            // Trigger completion notification
+            const integration = integrateOralHealthTreatmentNotifications();
+            integration.handleStatusChange('completed', props.student, props.treatment);
+            
+            stopTimerMonitoring();
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error completing timer:', error);
+    }
+};
+
+// Start monitoring timer when component mounts
+onMounted(() => {
+    if (props.timer_status?.status === 'active' && props.remaining_minutes > 0) {
+        console.log('Starting timer monitoring for oral health treatment:', props.treatment.title);
+        startTimerMonitoring(props.student, props.treatment, props.remaining_minutes);
+    }
+});
+
+// Stop monitoring when component unmounts
+onUnmounted(() => {
+    stopTimerMonitoring();
+});
 </script>

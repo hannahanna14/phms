@@ -39,7 +39,7 @@ class Incident extends Model
     public function startTimer()
     {
         $this->started_at = now();
-        $this->expires_at = now()->addHours(2);
+        $this->expires_at = now()->addHours(2); // Standard 2-hour timer
         $this->is_expired = false;
         $this->timer_status = 'active';
         $this->save();
