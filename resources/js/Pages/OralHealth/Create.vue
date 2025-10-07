@@ -21,19 +21,19 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Interactive Dental Chart -->
                 <div class="mb-8">
                     <div class="flex justify-center mb-4">
                         <div class="chart-selector">
-                            <button 
+                            <button
                                 type="button"
                                 :class="['chart-btn', { active: showPermanent }]"
                                 @click="toggleChartType('permanent')"
                             >
                                 Permanent Teeth
                             </button>
-                            <button 
+                            <button
                                 type="button"
                                 :class="['chart-btn', { active: !showPermanent }]"
                                 @click="toggleChartType('primary')"
@@ -42,7 +42,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="dental-chart-container">
                         <div v-show="showPermanent" class="dental-chart compact">
                             <h3 class="text-center text-lg font-semibold mb-4">Permanent Teeth (32 teeth)</h3>
@@ -53,7 +53,7 @@
                                 <div class="arch-label">Lower Teeth</div>
                             </div>
                         </div>
-                        
+
                         <div v-show="!showPermanent" class="dental-chart compact">
                             <h3 class="text-center text-lg font-semibold mb-4">Primary Teeth (20 teeth)</h3>
                             <div class="teeth-section">
@@ -65,17 +65,17 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Permanent Teeth Section -->
                     <div class="border rounded-lg p-6">
                         <h2 class="text-lg font-semibold text-center mb-6">Permanent Teeth</h2>
-                        
+
                         <div class="grid grid-cols-3 gap-6">
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t. <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_index_dft" 
+                                <InputText
+                                    v-model="form.permanent_index_dft"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -86,8 +86,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_teeth_decayed" 
+                                <InputText
+                                    v-model="form.permanent_teeth_decayed"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -98,8 +98,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_teeth_filled" 
+                                <InputText
+                                    v-model="form.permanent_teeth_filled"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -110,8 +110,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_total_dft" 
+                                <InputText
+                                    v-model="form.permanent_total_dft"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -122,8 +122,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_for_extraction" 
+                                <InputText
+                                    v-model="form.permanent_for_extraction"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -134,8 +134,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">For Filling <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.permanent_for_filling" 
+                                <InputText
+                                    v-model="form.permanent_for_filling"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -149,12 +149,12 @@
                     <!-- Temporary Teeth Section -->
                     <div class="border rounded-lg p-6">
                         <h2 class="text-lg font-semibold text-center mb-6">Temporary Teeth</h2>
-                        
+
                         <div class="grid grid-cols-3 gap-6">
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t. <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_index_dft" 
+                                <InputText
+                                    v-model="form.temporary_index_dft"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -165,8 +165,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_teeth_decayed" 
+                                <InputText
+                                    v-model="form.temporary_teeth_decayed"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -177,8 +177,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_teeth_filled" 
+                                <InputText
+                                    v-model="form.temporary_teeth_filled"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -189,8 +189,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_total_dft" 
+                                <InputText
+                                    v-model="form.temporary_total_dft"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -201,8 +201,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_for_extraction" 
+                                <InputText
+                                    v-model="form.temporary_for_extraction"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -213,8 +213,8 @@
 
                             <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">For Filling <span class="text-red-500">*</span></label>
-                                <InputText 
-                                    v-model="form.temporary_for_filling" 
+                                <InputText
+                                    v-model="form.temporary_for_filling"
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
@@ -228,7 +228,7 @@
                     <!-- Oral Health Conditions Section -->
                     <div class="border rounded-lg p-6">
                         <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
-                        
+
                         <div class="overflow-x-auto">
                             <table class="w-full border-collapse border border-gray-300">
                                 <thead>
@@ -246,27 +246,27 @@
                                             <div class="flex flex-col items-center space-y-1">
                                                 <!-- Checkbox -->
                                                 <label class="flex items-center space-x-1 text-xs">
-                                                    <input 
+                                                    <input
                                                         v-model="form.conditions[condition.key][gradeRange.key].present"
-                                                        type="checkbox" 
+                                                        type="checkbox"
                                                         class="w-3 h-3"
                                                     >
                                                     <span>Present</span>
                                                 </label>
-                                                
+
                                                 <!-- Date Input (only show if present is checked) -->
-                                                <input 
+                                                <input
                                                     v-if="form.conditions[condition.key][gradeRange.key].present"
                                                     v-model="form.conditions[condition.key][gradeRange.key].date"
-                                                    type="date" 
+                                                    type="date"
                                                     class="w-20 text-xs border border-gray-300 rounded px-1 py-0.5"
                                                 >
-                                                
+
                                                 <!-- Text Input for "Others, specify" (only show if present is checked and it's the others_specify condition) -->
-                                                <input 
+                                                <input
                                                     v-if="condition.key === 'others_specify' && form.conditions[condition.key][gradeRange.key].present"
                                                     v-model="form.conditions[condition.key][gradeRange.key].specification"
-                                                    type="text" 
+                                                    type="text"
                                                     placeholder="Specify..."
                                                     class="w-24 text-xs border border-gray-300 rounded px-1 py-0.5"
                                                 >
@@ -279,14 +279,14 @@
                     </div>
 
                     <div class="flex justify-end space-x-4 mt-8">
-                        <Button 
-                            type="button" 
+                        <Button
+                            type="button"
                             @click="$inertia.visit(`/pupil-health/oral-health/${student.id}?grade=${gradeLevel.value}`)"
                             severity="secondary"
                             label="Cancel"
                         />
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             label="Add"
                             :loading="form.processing"
                         />
@@ -302,12 +302,12 @@
             <h3 id="selected-tooth-title">Select a tooth</h3>
             <button id="close-panel" class="close-btn" type="button">&times;</button>
         </div>
-        
+
         <div class="panel-content">
             <div class="current-symbols-display" id="current-symbols-display">
                 <strong>Current conditions:</strong> <span id="tooth-symbols">None</span>
             </div>
-            
+
             <div class="symbol-categories">
                 <div class="symbol-group">
                     <h4>Conditions</h4>
@@ -318,7 +318,7 @@
                         <button class="symbol-btn" data-symbol="M" title="Missing tooth" type="button">M</button>
                     </div>
                 </div>
-                
+
                 <div class="symbol-group">
                     <h4>Treatments</h4>
                     <div class="symbol-buttons">
@@ -328,7 +328,7 @@
                         <button class="symbol-btn" data-symbol="JC" title="Jacket Crown" type="button">JC</button>
                     </div>
                 </div>
-                
+
                 <div class="symbol-group">
                     <h4>Prosthetics</h4>
                     <div class="symbol-buttons">
@@ -338,7 +338,7 @@
                         <button class="symbol-btn" data-symbol="CD" title="Complete Denture" type="button">CD</button>
                     </div>
                 </div>
-                
+
                 <div class="symbol-group">
                     <h4>Restorations</h4>
                     <div class="symbol-buttons">
@@ -348,7 +348,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="panel-actions">
                 <button id="clear-tooth-symbols" class="action-btn secondary" type="button">Clear Tooth</button>
                 <button id="confirm-symbols" class="action-btn primary" type="button">Confirm</button>
@@ -403,7 +403,7 @@ const oralHealthConditions = [
 // Show only current grade being examined
 const getCurrentGradeRange = (currentGrade) => {
     const gradeNum = parseInt(currentGrade) || 0
-    
+
     // Map grade numbers to their corresponding range keys and simple labels
     const gradeMapping = {
         0: { key: 'kinder', label: 'Grade Level' },
@@ -414,12 +414,12 @@ const getCurrentGradeRange = (currentGrade) => {
         5: { key: 'grade_5_11', label: 'Grade Level' },
         6: { key: 'grade_6_12', label: 'Grade Level' }
     }
-    
+
     // Handle Kinder cases
     if (currentGrade === 'K' || currentGrade === 'Kinder' || gradeNum === 0) {
         return [gradeMapping[0]]
     }
-    
+
     // Return only the current grade range
     return gradeMapping[gradeNum] ? [gradeMapping[gradeNum]] : [gradeMapping[0]]
 }
@@ -451,6 +451,7 @@ const form = useForm({
     original_grade: gradeLevel.value,
     permanent_index_dft: 0,
     permanent_teeth_decayed: 0,
+     permanent_teeth_missing: 0,
     permanent_teeth_filled: 0,
     permanent_total_dft: 0,
     permanent_for_extraction: 0,
@@ -494,7 +495,7 @@ onMounted(() => {
     // Initialize form persistence
     initializeForm()
     setupAutoSave()
-    
+
     nextTick(() => {
         initializeDentalChart()
     })
@@ -506,7 +507,7 @@ const initializeDentalChart = () => {
     createPrimaryTeeth()
     addToothSelectionFunctionality()
     addPanelFunctionality()
-    
+
     // Set initial chart based on grade level
     if (shouldShowPrimaryTeeth.value) {
         showPermanent.value = false
@@ -516,10 +517,10 @@ const initializeDentalChart = () => {
 const createUpperTeeth = () => {
     const container = document.getElementById('upper-teeth')
     if (!container) return
-    
+
     const toothNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
     const toothTypes = ['Wisdom Tooth', 'Molar', 'Molar', 'Premolar', 'Premolar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Premolar', 'Premolar', 'Molar', 'Molar', 'Wisdom Tooth']
-    
+
     container.innerHTML = ''
     for (let i = 0; i < toothNumbers.length; i++) {
         const tooth = document.createElement('div')
@@ -527,11 +528,11 @@ const createUpperTeeth = () => {
         tooth.textContent = toothNumbers[i]
         tooth.setAttribute('data-number', toothNumbers[i])
         tooth.setAttribute('data-type', toothTypes[i])
-        
+
         const curve = Math.sin((i / (toothNumbers.length - 1)) * Math.PI) * 8
         tooth.style.left = `${i * 35 + 20}px`
         tooth.style.top = `${15 - curve}px`
-        
+
         container.appendChild(tooth)
     }
 }
@@ -539,10 +540,10 @@ const createUpperTeeth = () => {
 const createLowerTeeth = () => {
     const container = document.getElementById('lower-teeth')
     if (!container) return
-    
+
     const toothNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
     const toothTypes = ['Wisdom Tooth', 'Molar', 'Molar', 'Premolar', 'Premolar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Premolar', 'Premolar', 'Molar', 'Molar', 'Wisdom Tooth']
-    
+
     container.innerHTML = ''
     for (let i = 0; i < toothNumbers.length; i++) {
         const tooth = document.createElement('div')
@@ -550,11 +551,11 @@ const createLowerTeeth = () => {
         tooth.textContent = toothNumbers[i]
         tooth.setAttribute('data-number', toothNumbers[i])
         tooth.setAttribute('data-type', toothTypes[i])
-        
+
         const curve = Math.sin((i / (toothNumbers.length - 1)) * Math.PI) * 8
         tooth.style.left = `${i * 35 + 20}px`
         tooth.style.top = `${15 + curve}px`
-        
+
         container.appendChild(tooth)
     }
 }
@@ -563,11 +564,11 @@ const createPrimaryTeeth = () => {
     const upperContainer = document.getElementById('upper-primary')
     const lowerContainer = document.getElementById('lower-primary')
     if (!upperContainer || !lowerContainer) return
-    
+
     // Upper Primary Teeth
     const upperNumbers = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65]
     const upperTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
-    
+
     upperContainer.innerHTML = ''
     for (let i = 0; i < upperNumbers.length; i++) {
         const tooth = document.createElement('div')
@@ -576,18 +577,18 @@ const createPrimaryTeeth = () => {
         tooth.setAttribute('data-number', upperNumbers[i])
         tooth.setAttribute('data-type', upperTypes[i])
         tooth.setAttribute('data-category', 'Primary')
-        
+
         const curve = Math.sin((i / (upperNumbers.length - 1)) * Math.PI) * 6
         tooth.style.left = `${i * 55 + 30}px`
         tooth.style.top = `${15 - curve}px`
-        
+
         upperContainer.appendChild(tooth)
     }
-    
+
     // Lower Primary Teeth
     const lowerNumbers = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
     const lowerTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
-    
+
     lowerContainer.innerHTML = ''
     for (let i = 0; i < lowerNumbers.length; i++) {
         const tooth = document.createElement('div')
@@ -596,27 +597,27 @@ const createPrimaryTeeth = () => {
         tooth.setAttribute('data-number', lowerNumbers[i])
         tooth.setAttribute('data-type', lowerTypes[i])
         tooth.setAttribute('data-category', 'Primary')
-        
+
         const curve = Math.sin((i / (lowerNumbers.length - 1)) * Math.PI) * 6
         tooth.style.left = `${i * 55 + 30}px`
         tooth.style.top = `${15 + curve}px`
-        
+
         lowerContainer.appendChild(tooth)
     }
 }
 
 const addToothSelectionFunctionality = () => {
     const teeth = document.querySelectorAll('.tooth')
-    
+
     teeth.forEach(tooth => {
         tooth.addEventListener('click', function() {
             if (selectedTooth) {
                 selectedTooth.classList.remove('selected')
             }
-            
+
             selectedTooth = this
             this.classList.add('selected')
-            
+
             openSidePanel()
             updatePanelContent()
         })
@@ -631,7 +632,7 @@ const openSidePanel = () => {
 const closeSidePanel = () => {
     const panel = document.getElementById('symbol-panel')
     if (panel) panel.classList.remove('open')
-    
+
     if (selectedTooth) {
         selectedTooth.classList.remove('selected')
         selectedTooth = null
@@ -640,22 +641,22 @@ const closeSidePanel = () => {
 
 const updatePanelContent = () => {
     if (!selectedTooth) return
-    
+
     const toothNumber = selectedTooth.dataset.number
     const toothType = selectedTooth.dataset.type
     const category = selectedTooth.dataset.category || 'Permanent'
-    
+
     const titleElement = document.getElementById('selected-tooth-title')
     if (titleElement) {
         titleElement.textContent = `${category} Tooth ${toothNumber} (${toothType})`
     }
-    
+
     const currentSymbols = toothSymbols[toothNumber] || []
     const symbolsDisplay = document.getElementById('tooth-symbols')
     if (symbolsDisplay) {
         symbolsDisplay.textContent = currentSymbols.length > 0 ? currentSymbols.join(', ') : 'None'
     }
-    
+
     const symbolBtns = document.querySelectorAll('.symbol-btn')
     symbolBtns.forEach(btn => {
         const symbol = btn.dataset.symbol
@@ -672,19 +673,19 @@ const addPanelFunctionality = () => {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel)
     }
-    
+
     const symbolBtns = document.querySelectorAll('.symbol-btn')
     symbolBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             if (!selectedTooth) return
-            
+
             const symbol = this.dataset.symbol
             const toothNumber = selectedTooth.dataset.number
-            
+
             if (!toothSymbols[toothNumber]) {
                 toothSymbols[toothNumber] = []
             }
-            
+
             const symbolIndex = toothSymbols[toothNumber].indexOf(symbol)
             if (symbolIndex > -1) {
                 toothSymbols[toothNumber].splice(symbolIndex, 1)
@@ -693,27 +694,27 @@ const addPanelFunctionality = () => {
                 toothSymbols[toothNumber].push(symbol)
                 this.classList.add('selected')
             }
-            
+
             updateToothSymbolDisplay()
             updatePanelContent()
             updateFormData()
         })
     })
-    
+
     const clearBtn = document.getElementById('clear-tooth-symbols')
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
             if (!selectedTooth) return
-            
+
             const toothNumber = selectedTooth.dataset.number
             toothSymbols[toothNumber] = []
-            
+
             updateToothSymbolDisplay()
             updatePanelContent()
             updateFormData()
         })
     }
-    
+
     const confirmBtn = document.getElementById('confirm-symbols')
     if (confirmBtn) {
         confirmBtn.addEventListener('click', closeSidePanel)
@@ -722,23 +723,23 @@ const addPanelFunctionality = () => {
 
 const updateToothSymbolDisplay = () => {
     if (!selectedTooth) return
-    
+
     const toothNumber = selectedTooth.dataset.number
     const symbols = toothSymbols[toothNumber] || []
-    
+
     const existingSymbol = selectedTooth.querySelector('.tooth-symbol')
     if (existingSymbol) {
         existingSymbol.remove()
     }
-    
+
     if (symbols.length > 0) {
         selectedTooth.classList.add('has-symbol')
-        
+
         const symbolElement = document.createElement('div')
         symbolElement.className = 'tooth-symbol'
         symbolElement.textContent = symbols.length > 1 ? symbols.length : symbols[0]
         symbolElement.title = symbols.join(', ')
-        
+
         selectedTooth.appendChild(symbolElement)
     } else {
         selectedTooth.classList.remove('has-symbol')
@@ -752,12 +753,15 @@ const updateFormData = () => {
 // Validation rules for oral health examination
 const validateForm = () => {
     const errors = {}
-    
+
     // Required permanent teeth fields
     if (form.permanent_index_dft === '' || form.permanent_index_dft === null) {
         errors.permanent_index_dft = 'Permanent Index D.F.T. is required'
     }
     if (form.permanent_teeth_decayed === '' || form.permanent_teeth_decayed === null) {
+        errors.permanent_teeth_decayed = 'Permanent teeth decayed count is required'
+    }
+    if (form.permanent_teeth_missing === '' || form.permanent_teeth_missing === null) {
         errors.permanent_teeth_decayed = 'Permanent teeth decayed count is required'
     }
     if (form.permanent_teeth_filled === '' || form.permanent_teeth_filled === null) {
@@ -772,7 +776,7 @@ const validateForm = () => {
     if (form.permanent_for_filling === '' || form.permanent_for_filling === null) {
         errors.permanent_for_filling = 'Permanent teeth for filling count is required'
     }
-    
+
     // Required temporary teeth fields
     if (form.temporary_index_dft === '' || form.temporary_index_dft === null) {
         errors.temporary_index_dft = 'Temporary Index d.f.t. is required'
@@ -792,7 +796,7 @@ const validateForm = () => {
     if (form.temporary_for_filling === '' || form.temporary_for_filling === null) {
         errors.temporary_for_filling = 'Temporary teeth for filling count is required'
     }
-    
+
     return errors
 }
 
@@ -800,18 +804,18 @@ const errors = ref({})
 
 const submit = () => {
     updateFormData()
-    
+
     // Validate form
     const validationErrors = validateForm()
     errors.value = validationErrors
-    
+
     if (Object.keys(validationErrors).length > 0) {
         console.log('Form validation failed:', validationErrors)
         return
     }
-    
+
     console.log('Submitting form:', form.data())
-    
+
     form.post(route('oral-health-examination.store'), {
         preserveScroll: true,
         onSuccess: () => {

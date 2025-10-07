@@ -205,8 +205,21 @@ class PupilHealthController extends Controller
             $gradeLevel = $request->query('grade_level');
 
             // Find health examination for this student with matching grade level
+            // Handle both formats: "6" and "Grade 6", "Kinder 2" etc.
             $healthExamination = HealthExamination::where('student_id', $studentId)
-                ->where('grade_level', $gradeLevel)
+                ->where(function($query) use ($gradeLevel) {
+                    $query->where('grade_level', $gradeLevel);
+                    
+                    // If numeric grade level (e.g., "6"), also try "Grade 6" format
+                    if (is_numeric($gradeLevel)) {
+                        $query->orWhere('grade_level', "Grade {$gradeLevel}");
+                    }
+                    
+                    // If "Grade X" format, also try just the number
+                    if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
+                        $query->orWhere('grade_level', $matches[1]);
+                    }
+                })
                 ->latest()
                 ->first();
 
@@ -302,14 +315,42 @@ class PupilHealthController extends Controller
         try {
             $gradeLevel = $request->get('grade_level', '6');
 
-            // Find oral health examination for this student with matching grade level
+            // Find oral health examination for this student with flexible grade level matching
             $oralHealthExamination = OralHealthExamination::where('student_id', $studentId)
-                ->where('grade_level', $gradeLevel)
+                ->where(function($query) use ($gradeLevel) {
+                    $query->where('grade_level', $gradeLevel);
+                    
+                    // If numeric grade level (e.g., "6"), also try "Grade 6" format
+                    if (is_numeric($gradeLevel)) {
+                        $query->orWhere('grade_level', "Grade {$gradeLevel}");
+                    }
+                    
+                    // If "Grade X" format, also try just the number
+                    if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
+                        $query->orWhere('grade_level', $matches[1]);
+                    }
+                    
+                    // Handle Kinder levels
+                    if ($gradeLevel === 'K-2' || $gradeLevel === 'Kinder 2') {
+                        $query->orWhere('grade_level', 'K-2')->orWhere('grade_level', 'Kinder 2');
+                    }
+                })
                 ->latest()
                 ->first();
 
             if ($oralHealthExamination) {
-                return response()->json($oralHealthExamination);
+                // Ensure tooth_symbols and conditions are properly formatted as objects/arrays
+                $response = $oralHealthExamination->toArray();
+                
+                // Convert JSON strings back to objects for frontend compatibility
+                if (isset($response['tooth_symbols']) && is_string($response['tooth_symbols'])) {
+                    $response['tooth_symbols'] = json_decode($response['tooth_symbols'], true);
+                }
+                if (isset($response['conditions']) && is_string($response['conditions'])) {
+                    $response['conditions'] = json_decode($response['conditions'], true);
+                }
+                
+                return response()->json($response);
             } else {
                 return response()->json(['message' => 'No record found'], 200);
             }

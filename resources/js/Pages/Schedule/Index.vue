@@ -5,7 +5,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">Schedule Calendar</h1>
                 <Button
-                    v-if="$page.props.auth.user.role === 'admin'"
+                    v-if="['admin', 'nurse'].includes($page.props.auth.user.role)"
                     @click="$inertia.visit(route('schedule-calendar.create'))"
                     icon="pi pi-plus"
                     label="Add Schedule"
@@ -181,14 +181,14 @@
             <template #footer>
                 <div class="flex justify-end space-x-2">
                     <Button
-                        v-if="$page.props.auth.user.role === 'admin'"
+                        v-if="['admin', 'nurse'].includes($page.props.auth.user.role)"
                         @click="editSchedule"
                         icon="pi pi-pencil"
                         label="Edit"
                         class="p-button-text"
                     />
                     <Button
-                        v-if="$page.props.auth.user.role === 'admin'"
+                        v-if="['admin', 'nurse'].includes($page.props.auth.user.role)"
                         @click="deleteSchedule"
                         icon="pi pi-trash"
                         label="Delete"

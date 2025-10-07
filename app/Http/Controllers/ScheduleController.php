@@ -64,8 +64,8 @@ class ScheduleController extends Controller
     public function create()
     {
         $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Only administrators can create schedules.');
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            abort(403, 'Only administrators and nurses can create schedules.');
         }
 
         return Inertia::render('Schedule/Create');
@@ -76,10 +76,10 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        // Only admins can create schedules
+        // Only admins and nurses can create schedules
         $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Only administrators can create schedules.');
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            abort(403, 'Only administrators and nurses can create schedules.');
         }
 
         $validated = $request->validate([
@@ -119,8 +119,8 @@ class ScheduleController extends Controller
     public function edit($id)
     {
         $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Only administrators can edit schedules.');
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            abort(403, 'Only administrators and nurses can edit schedules.');
         }
 
         $schedule = Schedule::findOrFail($id);
@@ -136,8 +136,8 @@ class ScheduleController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Only administrators can update schedules.');
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            abort(403, 'Only administrators and nurses can update schedules.');
         }
 
         $schedule = Schedule::findOrFail($id);
@@ -166,8 +166,8 @@ class ScheduleController extends Controller
     public function destroy($id)
     {
         $user = auth()->user();
-        if ($user->role !== 'admin') {
-            abort(403, 'Only administrators can delete schedules.');
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            abort(403, 'Only administrators and nurses can delete schedules.');
         }
 
         $schedule = Schedule::findOrFail($id);

@@ -213,6 +213,24 @@
                                     </div>
                                 </div>
 
+                                <!-- Oral Health Conditions Section -->
+                                <div class="border rounded-lg p-4">
+                                    <h3 class="text-lg font-semibold text-center mb-4">Oral Health Conditions</h3>
+                                    <div v-if="currentExam.conditions && Object.keys(currentExam.conditions).length > 0" class="grid grid-cols-2 gap-3 text-sm">
+                                        <div v-for="(date, condition) in currentExam.conditions" :key="condition" class="flex items-center justify-between p-2 bg-red-50 rounded border-l-4 border-red-400">
+                                            <div class="flex items-center">
+                                                <i class="pi pi-check-circle text-red-500 mr-2"></i>
+                                                <span class="font-medium capitalize">{{ formatConditionName(condition) }}</span>
+                                            </div>
+                                            <Tag :value="date" severity="danger" class="text-xs" />
+                                        </div>
+                                    </div>
+                                    <div v-else class="text-center py-4 text-gray-500 text-sm">
+                                        <i class="pi pi-shield-check text-green-500 text-2xl mb-2"></i>
+                                        <div>No oral health conditions detected</div>
+                                    </div>
+                                </div>
+
                                 <!-- Interactive Dental Chart Display -->
                                 <div v-if="currentExam.tooth_symbols && Object.keys(currentExam.tooth_symbols).length > 0" class="border rounded-lg p-4">
                                     <h3 class="text-lg font-semibold text-center mb-4">Dental Chart</h3>
@@ -681,6 +699,25 @@ watch(selectedGrade, (newGrade) => {
 
 const formatDate = (date) => {
     return new Date(date).toLocaleDateString()
+}
+
+// Format condition names for display
+const formatConditionName = (condition) => {
+    const conditionNames = {
+        'gingivitis': 'Gingivitis',
+        'periodontal_disease': 'Periodontal Disease',
+        'malocclusion': 'Malocclusion',
+        'supernumerary_teeth': 'Supernumerary Teeth',
+        'retained_deciduous_teeth': 'Retained Deciduous Teeth',
+        'decubital_ulcer': 'Decubital Ulcer',
+        'calculus': 'Calculus',
+        'cleft_lip_palate': 'Cleft Lip/Palate',
+        'root_fragment': 'Root Fragment',
+        'fluorosis': 'Fluorosis',
+        'others_specify': 'Others (Specify)'
+    };
+    
+    return conditionNames[condition] || condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 </script>
 

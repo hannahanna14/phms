@@ -5,30 +5,30 @@
         if (!$gradeData || !$gradeData->conditions) {
             return '';
         }
-        
+
         $condition = $gradeData->conditions[$conditionKey][$gradeDataKey] ?? null;
         if (!$condition || !$condition['present']) {
             return '';
         }
-        
-        $display = '✓';
+
+        $display = '&#10003;'; // HTML entity for check mark
         if (!empty($condition['date'])) {
             $display .= ' (' . date('m/d/y', strtotime($condition['date'])) . ')';
         }
         if ($conditionKey === 'others_specify' && !empty($condition['specification'])) {
             $display .= ' ' . $condition['specification'];
         }
-        
+
         return $display;
     }
-    
+
     // Helper function to get index dft data
     function getIndexDftData($oralHealthDataByGrade, $gradeKey, $field) {
         $gradeData = $oralHealthDataByGrade[$gradeKey] ?? null;
         if (!$gradeData) {
             return '';
         }
-        
+
         $value = $gradeData->$field ?? null;
         return $value !== null ? $value : '';
     }
@@ -45,7 +45,7 @@
             size: A4 portrait;
             margin: 0.3in;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
@@ -53,25 +53,25 @@
             margin: 0;
             padding: 0;
         }
-        
+
         .header {
             margin-bottom: 20px;
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
         }
-        
+
         .header-top {
             position: relative;
             margin-bottom: 10px;
         }
-        
+
         .form-number {
             font-size: 8px;
             position: absolute;
             left: 0;
             top: 0;
         }
-        
+
         .republic-info {
             font-size: 7px;
             text-align: center;
@@ -79,19 +79,19 @@
             margin: 0 auto;
             width: 100%;
         }
-        
+
         .tagig-city {
             font-size: 7px;
             text-align: center;
             margin-top: 2px;
         }
-        
+
         .bureau-title {
             font-size: 11px;
             font-weight: bold;
             margin-bottom: 10px;
         }
-        
+
         .main-title {
             border: 2px solid #000;
             color: black;
@@ -104,31 +104,31 @@
             word-wrap: break-word;
             overflow: visible;
         }
-        
+
         .info-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        
+
         .info-table td {
             border: none;
             padding: 4px 0;
             vertical-align: middle;
         }
-        
+
         .date-cell {
             display: flex;
             align-items: center;
         }
-        
+
         .info-label {
             font-size: 9px;
             font-weight: bold;
             width: 80px;
             flex-shrink: 0;
         }
-        
+
         .info-value {
             border-bottom: 1px solid #000;
             height: 18px;
@@ -138,14 +138,14 @@
             display: inline-block;
             text-align: left;
         }
-        
+
         .info-label-right {
             font-size: 9px;
             font-weight: bold;
             width: 80px;
             flex-shrink: 0;
         }
-        
+
         .info-value-right {
             border-bottom: 1px solid #000;
             height: 18px;
@@ -154,12 +154,12 @@
             display: inline-block;
             text-align: left;
         }
-        
+
         .date-section {
             display: inline-block;
             margin-right: 20px;
         }
-        
+
         .date-box {
             border-bottom: 1px solid #000;
             padding: 2px 5px;
@@ -168,19 +168,19 @@
             display: inline-block;
             margin-right: 5px;
         }
-        
+
         .date-label {
             font-size: 8px;
             margin-right: 10px;
         }
-        
+
         /* Dental Chart Styles */
         .dental-chart {
             border-collapse: collapse;
             margin: 10px 0;
             font-size: 7px;
         }
-        
+
         .dental-chart td {
             border: 1px solid #000;
             width: 15px;
@@ -189,19 +189,19 @@
             vertical-align: middle;
             padding: 1px;
         }
-        
+
         /* Empty cells with no borders */
         .empty {
             border: none;
             background: transparent;
         }
-        
+
         /* No border class for specific cells */
         .no-border {
             border: none !important;
             background: transparent !important;
         }
-        
+
         /* Label cells */
         .label {
             background-color: #f0f0f0;
@@ -209,14 +209,14 @@
             font-size: 7px;
             padding: 1px;
         }
-        
+
         /* Tooth number cells */
         .tooth-number {
             background-color: #f9f9f9;
             font-size: 8px;
             font-weight: bold;
         }
-        
+
         /* Symbol cells */
         .symbol {
             background-color: white;
@@ -224,25 +224,25 @@
             font-size: 12px;
             font-weight: bold;
         }
-        
+
         /* Working area cells */
         .work-area {
             background-color: white;
         }
-        
+
         /* Side labels */
         .side-label {
             background-color: #f0f0f0;
             font-weight: bold;
             font-size: 7px;
         }
-        
+
         /* Container for table and side label */
         .chart-container {
             position: relative;
             margin: 10px 0;
         }
-        
+
         /* Side permanent teeth label */
         .permanent-teeth-label {
             position: absolute;
@@ -259,54 +259,54 @@
             transform: rotate(-90deg);
             transform-origin: center;
         }
-        
+
         .dental-charts-container {
             width: 100%;
             overflow: hidden;
         }
-        
+
         .charts-row {
             width: 100%;
             margin-bottom: 20px;
         }
-        
+
         .grade-section {
             float: left;
             width: 48%;
             margin-left: 25px;
             margin-right: 2%;
         }
-        
+
         .grade-section:last-child {
             margin-right: 0;
         }
-        
+
         .clearfix::after {
             content: "";
             display: table;
             clear: both;
         }
-        
+
         .grade-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             margin: 10px 0 5px 0;
         }
-        
+
         .grade-title {
             font-size: 12px;
             font-weight: bold;
             color: #333;
         }
-        
+
         .school-year {
             font-size: 10px;
             border-bottom: 1px solid #000;
             padding-bottom: 2px;
             width: 150px;
         }
-        
+
         .page-break {
             page-break-before: always;
         }
@@ -324,11 +324,11 @@
             <div class="tagig-city">Tagig City</div>
         </div>
     </div>
-    
+
     <div class="main-title">
         ORAL HEALTH EXAMINATION REPORT CARD
     </div>
-    
+
     <table class="info-table">
         <tr>
             <td class="info-label">Name:</td>
@@ -411,7 +411,7 @@
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                 </tr>
-                
+
                 <!-- Row 2: Temporary teeth numbers (55-65) with RIGHT spanning columns 2-3 -->
                 <tr>
                     <td class="empty no-border"></td>
@@ -429,25 +429,25 @@
                     <td class="side-label no-border" colspan="2">LEFT</td>
                     <td class="empty no-border"></td>
                 </tr>
-                
+
                 <!-- Row 3: Temporary teeth symbols with horizontal TEMPORARY TEETH label -->
                 <tr>
                     <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                 </tr>
-                
+
                 <!-- Row 4: Empty spacing -->
                 <tr>
                     <td class="empty"></td>
@@ -467,7 +467,7 @@
                     <td class="empty"></td>
                     <td class="empty"></td>
                 </tr>
-                
+
                 <!-- Row 5: Empty spacing -->
                 <tr>
                     <td class="perm-k18">{{ $oralHealthDataByGrade['K']->perm_18 ?? '' }}</td>
@@ -487,7 +487,7 @@
                     <td class="perm-k27">{{ $oralHealthDataByGrade['K']->perm_27 ?? '' }}</td>
                     <td class="perm-k28">{{ $oralHealthDataByGrade['K']->perm_28 ?? '' }}</td>
                 </tr>
-                
+
                 <!-- Row 6: Upper permanent teeth numbers (18-28) -->
                 <tr>
                     <td class="tooth-number">18</td>
@@ -507,47 +507,47 @@
                     <td class="tooth-number">27</td>
                     <td class="tooth-number">28</td>
                 </tr>
-                
+
                 <!-- Row 7: Upper permanent teeth symbols -->
                 <tr>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                 </tr>
-                
+
                 <!-- Row 8: Lower permanent teeth symbols -->
                 <tr>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                 </tr>
-                
+
                 <!-- Row 9: Lower permanent teeth numbers -->
                 <tr>
                     <td class="tooth-number">48</td>
@@ -567,7 +567,7 @@
                     <td class="tooth-number">37</td>
                     <td class="tooth-number">38</td>
                 </tr>
-                
+
                 <!-- Row 10: Empty spacing -->
                 <tr>
                     <td class="perm-k48">{{ $oralHealthDataByGrade['K']->perm_48 ?? '' }}</td>
@@ -587,7 +587,7 @@
                     <td class="perm-k37">{{ $oralHealthDataByGrade['K']->perm_37 ?? '' }}</td>
                     <td class="perm-k38">{{ $oralHealthDataByGrade['K']->perm_38 ?? '' }}</td>
                 </tr>
-                
+
                 <!-- Row 11: Empty spacing -->
                 <tr>
                     <td class="empty"></td>
@@ -607,25 +607,25 @@
                     <td class="empty"></td>
                     <td class="empty"></td>
                 </tr>
-                
+
                 <!-- Row 12: TEMPORARY TEETH label and symbols -->
                 <tr>
                     <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                 </tr>
-                
+
                 <!-- Row 13: Bottom temporary teeth numbers (85-75) -->
                 <tr>
                     <td class="empty no-border"></td>
@@ -643,7 +643,7 @@
                     <td class="side-label no-border" colspan="2">LEFT</td>
                     <td class="empty no-border"></td>
                 </tr>
-                
+
                 <!-- Row 14: Bottom spacing -->
                 <tr>
                     <td class="empty no-border"></td>
@@ -713,16 +713,16 @@
                 </tr>
                 <tr>
                     <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
@@ -782,40 +782,40 @@
                     <td class="tooth-number">28</td>
                 </tr>
                 <tr>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                 </tr>
                 <tr>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                 </tr>
                 <tr>
                     <td class="tooth-number">48</td>
@@ -873,16 +873,16 @@
                 </tr>
                 <tr>
                     <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">—</td>
-                    <td class="symbol">◇</td>
-                    <td class="symbol">×</td>
-                    <td class="symbol">○</td>
-                    <td class="symbol">○</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&#8212;</td>
+                    <td class="symbol">&lt;&gt;</td>
+                    <td class="symbol">&#215;</td>
+                    <td class="symbol">O</td>
+                    <td class="symbol">O</td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
                     <td class="empty no-border"></td>
@@ -975,16 +975,16 @@
                         </tr>
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
@@ -1044,40 +1044,40 @@
                             <td class="tooth-number">28</td>
                         </tr>
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
                         <tr>
                             <td class="tooth-number">48</td>
@@ -1135,16 +1135,16 @@
                         </tr>
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
@@ -1233,16 +1233,16 @@
                         </tr>
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
@@ -1303,40 +1303,40 @@
                             <td class="tooth-number">28</td>
                         </tr>
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
                         <tr>
                             <td class="tooth-number">48</td>
@@ -1394,16 +1394,16 @@
                         </tr>
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
@@ -1480,7 +1480,7 @@
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 2: Temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -1498,25 +1498,25 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 3: Temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 4: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -1536,7 +1536,7 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 5: Upper permanent teeth data -->
                         <tr>
                             <td class="perm-g4-18">{{ $oralHealthDataByGrade['4']->perm_18 ?? '' }}</td>
@@ -1556,7 +1556,7 @@
                             <td class="perm-g4-27">{{ $oralHealthDataByGrade['4']->perm_27 ?? '' }}</td>
                             <td class="perm-g4-28">{{ $oralHealthDataByGrade['4']->perm_28 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 6: Upper permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">18</td>
@@ -1576,47 +1576,47 @@
                             <td class="tooth-number">27</td>
                             <td class="tooth-number">28</td>
                         </tr>
-                        
+
                         <!-- Row 7: Upper permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 8: Lower permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 9: Lower permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">48</td>
@@ -1636,7 +1636,7 @@
                             <td class="tooth-number">37</td>
                             <td class="tooth-number">38</td>
                         </tr>
-                        
+
                         <!-- Row 10: Lower permanent teeth data -->
                         <tr>
                             <td class="perm-g4-48">{{ $oralHealthDataByGrade['4']->perm_48 ?? '' }}</td>
@@ -1656,7 +1656,7 @@
                             <td class="perm-g4-37">{{ $oralHealthDataByGrade['4']->perm_37 ?? '' }}</td>
                             <td class="perm-g4-38">{{ $oralHealthDataByGrade['4']->perm_38 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 11: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -1676,25 +1676,25 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 12: Bottom temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 13: Bottom temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -1712,7 +1712,7 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 14: Bottom temporary teeth data -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -1765,7 +1765,7 @@
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 2: Temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -1783,25 +1783,25 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 3: Temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 4: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -1821,7 +1821,7 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 5: Upper permanent teeth data -->
                         <tr>
                             <td class="perm-g5-18">{{ $oralHealthDataByGrade['5']->perm_18 ?? '' }}</td>
@@ -1841,7 +1841,7 @@
                             <td class="perm-g5-27">{{ $oralHealthDataByGrade['5']->perm_27 ?? '' }}</td>
                             <td class="perm-g5-28">{{ $oralHealthDataByGrade['5']->perm_28 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 6: Upper permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">18</td>
@@ -1861,47 +1861,47 @@
                             <td class="tooth-number">27</td>
                             <td class="tooth-number">28</td>
                         </tr>
-                        
+
                         <!-- Row 7: Upper permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 8: Lower permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 9: Lower permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">48</td>
@@ -1921,7 +1921,7 @@
                             <td class="tooth-number">37</td>
                             <td class="tooth-number">38</td>
                         </tr>
-                        
+
                         <!-- Row 10: Lower permanent teeth data -->
                         <tr>
                             <td class="perm-g5-48">{{ $oralHealthDataByGrade['5']->perm_48 ?? '' }}</td>
@@ -1941,7 +1941,7 @@
                             <td class="perm-g5-37">{{ $oralHealthDataByGrade['5']->perm_37 ?? '' }}</td>
                             <td class="perm-g5-38">{{ $oralHealthDataByGrade['5']->perm_38 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 11: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -1961,25 +1961,25 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 12: Bottom temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 13: Bottom temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -1997,7 +1997,7 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 14: Bottom temporary teeth data -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -2054,7 +2054,7 @@
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 2: Temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -2072,25 +2072,25 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 3: Temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 4: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -2110,7 +2110,7 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 5: Upper permanent teeth data -->
                         <tr>
                             <td class="perm-g6-18">{{ $oralHealthDataByGrade['6']->perm_18 ?? '' }}</td>
@@ -2130,7 +2130,7 @@
                             <td class="perm-g6-27">{{ $oralHealthDataByGrade['6']->perm_27 ?? '' }}</td>
                             <td class="perm-g6-28">{{ $oralHealthDataByGrade['6']->perm_28 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 6: Upper permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">18</td>
@@ -2150,47 +2150,47 @@
                             <td class="tooth-number">27</td>
                             <td class="tooth-number">28</td>
                         </tr>
-                        
+
                         <!-- Row 7: Upper permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 8: Lower permanent teeth symbols -->
                         <tr>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                         </tr>
-                        
+
                         <!-- Row 9: Lower permanent teeth numbers -->
                         <tr>
                             <td class="tooth-number">48</td>
@@ -2210,7 +2210,7 @@
                             <td class="tooth-number">37</td>
                             <td class="tooth-number">38</td>
                         </tr>
-                        
+
                         <!-- Row 10: Lower permanent teeth data -->
                         <tr>
                             <td class="perm-g6-48">{{ $oralHealthDataByGrade['6']->perm_48 ?? '' }}</td>
@@ -2230,7 +2230,7 @@
                             <td class="perm-g6-37">{{ $oralHealthDataByGrade['6']->perm_37 ?? '' }}</td>
                             <td class="perm-g6-38">{{ $oralHealthDataByGrade['6']->perm_38 ?? '' }}</td>
                         </tr>
-                        
+
                         <!-- Row 11: Empty spacing -->
                         <tr>
                             <td class="empty"></td>
@@ -2250,25 +2250,25 @@
                             <td class="empty"></td>
                             <td class="empty"></td>
                         </tr>
-                        
+
                         <!-- Row 12: Bottom temporary teeth symbols -->
                         <tr>
                             <td class="label no-border" colspan="3">TEMPORARY TEETH</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">—</td>
-                            <td class="symbol">◇</td>
-                            <td class="symbol">×</td>
-                            <td class="symbol">○</td>
-                            <td class="symbol">○</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&#8212;</td>
+                            <td class="symbol">&lt;&gt;</td>
+                            <td class="symbol">&#215;</td>
+                            <td class="symbol">O</td>
+                            <td class="symbol">O</td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 13: Bottom temporary teeth numbers -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -2286,7 +2286,7 @@
                             <td class="side-label no-border" colspan="2">LEFT</td>
                             <td class="empty no-border"></td>
                         </tr>
-                        
+
                         <!-- Row 14: Bottom temporary teeth data -->
                         <tr>
                             <td class="empty no-border"></td>
@@ -2577,13 +2577,14 @@
                     <tr>
                         <td style="border: 1px solid #000; padding: 3px;">No T./Missing</td>
                         <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
-                        <td style="border: 1px solid #000; padding: 3px;"></td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, 'K', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '1', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '2', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '3', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '4', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '5', 'permanent_teeth_missing') }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ getIndexDftData($oralHealthDataByGrade, '6', 'permanent_teeth_missing') }}</td>
+                        
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; padding: 3px;">No. T./Filled</td>
@@ -2715,18 +2716,18 @@
                     $allTreatments = $allTreatments->sortBy('date');
                     $maxRows = 10; // Show up to 10 rows
                 @endphp
-                
+
                 @forelse($allTreatments->take($maxRows) as $treatment)
                 <tr>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->date ? $treatment->date->format('m/d/Y') : '' }}</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->chief_complaint ?? '' }}</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->treatment ?? '' }}</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->remarks ?? '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->title ?? '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">nurse</td>
                 </tr>
                 @empty
                 @endforelse
-                
+
                 @for($i = $allTreatments->count(); $i < $maxRows; $i++)
                 <tr>
                     <td style="border: 1px solid #000; padding: 5px; height: 20px;"></td>

@@ -260,10 +260,22 @@ class StudentController extends Controller
                 ->flatMap(function ($exam) {
                     $conditions = [];
                     if ($exam->conditions) {
-                        foreach ($exam->conditions as $conditionKey => $gradeData) {
-                            foreach ($gradeData as $grade => $data) {
-                                if (isset($data['present']) && $data['present']) {
+                        // Handle both array and string conditions
+                        $conditionsData = is_string($exam->conditions) ? json_decode($exam->conditions, true) : $exam->conditions;
+                        
+                        if (is_array($conditionsData)) {
+                            foreach ($conditionsData as $conditionKey => $value) {
+                                // Handle simple key-value pairs (from our seeder)
+                                if (is_string($value)) {
                                     $conditions[] = $conditionKey;
+                                }
+                                // Handle nested structure (from form submissions)
+                                elseif (is_array($value)) {
+                                    foreach ($value as $grade => $data) {
+                                        if (isset($data['present']) && $data['present']) {
+                                            $conditions[] = $conditionKey;
+                                        }
+                                    }
                                 }
                             }
                         }

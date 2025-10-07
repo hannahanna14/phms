@@ -19,6 +19,7 @@ class User extends Authenticatable
         'full_name',
         'password',
         'role',
+        'last_read_at',
     ];
 
     /**
@@ -29,6 +30,15 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'last_read_at' => 'datetime',
     ];
 
     public function healthExaminations()

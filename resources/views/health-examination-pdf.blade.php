@@ -148,18 +148,23 @@
         }
         
         .examination-table {
-            width: 95%;
+            width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            font-size: 10px;
+            font-size: 7px;
+            table-layout: fixed;
         }
         
         .examination-table th,
         .examination-table td {
             border: 1px solid #000;
-            padding: 2px;
+            padding: 1px;
             text-align: center;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow: hidden;
+            font-size: 6px;
+            line-height: 1.1;
         }
         
         .examination-table th {
@@ -168,25 +173,28 @@
         }
         
         .grade-header {
-            font-size: 5px;
-            width: 40px;
+            font-size: 4px;
+            width: 6%;
             padding: 1px;
+            line-height: 1.0;
         }
         
         .findings-header {
-            font-size: 5px;
-            width: 40px;
+            font-size: 4px;
+            width: 6%;
             padding: 1px;
             writing-mode: vertical-lr;
             text-orientation: mixed;
-            height: 60px;
+            height: 50px;
         }
         
         .examination-item {
             text-align: left;
-            padding-left: 3px;
-            width: 120px;
-            font-size: 10px;
+            padding-left: 2px;
+            width: 22%;
+            font-size: 7px;
+            font-weight: bold;
+            line-height: 1.1;
         }
         
         .legends-table {
@@ -247,6 +255,47 @@
         .intervention-header {
             font-size: 9px;
             font-weight: bold;
+        }
+        
+        /* Data cell specific styles for better text handling */
+        .examination-table tbody td {
+            font-size: 5px;
+            padding: 0.5px;
+            line-height: 1.0;
+            max-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Handle long text in specific rows */
+        .examination-table tbody td.long-text {
+            white-space: normal;
+            word-wrap: break-word;
+            hyphens: auto;
+            font-size: 4px;
+        }
+        
+        /* Print optimizations */
+        @media print {
+            .examination-table {
+                font-size: 6px;
+            }
+            
+            .examination-table th,
+            .examination-table td {
+                font-size: 5px;
+                padding: 0.5px;
+            }
+            
+            .examination-item {
+                font-size: 6px;
+            }
+            
+            .grade-header,
+            .findings-header {
+                font-size: 3px;
+            }
         }
     </style>
 </head>
@@ -363,7 +412,7 @@
             <tr>
                 <td class="examination-item">Heart Rate/Pulse Rate/Respiratory Rate</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->heart_rate ? $exam->heart_rate : '' }}</td>
+                    <td class="long-text">{{ $exam && $exam->heart_rate ? $exam->heart_rate : '' }}</td>
                 @endforeach
             </tr>
             <tr>
@@ -381,13 +430,13 @@
             <tr>
                 <td class="examination-item">Nutritional Status(NS)(BMI/Wt-for-Age)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->nutritional_status_bmi ? $exam->nutritional_status_bmi : '' }}</td>
+                    <td class="long-text">{{ $exam && $exam->nutritional_status_bmi ? $exam->nutritional_status_bmi : '' }}</td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Nutritional Status(NS)(Height-for-Age)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->nutritional_status_height ? $exam->nutritional_status_height : '' }}</td>
+                    <td class="long-text">{{ $exam && $exam->nutritional_status_height ? $exam->nutritional_status_height : '' }}</td>
                 @endforeach
             </tr>
             <tr>
@@ -447,13 +496,13 @@
             <tr>
                 <td class="examination-item">Deworming (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->deworming_status ? $exam->deworming_status : '' }}</td>
+                    <td class="long-text">{{ $exam && $exam->deworming_status ? $exam->deworming_status : '' }}</td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Immunization (Specify what kind)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->immunization ? $exam->immunization : '' }}</td>
+                    <td class="long-text">{{ $exam && $exam->immunization ? $exam->immunization : '' }}</td>
                 @endforeach
             </tr>
             <tr>

@@ -20,7 +20,7 @@ const schoolYears = ref([
     `${currentYear - 3}-${currentYear - 2}`
 ]);
 const gradeLevel = ref('All');
-const gradeLevels = ref(['All', 'K-1', 'K-2', 1, 2, 3, 4, 5, 6]);
+const gradeLevels = ref(['All', 'K-2', 1, 2, 3, 4, 5, 6]);
 const searchQuery = ref('');
 
 // Computed property for pupil records with flexible filtering
@@ -29,9 +29,19 @@ const pupilRecords = computed(() => {
 
     // Filter by grade level if not 'All'
     if (gradeLevel.value !== 'All') {
-        records = records.filter(student =>
-            student.grade_level?.toString() === gradeLevel.value.toString()
-        );
+        records = records.filter(student => {
+            const studentGrade = student.grade_level?.toString();
+            const filterGrade = gradeLevel.value.toString();
+            
+            // Handle both formats: "Grade 1" and "1", "Kinder 2" and "K-2"
+            if (filterGrade === 'K-2') {
+                return studentGrade === 'Kinder 2' || studentGrade === 'K-2';
+            } else {
+                // For numeric grades, check both "Grade X" and "X" formats
+                return studentGrade === filterGrade || 
+                       studentGrade === `Grade ${filterGrade}`;
+            }
+        });
     }
 
     // Filter by school year if not 'All'
@@ -43,7 +53,7 @@ const pupilRecords = computed(() => {
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         records = records.filter(student =>
-            student.name.toLowerCase().includes(query) ||
+            student.full_name?.toLowerCase().includes(query) ||
             student.lrn?.toLowerCase().includes(query)
         );
     }

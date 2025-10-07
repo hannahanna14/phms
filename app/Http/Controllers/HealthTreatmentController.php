@@ -59,17 +59,27 @@ class HealthTreatmentController extends Controller
             
             // Filter by grade level if provided - handle multiple formats
             if ($request->has('grade') && $request->grade) {
-                // Convert display format to database format (e.g., "Grade 4" becomes "4")
-                $gradeLevel = str_replace('Grade ', '', $request->grade);
+                $requestGrade = $request->grade;
                 
                 \Log::info('Filtering by grade:', [
-                    'original_grade' => $request->grade,
-                    'converted_grade' => $gradeLevel,
+                    'original_grade' => $requestGrade,
                     'existing_grades' => $allTreatments->pluck('grade_level')->unique()->toArray()
                 ]);
                 
-                // Only show treatments that match the exact grade level
-                $query->where('grade_level', $gradeLevel);
+                // Handle both formats: "6" and "Grade 6", "Kinder 2" etc.
+                $query->where(function($q) use ($requestGrade) {
+                    $q->where('grade_level', $requestGrade);
+                    
+                    // If numeric grade level (e.g., "6"), also try "Grade 6" format
+                    if (is_numeric($requestGrade)) {
+                        $q->orWhere('grade_level', "Grade {$requestGrade}");
+                    }
+                    
+                    // If "Grade X" format, also try just the number
+                    if (preg_match('/^Grade (\d+)$/', $requestGrade, $matches)) {
+                        $q->orWhere('grade_level', $matches[1]);
+                    }
+                });
             }
 
             $treatments = $query->orderBy('date', 'desc')->get();
