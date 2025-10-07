@@ -115,6 +115,7 @@ import Menubar from 'primevue/menubar'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+import ToastNotification from '@/Components/ToastNotification.vue'
 // Import the logo
 import logoSrc from '@/assets/logo.png'
 

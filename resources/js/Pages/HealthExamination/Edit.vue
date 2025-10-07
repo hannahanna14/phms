@@ -97,13 +97,29 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Lungs</label>
-                        <Select v-model="form.lungs" :options="['Normal', 'Rales', 'Wheeze']" class="w-full" />
+                        <Select v-model="form.lungs" :options="['Normal', 'Rales', 'Wheeze', 'Other specify']" class="w-full" />
                         <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
+                        <!-- Additional text box for "Other specify" -->
+                        <div v-if="form.lungs === 'Other specify'" class="mt-2">
+                            <InputText 
+                                v-model="form.lungs_other_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Heart</label>
-                        <Select v-model="form.heart" :options="['Normal', 'Murmur', 'Irregular heart rate']" class="w-full" />
+                        <Select v-model="form.heart" :options="['Normal', 'Murmur', 'Irregular heart rate', 'Other specify']" class="w-full" />
                         <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
+                        <!-- Additional text box for "Other specify" -->
+                        <div v-if="form.heart === 'Other specify'" class="mt-2">
+                            <InputText 
+                                v-model="form.heart_other_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Abdomen</label>
@@ -120,7 +136,7 @@
                 <!-- Immunization & Benefits Section -->
                 <div class="border rounded-lg p-4">
                     <h3 class="text-md font-semibold mb-4 text-blue-800">Immunization & Benefits</h3>
-                    <div class="grid grid-cols-4 gap-4">
+                    <div class="grid grid-cols-5 gap-4">
                         <div class="form-group">
                             <label>Iron Supplementation</label>
                             <div class="flex items-center gap-2">
@@ -136,6 +152,11 @@
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.deworming_status">{{ errors.deworming_status }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Immunization (Specify what kind)</label>
+                            <InputText v-model="form.immunization" class="w-full" placeholder="e.g., Measles, Polio, etc." />
+                            <small class="text-red-500" v-if="errors.immunization">{{ errors.immunization }}</small>
                         </div>
                         <div class="form-group">
                             <label>SBFP Beneficiary</label>
@@ -173,6 +194,7 @@
 
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
@@ -213,25 +235,30 @@ const heightOptions = [
     'Tall'
 ]
 
+
 const form = useForm({
-    temperature: props.healthExamination.temperature,
-    heart_rate: props.healthExamination.heart_rate,
-    height: props.healthExamination.height,
-    weight: props.healthExamination.weight,
-    nutritional_status_bmi: props.healthExamination.nutritional_status_bmi,
-    nutritional_status_height: props.healthExamination.nutritional_status_height,
-    vision_screening: props.healthExamination.vision_screening,
-    auditory_screening: props.healthExamination.auditory_screening,
-    skin: props.healthExamination.skin,
-    scalp: props.healthExamination.scalp,
-    eye: props.healthExamination.eye,
-    ear: props.healthExamination.ear,
-    nose: props.healthExamination.nose,
-    mouth: props.healthExamination.mouth,
-    lungs: props.healthExamination.lungs || props.healthExamination.lungs_heart,
-    heart: props.healthExamination.heart || props.healthExamination.lungs_heart,
-    abdomen: props.healthExamination.abdomen,
-    deformities: props.healthExamination.deformities,
+    temperature: parseFloat(props.healthExamination.temperature) || null,
+    heart_rate: props.healthExamination.heart_rate ? parseInt(props.healthExamination.heart_rate.toString().replace(/[^\d]/g, '')) || null : null,
+    height: parseFloat(props.healthExamination.height) || null,
+    weight: parseFloat(props.healthExamination.weight) || null,
+    nutritional_status_bmi: props.healthExamination.nutritional_status_bmi || '',
+    nutritional_status_height: props.healthExamination.nutritional_status_height || '',
+    vision_screening: props.healthExamination.vision_screening || '',
+    auditory_screening: props.healthExamination.auditory_screening || '',
+    skin: props.healthExamination.skin || '',
+    scalp: props.healthExamination.scalp || '',
+    eye: props.healthExamination.eye || '',
+    ear: props.healthExamination.ear || '',
+    nose: props.healthExamination.nose || '',
+    mouth: props.healthExamination.mouth || '',
+    neck: props.healthExamination.neck || '',
+    throat: props.healthExamination.throat || '',
+    lungs: props.healthExamination.lungs || props.healthExamination.lungs_heart || '',
+    lungs_other_specify: props.healthExamination.lungs_other_specify || '',
+    heart: props.healthExamination.heart || props.healthExamination.lungs_heart || '',
+    heart_other_specify: props.healthExamination.heart_other_specify || '',
+    abdomen: props.healthExamination.abdomen || '',
+    deformities: props.healthExamination.deformities || '',
     // Checkbox fields for UI (convert from backend values)
     iron_supplementation_check: props.healthExamination.iron_supplementation === 'Yes',
     deworming_check: props.healthExamination.deworming_status === 'dewormed',

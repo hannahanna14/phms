@@ -472,7 +472,24 @@
             <tr>
                 <td class="examination-item">Lungs/Heart</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->lungs_heart ? $exam->lungs_heart : '' }}</td>
+                    <td class="long-text">
+                        @if($exam)
+                            @php
+                                $lungsDisplay = $exam->lungs ?? '';
+                                if ($exam->lungs === 'Other specify' && $exam->lungs_other_specify) {
+                                    $lungsDisplay = $exam->lungs_other_specify;
+                                }
+                                
+                                $heartDisplay = $exam->heart ?? '';
+                                if ($exam->heart === 'Other specify' && $exam->heart_other_specify) {
+                                    $heartDisplay = $exam->heart_other_specify;
+                                }
+                                
+                                $combined = array_filter([$lungsDisplay, $heartDisplay]);
+                                echo implode('<br>', $combined);
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
@@ -490,13 +507,25 @@
             <tr>
                 <td class="examination-item">Iron Supplementation (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->iron_supplementation ? $exam->iron_supplementation : '' }}</td>
+                    <td>
+                        @if($exam)
+                            /
+                        @else
+                            X
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Deworming (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td class="long-text">{{ $exam && $exam->deworming_status ? $exam->deworming_status : '' }}</td>
+                    <td>
+                        @if($exam)
+                            /
+                        @else
+                            X
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
@@ -508,13 +537,21 @@
             <tr>
                 <td class="examination-item">SBFP Beneficiary (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->sbfp_beneficiary ? $exam->sbfp_beneficiary : '' }}</td>
+                    <td>
+                        @if($exam && isset($exam->sbfp_beneficiary))
+                            {{ $exam->sbfp_beneficiary ? '/' : 'X' }}
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">4Ps Beneficiary(✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->four_ps_beneficiary ? $exam->four_ps_beneficiary : '' }}</td>
+                    <td>
+                        @if($exam && isset($exam->four_ps_beneficiary))
+                            {{ $exam->four_ps_beneficiary ? '/' : 'X' }}
+                        @endif
+                    </td>
                 @endforeach
             </tr>
         </tbody>

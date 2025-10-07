@@ -97,13 +97,29 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Lungs <span class="text-red-500">*</span></label>
-                        <Select v-model="form.lungs" :options="normalAbnormalOptions" class="w-full" required />
+                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" required />
                         <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
+                        <!-- Additional text box for "Other specify" -->
+                        <div v-if="form.lungs === 'Other specify'" class="mt-2">
+                            <InputText 
+                                v-model="form.lungs_other_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Heart <span class="text-red-500">*</span></label>
-                        <Select v-model="form.heart" :options="normalAbnormalOptions" class="w-full" required />
+                        <Select v-model="form.heart" :options="heartOptions" class="w-full" required />
                         <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
+                        <!-- Additional text box for "Other specify" -->
+                        <div v-if="form.heart === 'Other specify'" class="mt-2">
+                            <InputText 
+                                v-model="form.heart_other_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Abdomen <span class="text-red-500">*</span></label>
@@ -120,7 +136,7 @@
                 <!-- Immunization & Benefits Section -->
                 <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 class="text-md font-semibold mb-4 text-blue-800">Immunization & Benefits</h3>
-                    <div class="grid grid-cols-4 gap-4">
+                    <div class="grid grid-cols-5 gap-4">
                         <div class="form-group">
                             <label>Iron Supplementation</label>
                             <div class="flex items-center gap-2">
@@ -136,6 +152,11 @@
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.deworming_status">{{ errors.deworming_status }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Immunization (Specify what kind)</label>
+                            <InputText v-model="form.immunization" class="w-full" placeholder="e.g., Measles, Polio, etc." />
+                            <small class="text-red-500" v-if="errors.immunization">{{ errors.immunization }}</small>
                         </div>
                         <div class="form-group">
                             <label>SBFP Beneficiary</label>
@@ -226,7 +247,8 @@ const eyeOptions = ['Normal', 'Eye Redness', 'Pale Conjunctiva']
 const earOptions = ['Normal', 'Ear discharge']
 const noseOptions = ['Normal', 'Mucus discharge', 'Nose Bleeding']
 const mouthOptions = ['Normal', 'Enlarged tonsil', 'Inflamed pharynx']
-const lungsHeartOptions = ['Normal', 'Rales', 'Wheeze', 'Murmur', 'Irregular heart rate']
+const lungsOptions = ['Normal', 'Rales', 'Wheeze', 'Other specify']
+const heartOptions = ['Normal', 'Murmur', 'Irregular heart rate', 'Other specify']
 const abdomenOptions = ['Normal', 'Distended', 'Tenderness']
 const deformitiesOptions = ['None', 'Acquired', 'Congenital']
 
@@ -250,7 +272,9 @@ const form = useForm({
     nose: '',
     mouth: '',
     lungs: '',
+    lungs_other_specify: '',
     heart: '',
+    heart_other_specify: '',
     abdomen: '',
     deformities: '',
     // Checkbox fields for UI

@@ -362,11 +362,23 @@ const viewTreatment = (treatment) => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Lungs:</span>
-                                        <span class="font-medium">{{ currentRecord.lungs || currentRecord.lungs_heart || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify 
+                                                    ? currentRecord.lungs_other_specify 
+                                                    : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Heart:</span>
-                                        <span class="font-medium">{{ currentRecord.heart || currentRecord.lungs_heart || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify 
+                                                    ? currentRecord.heart_other_specify 
+                                                    : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Abdomen:</span>

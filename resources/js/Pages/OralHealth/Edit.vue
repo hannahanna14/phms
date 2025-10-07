@@ -297,15 +297,15 @@
         </div>
 
         <!-- Oral Health Conditions Section -->
-        <div class="bg-white shadow rounded-lg p-6 mt-6">
+        <div class="border rounded-lg p-6 mt-6">
             <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
-            
+
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr class="bg-gray-50">
-                            <th class="border border-gray-300 px-3 py-2 text-left font-medium">Condition</th>
-                            <th v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center font-medium text-xs">
+                            <th class="border border-gray-300 px-3 py-2 text-left font-medium text-gray-700" style="width: 200px;">Condition</th>
+                            <th v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center font-medium text-gray-700">
                                 {{ gradeRange.label }}
                             </th>
                         </tr>
@@ -317,27 +317,27 @@
                                 <div class="flex flex-col items-center space-y-1">
                                     <!-- Checkbox -->
                                     <label class="flex items-center space-x-1 text-xs">
-                                        <input 
+                                        <input
                                             v-model="form.conditions[condition.key][gradeRange.key].present"
-                                            type="checkbox" 
+                                            type="checkbox"
                                             class="w-3 h-3"
                                         >
                                         <span>Present</span>
                                     </label>
-                                    
+
                                     <!-- Date Input (only show if present is checked) -->
-                                    <input 
+                                    <input
                                         v-if="form.conditions[condition.key][gradeRange.key].present"
                                         v-model="form.conditions[condition.key][gradeRange.key].date"
-                                        type="date" 
+                                        type="date"
                                         class="w-20 text-xs border border-gray-300 rounded px-1 py-0.5"
                                     >
-                                    
+
                                     <!-- Text Input for "Others, specify" (only show if present is checked and it's the others_specify condition) -->
-                                    <input 
+                                    <input
                                         v-if="condition.key === 'others_specify' && form.conditions[condition.key][gradeRange.key].present"
                                         v-model="form.conditions[condition.key][gradeRange.key].specification"
-                                        type="text" 
+                                        type="text"
                                         placeholder="Specify..."
                                         class="w-24 text-xs border border-gray-300 rounded px-1 py-0.5"
                                     >
@@ -397,30 +397,6 @@ const props = defineProps({
     }
 })
 
-const form = useForm({
-    permanent_index_dft: props.oralHealthExamination?.permanent_index_dft || 0,
-    permanent_teeth_decayed: props.oralHealthExamination?.permanent_teeth_decayed || 0,
-    permanent_teeth_filled: props.oralHealthExamination?.permanent_teeth_filled || 0,
-    permanent_total_dft: props.oralHealthExamination?.permanent_total_dft || 0,
-    permanent_for_extraction: props.oralHealthExamination?.permanent_for_extraction || 0,
-    permanent_for_filling: props.oralHealthExamination?.permanent_for_filling || 0,
-    temporary_index_dft: props.oralHealthExamination?.temporary_index_dft || 0,
-    temporary_teeth_decayed: props.oralHealthExamination?.temporary_teeth_decayed || 0,
-    temporary_teeth_filled: props.oralHealthExamination?.temporary_teeth_filled || 0,
-    temporary_total_dft: props.oralHealthExamination?.temporary_total_dft || 0,
-    temporary_for_extraction: props.oralHealthExamination?.temporary_for_extraction || 0,
-    temporary_for_filling: props.oralHealthExamination?.temporary_for_filling || 0,
-    grade_level: props.selectedGrade || props.oralHealthExamination?.grade_level || '',
-    school_year: props.oralHealthExamination?.school_year || '2024-2025',
-    tooth_symbols: props.oralHealthExamination?.tooth_symbols || {},
-    conditions: props.oralHealthExamination?.conditions || initializeConditions()
-})
-
-// Dental chart state
-const showPermanent = ref(true)
-let selectedTooth = null
-let toothSymbols = {}
-
 // Oral Health Conditions data
 const oralHealthConditions = [
     { key: 'gingivitis', label: 'Gingivitis' },
@@ -435,6 +411,52 @@ const oralHealthConditions = [
     { key: 'fluorosis', label: 'Fluorosis' },
     { key: 'others_specify', label: 'Others, specify' }
 ]
+
+// Initialize conditions structure
+const initializeConditions = () => {
+    const allGradeRanges = ['kinder', 'grade_1_7', 'grade_2_8', 'grade_3_9', 'grade_4_10', 'grade_5_11', 'grade_6_12']
+    const conditions = {}
+    oralHealthConditions.forEach(condition => {
+        conditions[condition.key] = {}
+        allGradeRanges.forEach(grade => {
+            conditions[condition.key][grade] = {
+                present: false,
+                date: '',
+                specification: '' // For "Others, specify" text input
+            }
+        })
+    })
+    return conditions
+}
+
+const form = useForm({
+    examination_date: props.oralHealthExamination?.examination_date ? 
+        new Date(props.oralHealthExamination.examination_date).toISOString().split('T')[0] : 
+        new Date().toISOString().split('T')[0],
+    permanent_index_dft: props.oralHealthExamination?.permanent_index_dft || 0,
+    permanent_teeth_decayed: props.oralHealthExamination?.permanent_teeth_decayed || 0,
+    permanent_teeth_filled: props.oralHealthExamination?.permanent_teeth_filled || 0,
+    permanent_teeth_missing: props.oralHealthExamination?.permanent_teeth_missing || 0,
+    permanent_total_dft: props.oralHealthExamination?.permanent_total_dft || 0,
+    permanent_for_extraction: props.oralHealthExamination?.permanent_for_extraction || 0,
+    permanent_for_filling: props.oralHealthExamination?.permanent_for_filling || 0,
+    temporary_index_dft: props.oralHealthExamination?.temporary_index_dft || 0,
+    temporary_teeth_decayed: props.oralHealthExamination?.temporary_teeth_decayed || 0,
+    temporary_teeth_filled: props.oralHealthExamination?.temporary_teeth_filled || 0,
+    temporary_teeth_missing: props.oralHealthExamination?.temporary_teeth_missing || 0,
+    temporary_total_dft: props.oralHealthExamination?.temporary_total_dft || 0,
+    temporary_for_extraction: props.oralHealthExamination?.temporary_for_extraction || 0,
+    temporary_for_filling: props.oralHealthExamination?.temporary_for_filling || 0,
+    grade_level: props.selectedGrade || props.oralHealthExamination?.grade_level || '',
+    school_year: props.oralHealthExamination?.school_year || '2024-2025',
+    tooth_symbols: props.oralHealthExamination?.tooth_symbols || {},
+    conditions: props.oralHealthExamination?.conditions || initializeConditions()
+})
+
+// Dental chart state
+const showPermanent = ref(true)
+let selectedTooth = null
+let toothSymbols = {}
 
 // Grade level logic
 const gradeLevel = computed(() => props.selectedGrade || props.oralHealthExamination?.grade_level || '')
@@ -453,23 +475,6 @@ const getCurrentGradeRange = (grade) => {
 }
 
 const relevantGradeRanges = computed(() => getCurrentGradeRange(gradeLevel.value))
-
-// Initialize conditions structure
-const initializeConditions = () => {
-    const allGradeRanges = ['kinder', 'grade_1_7', 'grade_2_8', 'grade_3_9', 'grade_4_10', 'grade_5_11', 'grade_6_12']
-    const conditions = {}
-    oralHealthConditions.forEach(condition => {
-        conditions[condition.key] = {}
-        allGradeRanges.forEach(grade => {
-            conditions[condition.key][grade] = {
-                present: false,
-                date: '',
-                specification: '' // For "Others, specify" text input
-            }
-        })
-    })
-    return conditions
-}
 
 const toggleChartType = (type) => {
     showPermanent.value = type === 'permanent'
@@ -491,15 +496,47 @@ const {
 
 // Submit function
 const submitForm = () => {
+    console.log('Submitting form with data:', {
+        formData: form.data(),
+        toothSymbols: toothSymbols,
+        conditions: form.conditions
+    })
+    
+    // Validate required fields
+    if (!form.grade_level) {
+        alert('Grade level is required')
+        return
+    }
+    
+    if (!form.school_year) {
+        alert('School year is required')
+        return
+    }
+    
     // Update tooth symbols from the dental chart
     form.tooth_symbols = toothSymbols
     
-    form.put(`/oral-health-examination/${props.oralHealthExamination.id}`, {
-        onSuccess: () => {
+    form.put(`/pupil-health/oral-health/${props.oralHealthExamination.id}`, {
+        onSuccess: (response) => {
+            console.log('Form submission successful', response)
             onSubmitSuccess()
         },
         onError: (errors) => {
             console.error('Form submission errors:', errors)
+            console.log('Form data that failed:', form.data())
+            console.log('Validation errors:', Object.keys(errors))
+            
+            // Log each validation error in detail
+            Object.keys(errors).forEach(field => {
+                console.error(`Validation error for ${field}:`, errors[field])
+            })
+            
+            // Show user-friendly error message with specific errors
+            const errorMessages = Object.keys(errors).map(field => `${field}: ${errors[field]}`).join('\n')
+            alert(`Form submission failed with validation errors:\n\n${errorMessages}`)
+        },
+        onFinish: () => {
+            console.log('Form submission finished')
         }
     })
 }
@@ -531,6 +568,14 @@ const initializeDentalChart = () => {
     // Load existing tooth symbols if available
     if (props.oralHealthExamination?.tooth_symbols) {
         toothSymbols = { ...props.oralHealthExamination.tooth_symbols }
+        
+        // Ensure all tooth symbols are arrays
+        Object.keys(toothSymbols).forEach(toothNum => {
+            if (!Array.isArray(toothSymbols[toothNum])) {
+                toothSymbols[toothNum] = []
+            }
+        })
+        
         renderToothSymbols()
     }
 }
@@ -678,15 +723,19 @@ const updatePanelContent = () => {
     }
     
     const currentSymbols = toothSymbols[toothNumber] || []
+    
+    // Ensure currentSymbols is an array
+    const symbolsArray = Array.isArray(currentSymbols) ? currentSymbols : []
+    
     const symbolsDisplay = document.getElementById('tooth-symbols')
     if (symbolsDisplay) {
-        symbolsDisplay.textContent = currentSymbols.length > 0 ? currentSymbols.join(', ') : 'None'
+        symbolsDisplay.textContent = symbolsArray.length > 0 ? symbolsArray.join(', ') : 'None'
     }
     
     const symbolBtns = document.querySelectorAll('.symbol-btn')
     symbolBtns.forEach(btn => {
         const symbol = btn.dataset.symbol
-        if (currentSymbols.includes(symbol)) {
+        if (symbolsArray.includes(symbol)) {
             btn.classList.add('selected')
         } else {
             btn.classList.remove('selected')
@@ -745,6 +794,12 @@ const renderToothSymbols = () => {
     // Render existing tooth symbols on the chart
     Object.keys(toothSymbols).forEach(toothNum => {
         const toothElement = document.querySelector(`[data-tooth-number="${toothNum}"], [data-number="${toothNum}"]`)
+        
+        // Ensure toothSymbols[toothNum] is an array
+        if (!Array.isArray(toothSymbols[toothNum])) {
+            toothSymbols[toothNum] = []
+        }
+        
         if (toothElement && toothSymbols[toothNum] && toothSymbols[toothNum].length > 0) {
             toothElement.classList.add('has-symbol')
             

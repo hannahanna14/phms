@@ -117,10 +117,10 @@ class PupilHealthController extends Controller
                 'student_id' => 'required|exists:students,id',
                 'grade_level' => 'required|string',
                 'examination_date' => 'required|date',
-                'height' => 'nullable|string',
-                'weight' => 'nullable|string',
-                'temperature' => 'nullable|string',
-                'heart_rate' => 'nullable|string',
+                'temperature' => 'nullable|numeric',
+                'heart_rate' => 'nullable|integer',
+                'height' => 'nullable|numeric',
+                'weight' => 'nullable|numeric',
                 'nutritional_status_bmi' => 'nullable|string',
                 'nutritional_status_height' => 'nullable|string',
                 'vision_screening' => 'nullable|string',
@@ -131,18 +131,22 @@ class PupilHealthController extends Controller
                 'ear' => 'nullable|string',
                 'nose' => 'nullable|string',
                 'mouth' => 'nullable|string',
-                'throat' => 'nullable|string',
                 'neck' => 'nullable|string',
+                'throat' => 'nullable|string',
+                'lungs' => 'nullable|string',
+                'lungs_other_specify' => 'nullable|string',
+                'heart' => 'nullable|string',
+                'heart_other_specify' => 'nullable|string',
                 'lungs_heart' => 'nullable|string',
                 'abdomen' => 'nullable|string',
                 'deformities' => 'nullable|string',
-                'deworming_status' => 'nullable|string',
                 'iron_supplementation' => 'nullable|string',
+                'deworming_status' => 'nullable|string',
+                'immunization' => 'nullable|string',
                 'sbfp_beneficiary' => 'nullable|boolean',
                 'four_ps_beneficiary' => 'nullable|boolean',
-                'remarks' => 'nullable|string',
-                'immunization' => 'nullable|string',
                 'other_specify' => 'nullable|string',
+                'remarks' => 'nullable|string',
             ]);
 
             // Get student info to add school_year
@@ -206,7 +210,8 @@ class PupilHealthController extends Controller
 
             // Find health examination for this student with matching grade level
             // Handle both formats: "6" and "Grade 6", "Kinder 2" etc.
-            $healthExamination = HealthExamination::where('student_id', $studentId)
+            // Get ALL matching records to see if there are duplicates
+            $allRecords = HealthExamination::where('student_id', $studentId)
                 ->where(function($query) use ($gradeLevel) {
                     $query->where('grade_level', $gradeLevel);
                     
@@ -220,13 +225,57 @@ class PupilHealthController extends Controller
                         $query->orWhere('grade_level', $matches[1]);
                     }
                 })
-                ->latest()
-                ->first();
+                ->orderBy('examination_date', 'desc')
+                ->get();
 
-            \Log::info('Query Result:', [
+            \Log::info('All matching records found:', [
                 'student_id' => $studentId,
                 'grade_level' => $gradeLevel,
-                'found' => $healthExamination ? true : false
+                'total_records' => $allRecords->count(),
+                'record_ids' => $allRecords->pluck('id')->toArray(),
+                'record_data' => $allRecords->map(function($record) {
+                    return [
+                        'id' => $record->id,
+                        'grade_level' => $record->grade_level,
+                        'examination_date' => $record->examination_date,
+                        'height' => $record->height,
+                        'weight' => $record->weight,
+                        'heart_rate' => $record->heart_rate,
+                        'temperature' => $record->temperature
+                    ];
+                })->toArray()
+            ]);
+
+            // Prioritize records with actual data over empty/null records
+            $healthExamination = $allRecords->sortByDesc(function($record) {
+                $score = 0;
+                // Give points for having actual data vs null/empty values
+                if ($record->height && $record->height !== 'NgN' && is_numeric($record->height)) $score += 10;
+                if ($record->weight && $record->weight !== 'NgN' && is_numeric($record->weight)) $score += 10;
+                if ($record->temperature && $record->temperature !== 'NoN' && is_numeric($record->temperature)) $score += 5;
+                if ($record->heart_rate && $record->heart_rate !== 'NoN' && is_numeric($record->heart_rate)) $score += 5;
+                if ($record->lungs && $record->lungs !== 'Normal' && !empty($record->lungs)) $score += 3;
+                if ($record->heart && $record->heart !== 'Normal' && !empty($record->heart)) $score += 3;
+                if ($record->skin && !empty($record->skin)) $score += 1;
+                if ($record->eye && !empty($record->eye)) $score += 1;
+                return $score;
+            })->first();
+
+            \Log::info('Selected Record:', [
+                'student_id' => $studentId,
+                'grade_level' => $gradeLevel,
+                'found' => $healthExamination ? true : false,
+                'selected_record_id' => $healthExamination ? $healthExamination->id : null,
+                'selected_record_data' => $healthExamination ? [
+                    'height' => $healthExamination->height,
+                    'weight' => $healthExamination->weight,
+                    'temperature' => $healthExamination->temperature,
+                    'heart_rate' => $healthExamination->heart_rate,
+                    'lungs' => $healthExamination->lungs,
+                    'heart' => $healthExamination->heart,
+                    'iron_supplementation' => $healthExamination->iron_supplementation,
+                    'deworming_status' => $healthExamination->deworming_status
+                ] : null
             ]);
 
             if ($healthExamination) {
@@ -449,26 +498,35 @@ class PupilHealthController extends Controller
     public function updateHealthExam(Request $request, HealthExamination $healthExamination)
     {
         $validated = $request->validate([
+            'temperature' => 'nullable|numeric',
+            'heart_rate' => 'nullable|integer',
             'height' => 'nullable|numeric',
             'weight' => 'nullable|numeric',
-            'bmi' => 'nullable|numeric',
-            'temperature' => 'nullable|numeric',
-            'blood_pressure' => 'nullable|string',
-            'heart_rate' => 'nullable|integer',
-            'vision' => 'nullable|string',
-            'hearing' => 'nullable|string',
+            'nutritional_status_bmi' => 'nullable|string',
+            'nutritional_status_height' => 'nullable|string',
+            'vision_screening' => 'nullable|string',
+            'auditory_screening' => 'nullable|string',
             'skin' => 'nullable|string',
             'scalp' => 'nullable|string',
-            'eyes' => 'nullable|string',
-            'ears' => 'nullable|string',
+            'eye' => 'nullable|string',
+            'ear' => 'nullable|string',
             'nose' => 'nullable|string',
             'mouth' => 'nullable|string',
-            'throat' => 'nullable|string',
             'neck' => 'nullable|string',
+            'throat' => 'nullable|string',
             'lungs' => 'nullable|string',
+            'lungs_other_specify' => 'nullable|string',
             'heart' => 'nullable|string',
+            'heart_other_specify' => 'nullable|string',
             'abdomen' => 'nullable|string',
             'deformities' => 'nullable|string',
+            'iron_supplementation' => 'nullable|string',
+            'deworming_status' => 'nullable|string',
+            'immunization' => 'nullable|string',
+            'sbfp_beneficiary' => 'nullable|boolean',
+            'four_ps_beneficiary' => 'nullable|boolean',
+            'other_specify' => 'nullable|string',
+            'remarks' => 'nullable|string',
             'grade_level' => 'required|string',
             'school_year' => 'required|string',
         ]);
@@ -517,16 +575,23 @@ class PupilHealthController extends Controller
     public function updateOralHealth(Request $request, OralHealthExamination $oralHealthExamination)
     {
         $validated = $request->validate([
+            'examination_date' => 'nullable|date',
             'permanent_index_dft' => 'nullable|numeric',
             'permanent_teeth_decayed' => 'nullable|integer',
             'permanent_teeth_filled' => 'nullable|integer',
+            'permanent_teeth_missing' => 'nullable|integer',
+            'permanent_total_dft' => 'nullable|integer',
             'permanent_for_extraction' => 'nullable|integer',
             'permanent_for_filling' => 'nullable|integer',
             'temporary_index_dft' => 'nullable|numeric',
             'temporary_teeth_decayed' => 'nullable|integer',
             'temporary_teeth_filled' => 'nullable|integer',
+            'temporary_teeth_missing' => 'nullable|integer',
+            'temporary_total_dft' => 'nullable|integer',
             'temporary_for_extraction' => 'nullable|integer',
             'temporary_for_filling' => 'nullable|integer',
+            'tooth_symbols' => 'nullable|array',
+            'conditions' => 'nullable|array',
             'grade_level' => 'required|string',
             'school_year' => 'required|string',
         ]);

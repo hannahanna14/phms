@@ -17,16 +17,22 @@ class HealthExaminationSeeder extends Seeder
 
         $students = Student::all();
         
-        // Health condition options
-        $normalConditions = ['Normal', 'Healthy', 'Clear', 'Good'];
-        $minorConditions = ['Mild irritation', 'Slight redness', 'Minor concern', 'Needs monitoring'];
-        $skinConditions = ['Clear', 'Dry skin', 'Minor rash', 'Healthy', 'Slight irritation'];
-        $visionConditions = ['20/20', '20/25', '20/30', 'Normal', 'Needs glasses'];
-        $auditoryConditions = ['Normal', 'Clear', 'Good hearing', 'Slight wax buildup'];
+        // Health condition options - matching dropdown values
+        $skinOptions = ['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin'];
+        $scalpOptions = ['Normal', 'Presence of Lice'];
+        $eyeOptions = ['Normal', 'Eye Redness', 'Pale Conjunctiva'];
+        $earOptions = ['Normal', 'Ear discharge'];
+        $noseOptions = ['Normal', 'Mucus discharge', 'Nose Bleeding'];
+        $mouthOptions = ['Normal', 'Enlarged tonsil', 'Inflamed pharynx'];
+        $lungsOptions = ['Normal', 'Rales', 'Wheeze'];
+        $heartOptions = ['Normal', 'Murmur', 'Irregular heart rate'];
+        $abdomenOptions = ['Normal', 'Distended', 'Tenderness'];
+        $deformitiesOptions = ['None', 'Acquired', 'Congenital'];
+        $visionOptions = ['Passed', 'Failed'];
+        $auditoryOptions = ['Passed', 'Failed'];
         $nutritionalStatuses = ['Normal', 'Underweight', 'Overweight', 'Severely Underweight', 'Obese'];
-        $dewormingStatuses = ['dewormed', 'not_dewormed', 'pending'];
-        $ironSupplementation = ['positive', 'negative', 'pending'];
-        $beneficiaryStatuses = ['yes', 'no'];
+        $dewormingStatuses = ['dewormed', 'not_dewormed'];
+        $ironSupplementation = ['Yes', 'No'];
         $immunizationStatuses = ['complete', 'incomplete', 'up_to_date', 'needs_update'];
 
         // All grade levels from Kinder 2 to Grade 6
@@ -78,25 +84,25 @@ class HealthExaminationSeeder extends Seeder
                         'weight' => $weight,
                         'nutritional_status_bmi' => $bmiStatus,
                         'nutritional_status_height' => $this->getHeightStatus($baseAge, floatval(str_replace(' cm', '', $height))),
-                        'vision_screening' => $visionConditions[array_rand($visionConditions)],
-                        'auditory_screening' => $auditoryConditions[array_rand($auditoryConditions)],
-                        'skin' => $hasMinorIssues && rand(1, 100) <= 30 ? $minorConditions[array_rand($minorConditions)] : $skinConditions[array_rand($skinConditions)],
-                        'scalp' => $hasMinorIssues && rand(1, 100) <= 20 ? 'Dandruff' : 'Healthy',
-                        'eye' => $hasMinorIssues && rand(1, 100) <= 25 ? 'Slight redness' : 'Normal',
-                        'ear' => $hasMinorIssues && rand(1, 100) <= 15 ? 'Wax buildup' : 'Normal',
-                        'nose' => $hasMinorIssues && rand(1, 100) <= 20 ? 'Congestion' : 'Normal',
-                        'mouth' => $hasMinorIssues && rand(1, 100) <= 25 ? 'Needs dental care' : 'Healthy',
-                        'neck' => $normalConditions[array_rand($normalConditions)],
-                        'throat' => $hasMinorIssues && rand(1, 100) <= 15 ? 'Slightly red' : 'Clear',
+                        'vision_screening' => $visionOptions[array_rand($visionOptions)],
+                        'auditory_screening' => $auditoryOptions[array_rand($auditoryOptions)],
+                        'skin' => $hasMinorIssues && rand(1, 100) <= 30 ? $skinOptions[array_rand(array_slice($skinOptions, 1))] : 'Normal',
+                        'scalp' => $hasMinorIssues && rand(1, 100) <= 20 ? 'Presence of Lice' : 'Normal',
+                        'eye' => $hasMinorIssues && rand(1, 100) <= 25 ? $eyeOptions[array_rand(array_slice($eyeOptions, 1))] : 'Normal',
+                        'ear' => $hasMinorIssues && rand(1, 100) <= 15 ? 'Ear discharge' : 'Normal',
+                        'nose' => $hasMinorIssues && rand(1, 100) <= 20 ? $noseOptions[array_rand(array_slice($noseOptions, 1))] : 'Normal',
+                        'mouth' => $hasMinorIssues && rand(1, 100) <= 25 ? $mouthOptions[array_rand(array_slice($mouthOptions, 1))] : 'Normal',
+                        'neck' => 'Normal',
+                        'throat' => 'Normal',
                         'lungs_heart' => 'Normal',
-                        'lungs' => 'Clear',
-                        'heart' => 'Regular rhythm',
-                        'abdomen' => 'Soft, non-tender',
-                        'deformities' => rand(1, 100) <= 5 ? 'Minor postural issue' : 'None',
+                        'lungs' => $hasMinorIssues && rand(1, 100) <= 10 ? $lungsOptions[array_rand(array_slice($lungsOptions, 1))] : 'Normal',
+                        'heart' => $hasMinorIssues && rand(1, 100) <= 10 ? $heartOptions[array_rand(array_slice($heartOptions, 1))] : 'Normal',
+                        'abdomen' => $hasMinorIssues && rand(1, 100) <= 15 ? $abdomenOptions[array_rand(array_slice($abdomenOptions, 1))] : 'Normal',
+                        'deformities' => rand(1, 100) <= 5 ? $deformitiesOptions[array_rand(array_slice($deformitiesOptions, 1))] : 'None',
                         'deworming_status' => $dewormingStatuses[array_rand($dewormingStatuses)],
                         'iron_supplementation' => $ironSupplementation[array_rand($ironSupplementation)],
-                        'sbfp_beneficiary' => $beneficiaryStatuses[array_rand($beneficiaryStatuses)],
-                        'four_ps_beneficiary' => $beneficiaryStatuses[array_rand($beneficiaryStatuses)],
+                        'sbfp_beneficiary' => rand(0, 1) == 1,
+                        'four_ps_beneficiary' => rand(0, 1) == 1,
                         'immunization' => $immunizationStatuses[array_rand($immunizationStatuses)],
                         'other_specify' => rand(1, 100) <= 10 ? 'Allergic to peanuts' : null,
                         'remarks' => $this->generateRemarks($hasMinorIssues, $examDate, $gradeLevel)
