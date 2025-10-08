@@ -8,8 +8,10 @@ use App\Models\Student;
 use App\Models\HealthTreatment;
 use App\Models\OralHealthTreatment;
 use App\Models\HealthExamination;
+use App\Models\OralHealthExamination;
 use App\Models\SchoolSettings;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class HealthReportController extends Controller

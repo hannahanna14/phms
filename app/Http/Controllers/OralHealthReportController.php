@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\OralHealthExamination;
 use App\Models\SchoolSettings;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 

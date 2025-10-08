@@ -7,6 +7,7 @@ use App\Models\HealthExamination;
 use App\Models\OralHealth;
 use App\Models\Incident;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class StudentController extends Controller

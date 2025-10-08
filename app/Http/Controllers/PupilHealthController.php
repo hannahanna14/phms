@@ -18,11 +18,11 @@ class PupilHealthController extends Controller
         $selectedGrade = $request->query('grade') ?? 'Grade 6';
         
         session(['grade' => $selectedGrade]);
-        \Log::info('Index - Selected Grade:', ['grade' => $selectedGrade]);
+        Log::info('Index - Selected Grade:', ['grade' => $selectedGrade]);
         
         $user = auth()->user();
         
-        \Log::info('Current authenticated user:', [
+        Log::info('Current authenticated user:', [
             'user_id' => $user->id,
             'username' => $user->username,
             'full_name' => $user->full_name,
@@ -52,7 +52,7 @@ class PupilHealthController extends Controller
 
         $students = $studentsQuery->get();
         
-        \Log::info('Final student query result:', [
+        Log::info('Final student query result:', [
             'user_role' => $user->role,
             'students_count' => $students->count(),
             'student_names' => $students->pluck('full_name')->toArray()
@@ -68,7 +68,7 @@ class PupilHealthController extends Controller
     public function showHealthExam(Student $student, Request $request)
     {
         $selectedGrade = $request->query('grade') ?? session('grade');
-        \Log::info('Show Health Exam - Selected Grade from URL:', ['grade' => $selectedGrade]);
+        Log::info('Show Health Exam - Selected Grade from URL:', ['grade' => $selectedGrade]);
         
         // Check if teacher has access to this student
         $user = auth()->user();
@@ -122,7 +122,7 @@ class PupilHealthController extends Controller
         }
         
         try {
-            \Log::info('Store Health Exam Request Data:', $request->all());
+            Log::info('Store Health Exam Request Data:', $request->all());
             
             $validated = $request->validate([
                 'student_id' => 'required|exists:students,id',
@@ -175,23 +175,23 @@ class PupilHealthController extends Controller
             $student = $studentsQuery->findOrFail($validated['student_id']);
             $validated['school_year'] = $student->school_year;
 
-            \Log::info('Creating health examination with data:', $validated);
+            Log::info('Creating health examination with data:', $validated);
             
             // Create the health examination record
             $healthExam = HealthExamination::create($validated);
-            \Log::info('Health examination created successfully', ['id' => $healthExam->id]);
+            Log::info('Health examination created successfully', ['id' => $healthExam->id]);
 
             $redirectUrl = route('pupil-health.health-exam.show', [
                 'student' => $validated['student_id'],
                 'grade' => $validated['grade_level']
             ]);
             
-            \Log::info('Redirecting to:', ['url' => $redirectUrl]);
+            Log::info('Redirecting to:', ['url' => $redirectUrl]);
             
             return redirect($redirectUrl)->with('success', 'Health examination created successfully.');
             
         } catch (\Exception $e) {
-            \Log::error('Error creating health examination: ' . $e->getMessage(), [
+            Log::error('Error creating health examination: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
             
@@ -211,7 +211,7 @@ class PupilHealthController extends Controller
     {
         try {
             // Log the incoming request parameters
-            \Log::info('getHealthExaminationByGradeYear - Request Data:', [
+            Log::info('getHealthExaminationByGradeYear - Request Data:', [
                 'student_id' => $studentId,
                 'query_params' => $request->query(),
                 'grade_level' => $request->query('grade_level')
@@ -295,7 +295,7 @@ class PupilHealthController extends Controller
                 return response()->json(['message' => 'No record found'], 200);
             }
         } catch (\Exception $e) {
-            \Log::error('Error in getHealthExaminationByGradeYear:', [
+            Log::error('Error in getHealthExaminationByGradeYear:', [
                 'student_id' => $studentId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -425,7 +425,7 @@ class PupilHealthController extends Controller
                 return response()->json(['message' => 'No record found'], 200);
             }
         } catch (\Exception $e) {
-            \Log::error('Error in getOralHealthByGrade: ' . $e->getMessage());
+            Log::error('Error in getOralHealthByGrade: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -471,7 +471,7 @@ class PupilHealthController extends Controller
             ])->with('success', 'Oral health treatment created successfully.');
                 
         } catch (\Exception $e) {
-            \Log::error('Error creating oral health treatment: ' . $e->getMessage());
+            Log::error('Error creating oral health treatment: ' . $e->getMessage());
             
             return back()->withInput()->withErrors([
                 'error' => 'Failed to save oral health treatment. ' . $e->getMessage()
@@ -504,7 +504,7 @@ class PupilHealthController extends Controller
 
             return response()->json($treatments);
         } catch (\Exception $e) {
-            \Log::error('Error fetching oral health treatments: ' . $e->getMessage());
+            Log::error('Error fetching oral health treatments: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -592,17 +592,17 @@ class PupilHealthController extends Controller
         
         $grade = $request->query('grade');
         
-        \Log::info('EditOralHealth - Looking for examination with ID:', ['id' => $id, 'grade' => $grade]);
+        Log::info('EditOralHealth - Looking for examination with ID:', ['id' => $id, 'grade' => $grade]);
         
         // Find the oral health examination
         $oralHealthExamination = OralHealthExamination::with('student')->find($id);
         
         if (!$oralHealthExamination) {
-            \Log::error('EditOralHealth - Examination not found:', ['id' => $id]);
+            Log::error('EditOralHealth - Examination not found:', ['id' => $id]);
             return redirect()->back()->with('error', 'Oral health examination not found.');
         }
         
-        \Log::info('EditOralHealth - Examination found:', [
+        Log::info('EditOralHealth - Examination found:', [
             'id' => $oralHealthExamination->id,
             'student_id' => $oralHealthExamination->student_id,
             'student_name' => $oralHealthExamination->student->full_name ?? 'Unknown'

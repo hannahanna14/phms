@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HealthTreatment;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class HealthTreatmentController extends Controller

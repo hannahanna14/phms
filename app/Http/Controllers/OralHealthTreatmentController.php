@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OralHealthTreatment;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class OralHealthTreatmentController extends Controller
@@ -40,7 +41,7 @@ class OralHealthTreatmentController extends Controller
         ]);
 
         // Debug log the validated data
-        \Log::info('Oral Health Treatment Store - Validated Data:', $validated);
+        Log::info('Oral Health Treatment Store - Validated Data:', $validated);
 
         $treatment = OralHealthTreatment::create($validated);
         
@@ -60,7 +61,7 @@ class OralHealthTreatmentController extends Controller
             
             // Debug: Show all treatments and their grade_level values
             $allTreatments = OralHealthTreatment::where('student_id', $student->id)->get();
-            \Log::info('All oral health treatments for student:', [
+            Log::info('All oral health treatments for student:', [
                 'student_id' => $student->id,
                 'total_count' => $allTreatments->count(),
                 'grade_levels' => $allTreatments->pluck('grade_level')->toArray(),
@@ -72,7 +73,7 @@ class OralHealthTreatmentController extends Controller
                 // Convert display format to database format (e.g., "Grade 4" becomes "4")
                 $gradeLevel = str_replace('Grade ', '', $request->grade);
                 
-                \Log::info('Filtering oral health treatments by grade:', [
+                Log::info('Filtering oral health treatments by grade:', [
                     'original_grade' => $request->grade,
                     'converted_grade' => $gradeLevel,
                     'existing_grades' => $allTreatments->pluck('grade_level')->unique()->toArray()
@@ -118,7 +119,7 @@ class OralHealthTreatmentController extends Controller
                 ];
             });
             
-            \Log::info('Filtered Oral Health Treatment Result:', [
+            Log::info('Filtered Oral Health Treatment Result:', [
                 'grade_param' => $request->grade,
                 'count' => $treatments->count(),
                 'treatments' => $treatments->toArray()
@@ -128,7 +129,7 @@ class OralHealthTreatmentController extends Controller
                 'data' => $treatments
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching oral health treatments: ' . $e->getMessage());
+            Log::error('Error fetching oral health treatments: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
