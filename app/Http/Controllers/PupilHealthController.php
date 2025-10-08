@@ -60,7 +60,8 @@ class PupilHealthController extends Controller
         
         return Inertia::render('PupilHealth/Index', [
             'selectedGrade' => $selectedGrade,
-            'students' => $students
+            'students' => $students,
+            'userRole' => $user->role
         ]);
     }
 
@@ -99,6 +100,11 @@ class PupilHealthController extends Controller
 
     public function createHealthExam(Student $student, Request $request)
     {
+        // Only nurses can create health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can create health examinations.');
+        }
+        
         $gradeLevel = $request->query('grade');
         
         // Return a view for creating a new health examination
@@ -110,6 +116,11 @@ class PupilHealthController extends Controller
 
     public function storeHealthExam(Request $request)
     {
+        // Only nurses can store health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can store health examinations.');
+        }
+        
         try {
             \Log::info('Store Health Exam Request Data:', $request->all());
             
@@ -319,6 +330,11 @@ class PupilHealthController extends Controller
 
     public function createOralHealth(Student $student)
     {
+        // Only nurses can create oral health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can create oral health examinations.');
+        }
+        
         return Inertia::render('OralHealth/Create', [
             'student' => $student
         ]);
@@ -326,6 +342,11 @@ class PupilHealthController extends Controller
 
     public function storeOralHealth(Request $request)
     {
+        // Only nurses can store oral health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can store oral health examinations.');
+        }
+        
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'grade_level' => 'required|string',
@@ -412,6 +433,11 @@ class PupilHealthController extends Controller
     // Oral Health Treatment Methods
     public function createOralHealthTreatment(Student $student)
     {
+        // Only nurses can create oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can create oral health treatments.');
+        }
+        
         return Inertia::render('OralHealthTreatment/Create', [
             'student' => $student
         ]);
@@ -419,6 +445,11 @@ class PupilHealthController extends Controller
 
     public function storeOralHealthTreatment(Request $request)
     {
+        // Only nurses can store oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can store oral health treatments.');
+        }
+        
         try {
             $validated = $request->validate([
                 'student_id' => 'required|exists:students,id',
@@ -483,6 +514,11 @@ class PupilHealthController extends Controller
      */
     public function editHealthExam(HealthExamination $healthExamination, Request $request)
     {
+        // Only nurses can edit health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can edit health examinations.');
+        }
+        
         $grade = $request->query('grade');
         
         return Inertia::render('HealthExamination/Edit', [
@@ -497,6 +533,11 @@ class PupilHealthController extends Controller
      */
     public function updateHealthExam(Request $request, HealthExamination $healthExamination)
     {
+        // Only nurses can update health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can update health examinations.');
+        }
+        
         $validated = $request->validate([
             'temperature' => 'nullable|numeric',
             'heart_rate' => 'nullable|integer',
@@ -544,6 +585,11 @@ class PupilHealthController extends Controller
      */
     public function editOralHealth($id, Request $request)
     {
+        // Only nurses can edit oral health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can edit oral health examinations.');
+        }
+        
         $grade = $request->query('grade');
         
         \Log::info('EditOralHealth - Looking for examination with ID:', ['id' => $id, 'grade' => $grade]);
@@ -574,6 +620,11 @@ class PupilHealthController extends Controller
      */
     public function updateOralHealth(Request $request, OralHealthExamination $oralHealthExamination)
     {
+        // Only nurses can update oral health examinations
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can update oral health examinations.');
+        }
+        
         $validated = $request->validate([
             'examination_date' => 'nullable|date',
             'permanent_index_dft' => 'nullable|numeric',

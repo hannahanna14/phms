@@ -154,7 +154,7 @@
                 <!-- Actions -->
                 <div class="flex justify-end space-x-3 pt-6 border-t">
                     <Button
-                        @click="$inertia.visit(route('messages.index'))"
+                        @click="router.visit('/messages')"
                         label="Cancel"
                         class="p-button-text"
                         type="button"
@@ -173,7 +173,7 @@
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'

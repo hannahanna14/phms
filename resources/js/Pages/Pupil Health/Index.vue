@@ -11,6 +11,9 @@ import Button from 'primevue/button';
 
 const page = usePage();
 const currentYear = new Date().getFullYear();
+
+// Get user role from props
+const userRole = computed(() => page.props.userRole);
 const schoolYear = ref('All');
 const schoolYears = ref([
     'All',

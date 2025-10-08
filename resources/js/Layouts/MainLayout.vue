@@ -67,7 +67,7 @@
                             <div class="flex items-center space-x-3">
                                 <!-- Notification Dropdown -->
                                 <NotificationDropdown 
-                                    :notifications="notifications"
+                                    :notifications="filteredNotifications"
                                     @mark-as-read="markNotificationAsRead"
                                     @mark-all-as-read="markAllNotificationsAsRead"
                                 />
@@ -146,14 +146,35 @@ const user = computed(() => {
 // Notification store
 const { 
     notifications, 
+    unreadCount, 
     initializeNotifications, 
     markAsRead, 
     markAllAsRead,
-    addNotification,
-    createHealthExamNotification,
-    createTreatmentNotification,
-    createReportNotification
+    addNotification
 } = useNotificationStore()
+
+// Computed property for role-based filtered notifications
+const filteredNotifications = computed(() => {
+    const userRole = page.props.auth?.user?.role || 'teacher'
+    
+    // Simple role-based filtering
+    if (userRole === 'teacher') {
+        return notifications.value.filter(notification => {
+            // Block timer-related notifications for teachers
+            if (notification.title && (
+                notification.title.includes('Timer Expired') ||
+                notification.title.includes('Timer Warning') ||
+                notification.title.includes('Treatment')
+            )) {
+                return false
+            }
+            return true
+        })
+    }
+    
+    // For admin and nurse, show all notifications
+    return notifications.value
+})
 
 // Notification methods
 const markNotificationAsRead = (notificationId) => {
@@ -214,49 +235,79 @@ const toggleUserMenu = (event) => {
     userMenu.value.toggle(event);
 };
 
-const sideBarItems = ref([
-    {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
-        route: '/'
-    },
-    {
-        label: 'Pupil Health',
-        icon: 'pi pi-heart',
-        route: '/pupil-health'
-    },
-    {
-        label: 'Health Report',
-        icon: 'pi pi-chart-bar',
-        route: '/health-report'
-    },
-    {
-        label: 'Oral Health Report',
-        icon: 'pi pi-file-check',
-        route: '/oral-health-report'
-    },
-    {
+const sideBarItems = computed(() => {
+    const userRole = page.props.auth?.user?.role || 'teacher'
+    
+    const baseItems = [
+        {
+            label: 'Dashboard',
+            icon: 'pi pi-home',
+            route: '/'
+        },
+        {
+            label: 'Pupil Health',
+            icon: 'pi pi-heart',
+            route: '/pupil-health'
+        },
+        {
+            label: 'Health Report',
+            icon: 'pi pi-chart-bar',
+            route: '/health-report'
+        },
+        {
+            label: 'Oral Health Report',
+            icon: 'pi pi-file-check',
+            route: '/oral-health-report'
+        },
+        {
+            separator: true
+        },
+        {
+            label: 'Schedule Calendar',
+            icon: 'pi pi-calendar',
+            route: '/schedule-calendar'
+        },
+        {
+            label: 'Chat',
+            icon: 'pi pi-comments',
+            route: '/chat'
+        }
+    ]
+
+    // Add Settings for admin users only
+    if (userRole === 'admin') {
+        baseItems.push({
+            separator: true
+        })
+        baseItems.push({
+            label: 'Settings',
+            icon: 'pi pi-cog',
+            route: '/settings'
+        })
+        baseItems.push({
+            label: 'Export Data',
+            icon: 'pi pi-download',
+            route: '/health-data-export'
+        })
+        baseItems.push({
+            label: 'Logs',
+            icon: 'pi pi-list',
+            route: '/error-logs'
+        })
+    }
+
+    // Add logout at the end
+    baseItems.push({
         separator: true
-    },
-    {
-        label: 'Schedule Calendar',
-        icon: 'pi pi-calendar',
-        route: '/schedule-calendar'
-    },
-    {
-        label: 'Chat',
-        icon: 'pi pi-comments',
-        route: '/chat'
-    },
-    {
-        separator: true
-    },
-    {
+    })
+    baseItems.push({
         label: 'Logout',
         icon: 'pi pi-sign-out',
         command: logout
-    }
-])
+    })
+
+    return baseItems
+})
 
 // Check for unrecorded students notifications
 const checkUnrecordedStudents = async () => {

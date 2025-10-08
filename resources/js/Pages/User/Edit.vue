@@ -68,7 +68,7 @@
                             type="button"
                             label="Cancel"
                             class="p-button-secondary"
-                            @click="$inertia.visit(route('users.index'))"
+                            @click="router.visit('/users')"
                         />
                         <Button
                             type="submit"
@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'

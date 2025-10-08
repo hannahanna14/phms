@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\HealthExamination;
 use App\Models\OralHealthExamination;
@@ -10,6 +13,8 @@ use App\Models\Incident;
 
 class Student extends Model
 {
+    use HasFactory, LogsActivity;
+
     protected $fillable = [
         'full_name',
         'age',
@@ -39,5 +44,13 @@ class Student extends Model
     public function incidents(): HasMany
     {
         return $this->hasMany(Incident::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['full_name', 'age', 'sex', 'grade_level', 'lrn', 'school_year'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

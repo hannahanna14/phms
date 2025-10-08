@@ -121,47 +121,24 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            @php
-                // Try multiple logo locations
-                $logoPaths = [
-                    public_path('images/logo.png'),
-                    resource_path('js/assets/logo.png'),
-                    public_path('assets/logo.png'),
-                ];
-                
-                $logoFound = false;
-                foreach ($logoPaths as $path) {
-                    if (file_exists($path)) {
-                        try {
-                            $imageData = file_get_contents($path);
-                            if ($imageData !== false) {
-                                $base64 = base64_encode($imageData);
-                                $extension = pathinfo($path, PATHINFO_EXTENSION);
-                                echo '<img src="data:image/' . $extension . ';base64,' . $base64 . '" alt="School Logo" style="width: 70px; height: 70px; object-fit: contain;">';
-                                $logoFound = true;
-                                break;
-                            }
-                        } catch (Exception $e) {
-                            // Continue to next path
-                        }
-                    }
-                }
-                
-                if (!$logoFound) {
-                    echo '<div style="width: 70px; height: 70px; border: 2px solid #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #1e3a8a; background-color: #f8fafc;">LOGO</div>';
-                }
-            @endphp
+    <div class="header" style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 20px;">
+        @if($schoolSettings->school_logo)
+            <img src="{{ public_path('storage/' . $schoolSettings->school_logo) }}" alt="School Logo" style="height: 60px; margin-bottom: 10px;">
+        @else
+            <img src="{{ public_path('images/logo.png') }}" alt="School Logo" style="height: 60px; margin-bottom: 10px;">
+        @endif
+        <div class="school-name" style="font-size: 16px; font-weight: bold; margin-bottom: 2px;">
+            {{ $schoolSettings->school_name ?: 'NAAWAN CENTRAL SCHOOL' }}
         </div>
-        <div class="school-info">
-            <div class="school-name">NAAWAN CENTRAL SCHOOL</div>
-            <div class="region">Region X - Northern Mindanao</div>
-            <div class="report-title">Health Report</div>
-            <div class="report-details">
-                {{ $grade_level }} 
-                @if($section) - Section {{ $section }} @endif
-            </div>
+        @if($schoolSettings->school_address)
+            <div class="region" style="font-size: 11px; color: #666; margin-bottom: 8px;">{{ $schoolSettings->school_address }}</div>
+        @else
+            <div class="region" style="font-size: 11px; color: #666; margin-bottom: 8px;">Region X - Northern Mindanao</div>
+        @endif
+        <div class="report-title" style="font-size: 14px; font-weight: bold; margin-bottom: 2px;">Health Report</div>
+        <div class="report-details" style="font-size: 11px; color: #666;">
+            {{ $grade_level }} 
+            @if($section) - Section {{ $section }} @endif
         </div>
     </div>
 
@@ -213,7 +190,7 @@
     </table>
 
     <div class="footer">
-        <div>Printed by: Test User</div>
+        <div>Printed by: {{ $user_name ?? 'System' }}</div>
         <div>Date: {{ date('F d, Y') }}</div>
     </div>
 </body>

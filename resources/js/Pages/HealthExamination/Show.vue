@@ -198,7 +198,7 @@ const viewTreatment = (treatment) => {
                             @change="onGradeChange"
                         />
                         <Button 
-                            v-if="userRole !== 'teacher'"
+                            v-if="userRole === 'nurse'"
                             label="Print PDF" 
                             icon="pi pi-print" 
                             severity="info"
@@ -212,7 +212,7 @@ const viewTreatment = (treatment) => {
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
                             <span>Health Treatment</span>
                             <Button 
-                                v-if="userRole !== 'teacher'"
+                                v-if="userRole === 'nurse'"
                                 icon="pi pi-plus" 
                                 class="p-button-text text-white text-xs" 
                                 @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" 
@@ -282,14 +282,14 @@ const viewTreatment = (treatment) => {
                             <span>Pupil Health Examination</span>
                             <div class="flex gap-2">
                                 <Button 
-                                    v-if="!currentRecord && userRole !== 'teacher'"
+                                    v-if="!currentRecord && userRole === 'nurse'"
                                     label="Add Record" 
                                     icon="pi pi-plus" 
                                     class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
                                     @click="$inertia.visit(`/pupil-health/health-examination/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
                                 />
                                 <Button 
-                                    v-if="currentRecord && userRole !== 'teacher'"
+                                    v-if="currentRecord && userRole === 'nurse'"
                                     label="Edit Record" 
                                     icon="pi pi-pencil" 
                                     class="p-button-sm !bg-orange-600 !text-white !border-orange-600 hover:!bg-orange-700" 

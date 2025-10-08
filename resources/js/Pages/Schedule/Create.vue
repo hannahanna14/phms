@@ -158,7 +158,7 @@
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-3 pt-6 border-t">
                     <Button
-                        @click="$inertia.visit(route('schedule-calendar.index'))"
+                        @click="router.visit('/schedule-calendar')"
                         label="Cancel"
                         class="p-button-text"
                         type="button"
@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, useForm, router } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'

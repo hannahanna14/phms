@@ -228,10 +228,10 @@
                     </div>
 
                     <!-- Oral Examination Fields -->
-                    <div :class="{ 'opacity-50 pointer-events-none': getCheckedStudents().length > 0 }">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">
                             Oral Examination Fields
-                            <span v-if="getCheckedStudents().length > 0" class="text-sm text-gray-500 font-normal">(Disabled - Students Selected)</span>
+                            <span v-if="getCheckedStudents().length > 0" class="text-sm text-blue-600 font-normal">(Select fields to include in report)</span>
                         </label>
                         <TabView class="w-full">
                             <!-- Permanent Teeth Tab -->
@@ -321,16 +321,6 @@
                             :loading="form.processing"
                             :disabled="buttonDisabled"
                             class="!bg-green-600 !border-green-600 hover:!bg-green-700"
-                        />
-                        <Button 
-                            type="button"
-                            label="Preview" 
-                            icon="pi pi-eye"
-                            severity="secondary"
-                            outlined
-                            @click="previewReport"
-                            :disabled="buttonDisabled"
-                            class="!border-gray-300 !text-gray-700 hover:!bg-gray-50"
                         />
                         <Button
                             v-if="showDraftNotification"
@@ -465,7 +455,10 @@ const {
 });
 
 // Grade options will come from the controller
-const gradeOptions = props.gradeLevels || [];
+const gradeOptions = computed(() => {
+    const grades = props.gradeLevels || [];
+    return ['All', ...grades];
+});
 
 
 // Permanent teeth fields based on the image
@@ -686,44 +679,6 @@ const updateRange = (fieldKey, rangeValue) => {
     form.maxValues[fieldKey] = rangeValue[1];
 };
 
-const previewReport = () => {
-    // Get only checked students
-    const checkedStudents = getCheckedStudents();
-
-    // Validate required fields first
-    if (!form.grade_level && checkedStudents.length === 0) {
-        alert('Please select a grade level or check at least one student');
-        return;
-    }
-    
-    // Update form with selected students
-    form.selected_students = checkedStudents.map(s => ({
-        id: s.id,
-        name: s.name,
-        lrn: s.lrn,
-        grade_level: s.grade_level,
-        section: s.section
-    }));
-    
-    // Add oral exam fields that are selected (checked)
-    const oralExamFields = [];
-    Object.keys(form.selectedFields).forEach(fieldKey => {
-        if (form.selectedFields[fieldKey]) {
-            oralExamFields.push(fieldKey);
-        }
-    });
-    form.oral_exam_fields = oralExamFields;
-    
-    // Submit form to generate results page (same as generate but different handling)
-    form.get('/oral-health-report/generate', {
-        onSuccess: (page) => {
-            // Handle success - results page will be shown
-        },
-        onError: (errors) => {
-            console.error('Validation errors:', errors);
-        }
-    });
-};
 
 const generateReport = () => {
     // Get only checked students
@@ -753,16 +708,56 @@ const generateReport = () => {
     });
     form.oral_exam_fields = oralExamFields;
     
-    form.post('/oral-health-report/generate', {
-        onSuccess: (page) => {
-            // Clear saved form data on successful submission
-            onSubmitSuccess();
-            // Handle success - redirect to results page
-        },
-        onError: (errors) => {
-            console.error('Validation errors:', errors);
-        }
+    // Generate PDF directly like health examination (no Results page needed)
+    const params = new URLSearchParams();
+    
+    // Add grade level if selected
+    if (form.grade_level) {
+        params.append('grade_level', form.grade_level);
+    }
+    
+    // Add section if specified
+    if (form.section) {
+        params.append('section', form.section);
+    }
+    
+    // Add selected students (send only IDs)
+    if (checkedStudents.length > 0) {
+        checkedStudents.forEach((student, index) => {
+            params.append(`selected_students[${index}]`, student.id);
+        });
+    }
+    
+    // Add basic student fields (always include these)
+    const basicFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
+    basicFields.forEach((field, index) => {
+        params.append(`fields[${index}]`, field);
     });
+    
+    // Add oral exam fields
+    oralExamFields.forEach((field, index) => {
+        params.append(`oral_exam_fields[${index}]`, field);
+    });
+    
+    // Add optional filters
+    if (form.gender_filter) {
+        params.append('gender_filter', form.gender_filter);
+    }
+    if (form.min_age) {
+        params.append('min_age', form.min_age);
+    }
+    if (form.max_age) {
+        params.append('max_age', form.max_age);
+    }
+    
+    console.log('Opening PDF with parameters:', params.toString());
+    
+    // Open PDF directly (server-side generation, works offline)
+    const url = `/oral-health-report/export-pdf?${params.toString()}`;
+    window.open(url, '_blank');
+    
+    // Clear saved form data after successful generation
+    onSubmitSuccess();
 };
 
 const clearDraft = () => {

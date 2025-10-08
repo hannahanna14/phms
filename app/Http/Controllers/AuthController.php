@@ -35,11 +35,52 @@ class AuthController extends Controller
 
        if(Auth::attempt($fields, $request->remember)){
         $request->session()->regenerate();
+        
+        // Log successful login
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'login_time' => now()
+            ])
+            ->log('User logged in successfully');
+            
         return redirect()->intended('/');
        }
+
+       // Log failed login attempt
+       activity()
+           ->withProperties([
+               'email' => $fields['email'],
+               'ip_address' => $request->ip(),
+               'user_agent' => $request->userAgent(),
+               'attempt_time' => now()
+           ])
+           ->log('Failed login attempt');
 
        return back()->withErrors([
         'email' => 'The provided credentials do not match our records.'
        ])->onlyInput('email');
+    }
+
+    public function logout(Request $request){
+        // Log logout before actually logging out
+        if (Auth::check()) {
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'logout_time' => now()
+                ])
+                ->log('User logged out');
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect('/login');
     }
 }

@@ -222,7 +222,7 @@
 
 <script setup>
 import { Head, router } from '@inertiajs/vue3'
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -245,11 +245,19 @@ const showNewChatDialog = ref(false)
 const selectedUserId = ref(null)
 const messagesContainer = ref(null)
 
+// Create reactive copy of conversations to allow updates
+const conversations = ref([...props.conversations])
+
+// Watch for changes in props.conversations and update reactive copy
+watch(() => props.conversations, (newConversations) => {
+    conversations.value = [...newConversations]
+}, { deep: true })
+
 // Computed properties
 const filteredConversations = computed(() => {
-    if (!searchQuery.value) return props.conversations
+    if (!searchQuery.value) return conversations.value
     
-    return props.conversations.filter(conversation =>
+    return conversations.value.filter(conversation =>
         conversation.title.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
 })
@@ -265,10 +273,31 @@ const getConversationInitials = (conversation) => {
 }
 
 // Actions
-const selectConversation = (conversationId) => {
+const selectConversation = async (conversationId) => {
+    // First, visit the conversation
     router.visit(route('chat.index', { conversation: conversationId }), {
         preserveState: true,
-        preserveScroll: false
+        preserveScroll: false,
+        onSuccess: async () => {
+            // After successfully loading the conversation, mark it as read
+            try {
+                await fetch(route('chat.read', conversationId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                
+                // Update the local conversation's unread count to 0
+                const conversation = conversations.value.find(c => c.id === conversationId)
+                if (conversation) {
+                    conversation.unread_count = 0
+                }
+            } catch (error) {
+                console.error('Failed to mark conversation as read:', error)
+            }
+        }
     })
 }
 

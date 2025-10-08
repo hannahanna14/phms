@@ -11,6 +11,11 @@ class OralHealthTreatmentController extends Controller
 {
     public function create(Student $student)
     {
+        // Only nurses can create oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can create oral health treatments.');
+        }
+        
         return Inertia::render('OralHealthTreatment/Create', [
             'student' => $student
         ]);
@@ -18,6 +23,11 @@ class OralHealthTreatmentController extends Controller
 
     public function store(Request $request)
     {
+        // Only nurses can store oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can store oral health treatments.');
+        }
+        
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',

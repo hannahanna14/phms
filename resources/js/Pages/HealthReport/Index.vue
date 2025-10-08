@@ -319,13 +319,13 @@
                         class="!bg-green-600 !border-green-600 hover:!bg-green-700"
                     />
                     <Button
-                        label="Preview"
-                        icon="pi pi-eye"
-                        @click="previewReport"
-                        :loading="loading"
-                        :disabled="isGenerateDisabled"
+                        v-if="showDraftNotification"
+                        label="Clear Draft"
+                        icon="pi pi-trash"
+                        @click="clearDraft"
                         outlined
-                        severity="secondary"
+                        severity="danger"
+                        size="small"
                     />
                     <Button
                         v-if="reportData.length > 0"
@@ -334,15 +334,6 @@
                         @click="printReport"
                         outlined
                         severity="info"
-                    />
-                    <Button
-                        v-if="showDraftNotification"
-                        label="Clear Draft"
-                        icon="pi pi-trash"
-                        @click="clearDraft"
-                        outlined
-                        severity="danger"
-                        size="small"
                     />
                 </div>
             </div>
@@ -377,6 +368,7 @@ const props = defineProps({
 // Format grade levels properly
 const gradeLevels = computed(() => {
     const standardGrades = [
+        'All',
         'Kinder 1',
         'Kinder 2', 
         'Grade 1',
@@ -748,9 +740,78 @@ const previewReport = async () => {
 };
 
 const generateReport = async () => {
-    await previewReport();
-    // TODO: Add PDF generation functionality
-    alert('PDF generation will be implemented next');
+    // Get only checked students
+    const checkedStudents = selectedStudents.value ? selectedStudents.value.filter(student => student && student.checked) : [];
+
+    console.log('Selected students:', selectedStudents.value);
+    console.log('Checked students:', checkedStudents);
+    console.log('Selected grade:', selectedGrade.value);
+
+    if (!selectedGrade.value && checkedStudents.length === 0) {
+        alert('Please select a grade level or check at least one student');
+        return;
+    }
+
+    // Build URL parameters for direct PDF generation
+    const params = new URLSearchParams();
+    
+    // Add grade level - use selected grade or 'All' if students are selected
+    if (selectedGrade.value) {
+        params.append('grade_level', selectedGrade.value.replace('Grade ', ''));
+    } else if (checkedStudents.length > 0) {
+        params.append('grade_level', 'All');
+    }
+    
+    // Add school year
+    params.append('school_year', checkedStudents.length > 0 ? '2024-2025' : getSchoolYearForGrade(selectedGrade.value));
+    
+    // Add section if specified
+    if (section.value) {
+        params.append('section', section.value);
+    }
+    
+    // Add selected students (send only IDs)
+    if (checkedStudents.length > 0) {
+        checkedStudents.forEach((student, index) => {
+            params.append(`selected_students[${index}]`, student.id);
+        });
+    }
+    
+    // Add basic student fields (always include these)
+    const basicFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
+    basicFields.forEach((field, index) => {
+        params.append(`fields[${index}]`, field);
+    });
+    
+    // Add health exam fields
+    if (selectedHealthFields.value && selectedHealthFields.value.length > 0) {
+        selectedHealthFields.value.forEach((field, index) => {
+            params.append(`health_exam_fields[${index}]`, field);
+        });
+    }
+    
+    // Add filters
+    if (genderFilter.value && genderFilter.value !== 'All') {
+        params.append('gender_filter', genderFilter.value);
+    }
+    if (minAge.value) {
+        params.append('min_age', minAge.value);
+    }
+    if (maxAge.value) {
+        params.append('max_age', maxAge.value);
+    }
+    if (sortBy.value) {
+        params.append('sort_by', sortBy.value);
+    }
+    
+    console.log('Opening PDF with parameters:', params.toString());
+    
+    // Open PDF directly (server-side generation)
+    const url = `/health-report/export-pdf?${params.toString()}`;
+    window.open(url, '_blank');
+    
+    // Clear saved form data after successful generation
+    onSubmitSuccess();
 };
 
 const printReport = () => {

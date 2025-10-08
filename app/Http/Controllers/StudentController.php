@@ -176,10 +176,23 @@ class StudentController extends Controller
                     ->flatMap(function ($exam) {
                         $conditions = [];
                         if ($exam->conditions) {
-                            foreach ($exam->conditions as $conditionKey => $gradeData) {
-                                foreach ($gradeData as $grade => $data) {
-                                    if (isset($data['present']) && $data['present']) {
+                            // Handle both array and string conditions
+                            $conditionsData = is_string($exam->conditions) ? json_decode($exam->conditions, true) : $exam->conditions;
+                            
+                            if (is_array($conditionsData)) {
+                                foreach ($conditionsData as $conditionKey => $value) {
+                                    // Handle simple key-value pairs (from seeder)
+                                    if (is_string($value)) {
                                         $conditions[] = $conditionKey;
+                                    }
+                                    // Handle nested structure (from form submissions)
+                                    elseif (is_array($value)) {
+                                        foreach ($value as $grade => $data) {
+                                            if (isset($data['present']) && $data['present']) {
+                                                $conditions[] = $conditionKey;
+                                                break; // Only count condition once per exam
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -565,6 +578,11 @@ class StudentController extends Controller
 
     public function createIncident(Student $student)
     {
+        // Only nurses can create incidents
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can create incidents.');
+        }
+        
         return Inertia::render('Incident/Create', [
             'student' => $student
         ]);
@@ -572,6 +590,11 @@ class StudentController extends Controller
 
     public function storeIncident(Request $request)
     {
+        // Only nurses can store incidents
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can store incidents.');
+        }
+        
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',

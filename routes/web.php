@@ -101,7 +101,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-report.index');
     Route::match(['GET', 'POST'], '/api/health-report/generate', [HealthReportController::class, 'generate'])
         ->name('health-report.generate');
-    Route::post('/health-report/export-pdf', [HealthReportController::class, 'exportPdf'])
+    Route::match(['GET', 'POST'], '/health-report/export-pdf', [HealthReportController::class, 'exportPdf'])
         ->name('health-report.export-pdf');
     Route::get('/health-report/preview-pdf', [HealthReportController::class, 'previewPdf'])
         ->name('health-report.preview-pdf');
@@ -109,7 +109,7 @@ Route::middleware(['auth'])->group(function () {
     // Oral Health Report Routes
     Route::get('/oral-health-report', [OralHealthReportController::class, 'index'])->name('oral-health-report.index');
     Route::match(['GET', 'POST'], '/oral-health-report/generate', [OralHealthReportController::class, 'generate'])->name('oral-health-report.generate');
-    Route::post('/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])->name('oral-health-report.export-pdf');
+    Route::match(['GET', 'POST'], '/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])->name('oral-health-report.export-pdf');
 
     // Health examination PDF routes
     Route::get('/health-examination-pdf/{studentId}', [App\Http\Controllers\HealthReportController::class, 'exportHealthExaminationPdf'])->name('health-examination.export-pdf');
@@ -136,4 +136,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
     Route::get('/chat/{conversation}/messages', [App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
     Route::post('/chat/{conversation}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
+    
+    // Settings Routes (Admin Only)
+    Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('settings.store');
+    
+    // Health Data Export Routes (Admin Only)
+    Route::get('/health-data-export', [App\Http\Controllers\HealthDataExportController::class, 'index'])->name('health-data-export.index');
+    Route::get('/health-data-export/health-examinations', [App\Http\Controllers\HealthDataExportController::class, 'exportHealthExaminations'])->name('health-data-export.health-examinations');
+    Route::get('/health-data-export/oral-health-examinations', [App\Http\Controllers\HealthDataExportController::class, 'exportOralHealthExaminations'])->name('health-data-export.oral-health-examinations');
+    Route::get('/health-data-export/health-treatments', [App\Http\Controllers\HealthDataExportController::class, 'exportHealthTreatments'])->name('health-data-export.health-treatments');
+    Route::get('/health-data-export/oral-health-treatments', [App\Http\Controllers\HealthDataExportController::class, 'exportOralHealthTreatments'])->name('health-data-export.oral-health-treatments');
+    Route::get('/health-data-export/incidents', [App\Http\Controllers\HealthDataExportController::class, 'exportIncidents'])->name('health-data-export.incidents');
+    
+    // Error Logs Routes (Admin Only)
+    Route::get('/error-logs', [App\Http\Controllers\ErrorLogsController::class, 'index'])->name('error-logs.index');
+    Route::post('/error-logs/clear', [App\Http\Controllers\ErrorLogsController::class, 'clearLogs'])->name('error-logs.clear');
+    Route::get('/error-logs/download', [App\Http\Controllers\ErrorLogsController::class, 'downloadLogs'])->name('error-logs.download');
 });

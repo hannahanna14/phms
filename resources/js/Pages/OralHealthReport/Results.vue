@@ -344,62 +344,60 @@ const generateBrowserPDF = (data) => {
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
     script.onload = () => {
         console.log('html2pdf library loaded successfully');
-        // Create HTML content for PDF
+        // Create HTML content for PDF - Clean structure like health examination PDF
         const element = document.createElement('div');
         element.innerHTML = `
-            <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.4; width: 100%;">
-                <div style="display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
-                    <div style="margin-right: 20px;">
-                        <img src="/images/logo.png" alt="School Logo" style="width: 70px; height: 70px; object-fit: contain;" onerror="this.style.display='none';">
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 5px;">NAAWAN CENTRAL SCHOOL</div>
-                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Region X - Northern Mindanao</div>
-                        <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">Oral Health Report</div>
-                        <div style="font-size: 14px; color: #666;">
-                            ${data.grade_level ? 'Grade ' + data.grade_level : 'Selected Students'}${data.section ? ' - Section ' + data.section : ''}
-                        </div>
+            <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.2; margin: 0; padding: 0;">
+                <!-- Simple centered header -->
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">NAAWAN CENTRAL SCHOOL</div>
+                    <div style="font-size: 12px; margin-bottom: 10px;">Region X - Northern Mindanao</div>
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">Oral Health Report</div>
+                    <div style="font-size: 11px;">
+                        ${data.grade_level ? 'Grade ' + data.grade_level : 'Selected Students'}${data.section ? ' - Section ' + data.section : ''}
                     </div>
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;">
+                <!-- Clean table structure -->
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0; table-layout: fixed;">
                     <thead>
-                        <tr style="background-color: #f3f4f6;">
-                            ${data.fields.includes('name') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Name</th>' : ''}
-                            ${data.fields.includes('lrn') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">LRN</th>' : ''}
-                            ${data.fields.includes('grade_level') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Grade</th>' : ''}
-                            ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Section</th>' : ''}
-                            ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Gender</th>' : ''}
-                            ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">Age</th>' : ''}
+                        <tr>
+                            ${data.fields.includes('name') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 15%;">Name</th>' : ''}
+                            ${data.fields.includes('lrn') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 12%;">LRN</th>' : ''}
+                            ${data.fields.includes('grade_level') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Grade</th>' : ''}
+                            ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Section</th>' : ''}
+                            ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Gender</th>' : ''}
+                            ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Age</th>' : ''}
                             ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
                                 data.oral_exam_fields.map(field => 
-                                    `<th style="border: 1px solid #000; padding: 8px; text-align: center; font-size: 11px;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
+                                    `<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
                                 ).join('') : 
-                                '<th colspan="8" style="border: 1px solid #000; padding: 8px; text-align: center;">No oral health fields selected</th>'
+                                '<th colspan="8" style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0;">No oral health fields selected</th>'
                             }
                         </tr>
                     </thead>
                     <tbody>
                         ${data.reportData && data.reportData.length > 0 ? data.reportData.map(student => `
                             <tr>
-                                ${data.fields.includes('name') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.name || 'N/A'}</td>` : ''}
-                                ${data.fields.includes('lrn') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.lrn || 'N/A'}</td>` : ''}
-                                ${data.fields.includes('grade_level') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.grade_level || 'N/A'}</td>` : ''}
-                                ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.section || 'N/A'}</td>` : ''}
-                                ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.gender || 'N/A'}</td>` : ''}
-                                ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${student.age || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('name') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: left; word-wrap: break-word; overflow: hidden;">${student.name || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('lrn') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.lrn || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('grade_level') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.grade_level || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.section || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.gender || 'N/A'}</td>` : ''}
+                                ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.age || 'N/A'}</td>` : ''}
                                 ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
                                     data.oral_exam_fields.map(field => 
-                                        `<td style="border: 1px solid #000; padding: 6px; font-size: 10px; text-align: center;">${student[field] !== undefined && student[field] !== null ? student[field] : 'N/A'}</td>`
+                                        `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student[field] !== undefined && student[field] !== null ? student[field] : '0'}</td>`
                                     ).join('') : 
-                                    '<td colspan="8" style="border: 1px solid #000; padding: 6px; text-align: center;">No data</td>'
+                                    '<td colspan="8" style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 9px;">No data</td>'
                                 }
                             </tr>
                         `).join('') : '<tr><td colspan="100%" style="text-align: center; padding: 20px; font-size: 12px;">No data available</td></tr>'}
                     </tbody>
                 </table>
 
-                <div style="margin-top: 30px; font-size: 10px; color: #666;">
+                <!-- Simple footer -->
+                <div style="margin-top: 20px; text-align: right; font-size: 10px; border-top: 1px solid #000; padding-top: 10px;">
                     <div>Printed by: ${data.user_name || 'System'}</div>
                     <div>Date: ${new Date().toLocaleDateString()}</div>
                 </div>

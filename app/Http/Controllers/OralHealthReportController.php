@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use App\Models\OralHealthExamination;
+use App\Models\SchoolSettings;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class OralHealthReportController extends Controller
@@ -111,7 +111,7 @@ class OralHealthReportController extends Controller
                 $studentsQuery = Student::whereIn('id', $studentIds)
                     ->whereIn('id', $assignedStudentIds);
             } else {
-                // Admins can see all students
+                // Admins and nurses can see all students
                 $studentsQuery = Student::whereIn('id', $studentIds);
             }
         } else {
@@ -124,7 +124,7 @@ class OralHealthReportController extends Controller
                 $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
                 $studentsQuery = Student::whereIn('id', $assignedStudentIds);
             } else {
-                // Admins can see all students
+                // Admins and nurses can see all students
                 $studentsQuery = Student::query();
             }
             
@@ -396,7 +396,7 @@ class OralHealthReportController extends Controller
                 $studentsQuery = Student::whereIn('id', $studentIds)
                     ->whereIn('id', $assignedStudentIds);
             } else {
-                // Admins can see all students
+                // Admins and nurses can see all students
                 $studentsQuery = Student::whereIn('id', $studentIds);
             }
         } else {
@@ -407,9 +407,19 @@ class OralHealthReportController extends Controller
             if ($user->role === 'teacher') {
                 // Teachers can only see their assigned students
                 $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                \Log::info('Teacher PDF Debug:', [
+                    'teacher_id' => $user->id,
+                    'teacher_name' => $user->full_name,
+                    'assigned_student_ids' => $assignedStudentIds->toArray(),
+                    'assigned_count' => $assignedStudentIds->count()
+                ]);
                 $studentsQuery = Student::whereIn('id', $assignedStudentIds);
             } else {
-                // Admins can see all students
+                // Admins and nurses can see all students
+                \Log::info('Admin PDF Debug:', [
+                    'admin_id' => $user->id,
+                    'admin_name' => $user->full_name
+                ]);
                 $studentsQuery = Student::query();
             }
             
@@ -498,10 +508,28 @@ class OralHealthReportController extends Controller
                 'birthdate' => $student->birthdate ? $student->birthdate->format('Y-m-d') : null,
             ];
 
-            // Get oral health examination data
+            // Get oral health examination data for the student's current grade level
             $oralHealth = OralHealthExamination::where('student_id', $student->id)
+                ->where('grade_level', $student->grade_level)
                 ->latest()
                 ->first();
+            
+            // If no examination found for current grade, fall back to latest examination
+            if (!$oralHealth) {
+                $oralHealth = OralHealthExamination::where('student_id', $student->id)
+                    ->latest()
+                    ->first();
+            }
+            
+            \Log::info('Oral Health Data Debug:', [
+                'student_id' => $student->id,
+                'student_name' => $student->full_name,
+                'oral_health_found' => $oralHealth ? 'yes' : 'no',
+                'examination_grade' => $oralHealth ? $oralHealth->grade_level : 'no data',
+                'examination_date' => $oralHealth ? $oralHealth->examination_date : 'no data',
+                'permanent_for_filling' => $oralHealth ? $oralHealth->permanent_for_filling : 'no data',
+                'temporary_for_filling' => $oralHealth ? $oralHealth->temporary_for_filling : 'no data'
+            ]);
             
             // Apply min/max filters if specified - but skip filtering for selected students
             $includeStudent = true;
@@ -608,18 +636,21 @@ class OralHealthReportController extends Controller
             }
             
             if ($includeStudent) {
-                // Add only selected oral health data fields
+                // Add oral health examination data in the structure expected by the template
+                $oralHealthData = [];
                 foreach ($oralExamFields as $field) {
                     if ($oralHealth) {
-                        $studentData[$field] = $oralHealth->$field ?? 0;
+                        $oralHealthData[$field] = $oralHealth->$field ?? 0;
                     } else {
-                        $studentData[$field] = 0;
+                        $oralHealthData[$field] = 0;
                     }
                 }
+                $studentData['oral_health_examination'] = $oralHealthData;
                 
                 \Log::info('Adding student to reportData:', [
                     'student_id' => $student->id,
                     'student_name' => $studentData['name'],
+                    'oral_health_data' => $oralHealthData,
                     'include_student' => $includeStudent
                 ]);
                 
@@ -641,19 +672,23 @@ class OralHealthReportController extends Controller
             'all_request_data' => $request->all()
         ]);
 
-        // Return data for browser-based PDF generation instead of server-side PDF
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'reportData' => $reportData,
-                'grade_level' => $gradeLevel,
-                'section' => $request->section,
-                'fields' => $selectedFields,
-                'oral_exam_fields' => $oralExamFields,
-                'selected_students' => $request->selected_students ?? [],
-                'user_name' => auth()->user()->name ?? 'System'
-            ]
+        // Get school settings for PDF header
+        $schoolSettings = \App\Models\SchoolSettings::getInstance();
+        
+        // Generate server-side PDF using Blade template (like health examination)
+        $pdf = PDF::loadView('oral-health-report-pdf', [
+            'reportData' => $reportData,
+            'grade_level' => $gradeLevel,
+            'section' => $request->section,
+            'fields' => $selectedFields,
+            'oral_exam_fields' => $oralExamFields,
+            'selected_students' => $request->selected_students ?? [],
+            'user_name' => auth()->user()->full_name ?? 'System',
+            'schoolSettings' => $schoolSettings
         ]);
+        
+        $filename = 'oral-health-report-grade-' . ($gradeLevel ?: 'selected') . '.pdf';
+        return $pdf->stream($filename);
         
     } catch (\Exception $e) {
         \Log::error('PDF Export failed: ' . $e->getMessage());

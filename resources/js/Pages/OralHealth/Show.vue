@@ -47,7 +47,7 @@
                             @change="onGradeChange"
                         />
                         <Button 
-                            v-if="userRole !== 'teacher'"
+                            v-if="userRole === 'nurse'"
                             label="Print PDF" 
                             icon="pi pi-print" 
                             severity="info"
@@ -60,7 +60,7 @@
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
                             <Button 
-                                v-if="userRole !== 'teacher'"
+                                v-if="userRole === 'nurse'"
                                 label="Add Treatment" 
                                 icon="pi pi-plus" 
                                 class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
@@ -131,14 +131,14 @@
                             <span>Pupil Oral Health Examination</span>
                             <div class="flex gap-2">
                                 <Button 
-                                    v-if="!currentExam && userRole !== 'teacher'"
+                                    v-if="!currentExam && userRole === 'nurse'"
                                     label="Add Record" 
                                     icon="pi pi-plus" 
                                     class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
                                     @click="$inertia.visit(`/pupil-health/oral-health/${student.id}/create?grade=${selectedGrade.replace('Grade ', '')}`)"
                                 />
                                 <Button 
-                                    v-if="currentExam && userRole !== 'teacher'"
+                                    v-if="currentExam && userRole === 'nurse'"
                                     label="Edit Record" 
                                     icon="pi pi-pencil" 
                                     class="p-button-sm !bg-orange-600 !text-white !border-orange-600 hover:!bg-orange-700" 

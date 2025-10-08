@@ -19,8 +19,28 @@ class AuthenticatedSessionController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            // Log successful login
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'login_time' => now()
+                ])
+                ->log('User logged in successfully');
+
             return redirect()->intended('/');
         }
+
+        // Log failed login attempt
+        activity()
+            ->withProperties([
+                'username' => $credentials['username'],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'attempt_time' => now()
+            ])
+            ->log('Failed login attempt');
 
         return back()->withErrors([
             'username' => 'The provided credentials do not match our records.',
@@ -29,6 +49,18 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request)
     {
+        // Log logout before actually logging out
+        if (Auth::check()) {
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'logout_time' => now()
+                ])
+                ->log('User logged out');
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

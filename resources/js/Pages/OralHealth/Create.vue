@@ -281,7 +281,7 @@
                     <div class="flex justify-end space-x-4 mt-8">
                         <Button
                             type="button"
-                            @click="$inertia.visit(`/pupil-health/oral-health/${student.id}?grade=${gradeLevel.value}`)"
+                            @click="router.visit(`/pupil-health/oral-health/${student.id}?grade=${gradeLevel.value}`)"
                             severity="secondary"
                             label="Cancel"
                         />
@@ -358,7 +358,7 @@
 </template>
 
 <script setup>
-import { Head, useForm, usePage } from '@inertiajs/vue3'
+import { Head, useForm, usePage, router } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { computed, ref, onMounted, nextTick } from 'vue'

@@ -7,12 +7,10 @@ use Inertia\Inertia;
 use App\Models\Student;
 use App\Models\HealthTreatment;
 use App\Models\OralHealthTreatment;
-use App\Models\Incident;
 use App\Models\HealthExamination;
-use App\Models\OralHealthExamination;
-use Illuminate\Support\Facades\Log;
+use App\Models\SchoolSettings;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Support\Facades\Storage;
-use PDF;
 
 class HealthReportController extends Controller
 {
@@ -237,10 +235,10 @@ class HealthReportController extends Controller
         
         try {
             $request->validate([
-                'grade_level' => 'required|string',
-                'school_year' => 'required|string',
+                'grade_level' => 'nullable|string',
+                'school_year' => 'nullable|string',
                 'section' => 'nullable|string',
-                'fields' => 'required|array',
+                'fields' => 'nullable|array',
                 'health_exam_fields' => 'nullable|array',
                 'gender_filter' => 'nullable|string',
                 'min_age' => 'nullable|integer',
@@ -249,9 +247,16 @@ class HealthReportController extends Controller
                 'selected_students' => 'nullable|array',
             ]);
 
+            // Ensure either grade_level or selected_students is provided
+            if (!$request->grade_level && (!$request->selected_students || count($request->selected_students) === 0)) {
+                return response()->json([
+                    'error' => 'Either grade level or selected students must be provided'
+                ], 400);
+            }
+
             $gradeLevel = $request->grade_level;
             $schoolYear = $request->school_year;
-            $selectedFields = $request->fields;
+            $selectedFields = $request->fields ?? ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
 
             // Check if specific students are selected (same logic as generate method)
             if ($request->selected_students && count($request->selected_students) > 0) {
@@ -390,19 +395,24 @@ class HealthReportController extends Controller
                 $reportData[] = $studentData;
             }
 
-            // Return data for browser-based PDF generation instead of server-side PDF
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'reportData' => $reportData,
-                    'grade_level' => $gradeLevel,
-                    'school_year' => $schoolYear,
-                    'section' => $request->section,
-                    'fields' => $selectedFields,
-                    'health_exam_fields' => $request->health_exam_fields ?? [],
-                    'selected_students' => $request->selected_students ?? []
-                ]
+            // Get school settings for PDF header
+            $schoolSettings = SchoolSettings::getInstance();
+            
+            // Generate server-side PDF using Blade template (like oral health report)
+            $pdf = PDF::loadView('health-report-pdf', [
+                'reportData' => $reportData,
+                'grade_level' => $gradeLevel,
+                'school_year' => $schoolYear,
+                'section' => $request->section,
+                'fields' => $selectedFields,
+                'health_exam_fields' => $request->health_exam_fields ?? [],
+                'selected_students' => $request->selected_students ?? [],
+                'user_name' => auth()->user()->full_name ?? 'System',
+                'schoolSettings' => $schoolSettings
             ]);
+            
+            $filename = 'health-report-grade-' . ($gradeLevel ?: 'selected') . '.pdf';
+            return $pdf->stream($filename);
             
         } catch (\Exception $e) {
             Log::error('PDF Export failed: ' . $e->getMessage());

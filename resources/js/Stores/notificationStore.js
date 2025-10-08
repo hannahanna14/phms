@@ -35,6 +35,43 @@ const saveNotificationsToStorage = () => {
     }
 }
 
+// Role-based notification filtering
+const getFilteredNotifications = (userRole) => {
+    return notifications.value.filter(notification => {
+        // Define which notification types each role should see
+        const rolePermissions = {
+            'admin': ['all'], // Admins see everything
+            'nurse': ['health_exam', 'treatment', 'oral_health_treatment', 'incident', 'system', 'timer_expired', 'timer_warning'],
+            'teacher': ['health_exam', 'report', 'system'] // Teachers only see basic health info and reports
+        }
+        
+        const allowedTypes = rolePermissions[userRole] || []
+        
+        // If admin, show all notifications
+        if (allowedTypes.includes('all')) {
+            return true
+        }
+        
+        // Filter based on notification type or source
+        const notificationType = notification.type || notification.source || 'system'
+        
+        // Block timer-related notifications for teachers
+        if (userRole === 'teacher') {
+            if (notification.title && (
+                notification.title.includes('Timer Expired') ||
+                notification.title.includes('Timer Warning') ||
+                notification.title.includes('Treatment') ||
+                notification.source === 'health' ||
+                notification.source === 'oral_health'
+            )) {
+                return false
+            }
+        }
+        
+        return allowedTypes.includes(notificationType)
+    })
+}
+
 // Computed
 const unreadCount = computed(() => {
     return notifications.value.filter(n => !n.read).length
@@ -189,15 +226,9 @@ export const useNotificationStore = () => {
         markAllAsRead,
         removeNotification,
         clearAllNotifications,
+        getFilteredNotifications,
         
-        // Check functions
-        checkUnrecordedStudents,
-        checkExpiredTimers,
-        
-        // Main notification helpers (focused on priority scenarios)
-        createTimerExpiryNotification,
-        createUnrecordedStudentNotification,
-        createBatchUnrecordedNotification,
+        // Note: Notification creator functions can be added here when needed
         
         // Config
         notificationTypes
