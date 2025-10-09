@@ -6,17 +6,24 @@
             return '';
         }
 
-        $condition = $gradeData->conditions[$conditionKey][$gradeDataKey] ?? null;
-        if (!$condition || !$condition['present']) {
+        // Handle the actual database format: {"gingivitis": "10/06/24", "malocclusion": "10/06/24"}
+        $conditions = $gradeData->conditions;
+        
+        // If conditions is a string (JSON), decode it
+        if (is_string($conditions)) {
+            $conditions = json_decode($conditions, true);
+        }
+        
+        // Check if this condition exists
+        if (!isset($conditions[$conditionKey])) {
             return '';
         }
 
-        $display = '&#10003;'; // HTML entity for check mark
-        if (!empty($condition['date'])) {
-            $display .= ' (' . date('m/d/y', strtotime($condition['date'])) . ')';
-        }
-        if ($conditionKey === 'others_specify' && !empty($condition['specification'])) {
-            $display .= ' ' . $condition['specification'];
+        $display = '/'; // Forward slash checkmark
+        $conditionDate = $conditions[$conditionKey];
+        
+        if (!empty($conditionDate)) {
+            $display .= ' (' . $conditionDate . ')';
         }
 
         return $display;

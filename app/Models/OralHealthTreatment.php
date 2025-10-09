@@ -14,6 +14,7 @@ class OralHealthTreatment extends Model
         'chief_complaint',
         'treatment',
         'remarks',
+        'attended_by',
         'status',
         'grade_level',
         'school_year',

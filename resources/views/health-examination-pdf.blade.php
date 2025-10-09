@@ -604,13 +604,21 @@
             <tr>
                 <td class="examination-item">Iron Supplementation (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->iron_supplementation ? $exam->iron_supplementation : '' }}</td>
+                    <td>
+                        @if($exam && isset($exam->iron_supplementation))
+                            {{ $exam->iron_supplementation === 'Yes' ? '/' : 'X' }}
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Deworming (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->deworming ? $exam->deworming : '' }}</td>
+                    <td>
+                        @if($exam && isset($exam->deworming_status))
+                            {{ $exam->deworming_status === 'dewormed' ? '/' : 'X' }}
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>

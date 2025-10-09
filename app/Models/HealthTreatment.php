@@ -17,6 +17,7 @@ class HealthTreatment extends Model
         'treatment',
         'status',
         'remarks',
+        'attended_by',
         'grade_level',
         'school_year',
         'started_at',

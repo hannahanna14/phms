@@ -88,6 +88,15 @@ class HealthTreatmentSeeder extends Seeder
             'Treatment completed successfully'
         ];
 
+        // School nurse names for realistic attended_by data
+        $nurseNames = [
+            'Nurse Maria Santos',
+            'Nurse Ana Reyes', 
+            'Nurse Carmen Cruz',
+            'Nurse Rosa Garcia',
+            'Nurse Elena Villanueva'
+        ];
+
         // All grade levels from Kinder 2 to Grade 6
         $allGradeLevels = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
         $currentYear = date('Y');
@@ -144,6 +153,7 @@ class HealthTreatmentSeeder extends Seeder
                         'treatment' => $treatment,
                         'status' => $status,
                         'remarks' => $remark,
+                        'attended_by' => $nurseNames[array_rand($nurseNames)],
                         'grade_level' => $gradeLevel,
                         'school_year' => $schoolYear,
                         'started_at' => $startedAt,

@@ -40,6 +40,9 @@ class OralHealthTreatmentController extends Controller
             'school_year' => 'required|string',
         ]);
 
+        // Add the current user's name as attended_by
+        $validated['attended_by'] = auth()->user()->name ?? 'School Nurse';
+
         // Debug log the validated data
         Log::info('Oral Health Treatment Store - Validated Data:', $validated);
 

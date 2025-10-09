@@ -109,6 +109,18 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth missing <span class="text-red-500">*</span></label>
+                                <InputText
+                                    v-model="form.permanent_teeth_missing"
+                                    type="number"
+                                    class="w-full"
+                                    placeholder="Enter value"
+                                    required
+                                />
+                                <small v-if="errors.permanent_teeth_missing" class="text-red-500">{{ errors.permanent_teeth_missing }}</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t <span class="text-red-500">*</span></label>
                                 <InputText
                                     v-model="form.permanent_total_dft"
@@ -426,8 +438,8 @@ const form = useForm({
     original_grade: gradeLevel.value,
     permanent_index_dft: 0,
     permanent_teeth_decayed: 0,
-     permanent_teeth_missing: 0,
     permanent_teeth_filled: 0,
+    permanent_teeth_missing: 0,
     permanent_total_dft: 0,
     permanent_for_extraction: 0,
     permanent_for_filling: 0,
@@ -736,11 +748,11 @@ const validateForm = () => {
     if (form.permanent_teeth_decayed === '' || form.permanent_teeth_decayed === null) {
         errors.permanent_teeth_decayed = 'Permanent teeth decayed count is required'
     }
-    if (form.permanent_teeth_missing === '' || form.permanent_teeth_missing === null) {
-        errors.permanent_teeth_decayed = 'Permanent teeth decayed count is required'
-    }
     if (form.permanent_teeth_filled === '' || form.permanent_teeth_filled === null) {
         errors.permanent_teeth_filled = 'Permanent teeth filled count is required'
+    }
+    if (form.permanent_teeth_missing === '' || form.permanent_teeth_missing === null) {
+        errors.permanent_teeth_missing = 'Permanent teeth missing count is required'
     }
     if (form.permanent_total_dft === '' || form.permanent_total_dft === null) {
         errors.permanent_total_dft = 'Permanent total D.F.T. is required'

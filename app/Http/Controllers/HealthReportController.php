@@ -607,20 +607,24 @@ class HealthReportController extends Controller
             $gradeName = $gradeNames[$index];
             
             // Try different grade level formats that might be stored in database
-            $oralHealthData = OralHealthExamination::where('student_id', $studentId)
-                ->where(function($query) use ($gradeNum, $gradeName) {
-                    $query->where('grade_level', $gradeNum)
-                          ->orWhere('grade_level', $gradeName)
-                          ->orWhere('grade_level', strtolower($gradeName))
-                          ->orWhere('grade_level', ucfirst(strtolower($gradeName)));
-                    
-                    // Special handling for Kinder variations
-                    if ($gradeNum === 'K' || $gradeName === 'Kinder') {
-                        $query->orWhere('grade_level', 'Kinder 2')
-                              ->orWhere('grade_level', 'K-2');
-                    }
-                })
-                ->first();
+            $oralHealthData = null;
+            
+            // Handle Kinder specially since we only have "Kinder 2"
+            if ($gradeNum === 'K') {
+                $oralHealthData = OralHealthExamination::where('student_id', $studentId)
+                    ->where('grade_level', 'Kinder 2')
+                    ->latest()
+                    ->first();
+            } else {
+                // For numeric grades, try both formats
+                $oralHealthData = OralHealthExamination::where('student_id', $studentId)
+                    ->where(function($query) use ($gradeNum) {
+                        $query->where('grade_level', $gradeNum)
+                              ->orWhere('grade_level', "Grade {$gradeNum}");
+                    })
+                    ->latest()
+                    ->first();
+            }
             
             // Process the tooth_symbols JSON data if it exists
             if ($oralHealthData && $oralHealthData->tooth_symbols) {
