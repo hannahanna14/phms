@@ -24,7 +24,7 @@
                         placeholder="Enter schedule title"
                         required
                     />
-                    <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
+                    <small v-if="errors && errors.title" class="text-red-500">{{ errors.title }}</small>
                 </div>
 
                 <!-- Description -->
@@ -36,7 +36,7 @@
                         rows="3"
                         placeholder="Enter schedule description"
                     />
-                    <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
+                    <small v-if="errors && errors.description" class="text-red-500">{{ errors.description }}</small>
                 </div>
 
                 <!-- Date and Time -->
@@ -53,7 +53,7 @@
                             placeholder="Select start date and time"
                             required
                         />
-                        <small v-if="errors.start_datetime" class="text-red-500">{{ errors.start_datetime }}</small>
+                        <small v-if="errors && errors.start_datetime" class="text-red-500">{{ errors.start_datetime }}</small>
                     </div>
 
                     <div class="form-group">
@@ -68,7 +68,7 @@
                             placeholder="Select end date and time"
                             required
                         />
-                        <small v-if="errors.end_datetime" class="text-red-500">{{ errors.end_datetime }}</small>
+                        <small v-if="errors && errors.end_datetime" class="text-red-500">{{ errors.end_datetime }}</small>
                     </div>
                 </div>
 
@@ -87,7 +87,7 @@
                             class="w-full"
                             required
                         />
-                        <small v-if="errors.type" class="text-red-500">{{ errors.type }}</small>
+                        <small v-if="errors && errors.type" class="text-red-500">{{ errors.type }}</small>
                     </div>
 
                     <div class="form-group">
@@ -103,7 +103,7 @@
                             class="w-full"
                             required
                         />
-                        <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
+                        <small v-if="errors && errors.status" class="text-red-500">{{ errors.status }}</small>
                     </div>
                 </div>
 
@@ -115,31 +115,83 @@
                         class="w-full"
                         placeholder="Enter location (optional)"
                     />
-                    <small v-if="errors.location" class="text-red-500">{{ errors.location }}</small>
+                    <small v-if="errors && errors.location" class="text-red-500">{{ errors.location }}</small>
                 </div>
 
                 <!-- Attendees -->
                 <div class="form-group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Attendees</label>
-                    <div class="space-y-2">
-                        <div v-for="(attendee, index) in form.attendees" :key="index" class="flex items-center space-x-2">
-                            <InputText
-                                v-model="form.attendees[index]"
-                                class="flex-1"
-                                placeholder="Enter attendee name"
-                            />
-                            <Button
-                                @click="removeAttendee(index)"
-                                icon="pi pi-trash"
-                                class="p-button-danger p-button-text p-button-sm"
-                            />
+                    <div class="space-y-3">
+                        <!-- User Picker -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Select Users</label>
+                            <div v-if="usersLoading" class="text-center py-4 text-gray-500">
+                                Loading users...
+                            </div>
+                            <div v-else-if="!availableUsers || availableUsers.length === 0" class="text-center py-4 text-gray-500">
+                                No users available
+                            </div>
+                            <div v-else class="border rounded-lg p-4 max-h-60 overflow-y-auto">
+                                <div class="space-y-2">
+                                    <div v-for="user in availableUsers" :key="user.id" class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                        <input 
+                                            type="checkbox" 
+                                            :id="`user-${user.id}`"
+                                            :value="user.id"
+                                            v-model="selectedUsers"
+                                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        >
+                                        <div class="flex items-center space-x-2 flex-1">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                {{ (user.full_name && user.full_name.length > 0) ? user.full_name.charAt(0).toUpperCase() : '?' }}
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-sm">{{ user.full_name || 'Unknown User' }}</div>
+                                                <div class="text-xs text-gray-500 capitalize">{{ user.role || 'No role' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Selected Users Display -->
+                            <div v-if="selectedUsers && selectedUsers.length > 0 && !usersLoading" class="mt-2">
+                                <div class="text-xs font-medium text-gray-600 mb-1">Selected Users ({{ selectedUsers.length }})</div>
+                                <div class="flex flex-wrap gap-1">
+                                    <span v-for="userId in selectedUsers" :key="userId" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ availableUsers && availableUsers.length > 0 ? getUserName(userId) : 'Loading...' }}
+                                        <button @click="removeUser(userId)" class="ml-1 text-blue-600 hover:text-blue-800">
+                                            ×
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <Button
-                            @click="addAttendee"
-                            icon="pi pi-plus"
-                            label="Add Attendee"
-                            class="p-button-text p-button-sm"
-                        />
+
+                        <!-- Manual Entry (Optional) -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Additional Attendees (Manual Entry)</label>
+                            <div class="space-y-2">
+                                <div v-for="(attendee, index) in form.attendees" :key="index" class="flex items-center space-x-2">
+                                    <InputText
+                                        v-model="form.attendees[index]"
+                                        class="flex-1"
+                                        placeholder="Enter external attendee name"
+                                    />
+                                    <Button
+                                        @click="removeAttendee(index)"
+                                        icon="pi pi-trash"
+                                        class="p-button-danger p-button-text p-button-sm"
+                                    />
+                                </div>
+                                <Button
+                                    @click="addAttendee"
+                                    icon="pi pi-plus"
+                                    label="Add External Attendee"
+                                    class="p-button-text p-button-sm"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -152,7 +204,7 @@
                         rows="3"
                         placeholder="Additional notes (optional)"
                     />
-                    <small v-if="errors.notes" class="text-red-500">{{ errors.notes }}</small>
+                    <small v-if="errors && errors.notes" class="text-red-500">{{ errors.notes }}</small>
                 </div>
 
                 <!-- Submit Buttons -->
@@ -184,13 +236,24 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
+// Remove unused import
+// import AutoComplete from 'primevue/autocomplete'
 
 const props = defineProps({
-    date: String // Optional pre-selected date
+    date: String, // Optional pre-selected date
+    users: {
+        type: Array,
+        default: () => []
+    }
 })
 
 // Form validation errors
 const errors = ref({})
+
+// User selection
+const selectedUsers = ref([])
+const availableUsers = ref([])
+const usersLoading = ref(true)
 
 // Form data
 const form = useForm({
@@ -202,6 +265,7 @@ const form = useForm({
     status: 'scheduled',
     location: '',
     attendees: [''],
+    selected_users: [],
     notes: ''
 })
 
@@ -222,16 +286,68 @@ const statusOptions = [
 
 // Initialize form with pre-selected date if provided
 onMounted(() => {
-    if (props.date) {
-        const selectedDate = new Date(props.date)
-        selectedDate.setHours(9, 0, 0, 0) // Default to 9:00 AM
-        form.start_datetime = selectedDate
+    try {
+        if (props.date) {
+            const selectedDate = new Date(props.date)
+            selectedDate.setHours(9, 0, 0, 0) // Default to 9:00 AM
+            form.start_datetime = selectedDate
+            
+            const endDate = new Date(selectedDate)
+            endDate.setHours(10, 0, 0, 0) // Default to 10:00 AM (1 hour duration)
+            form.end_datetime = endDate
+        }
         
-        const endDate = new Date(selectedDate)
-        endDate.setHours(10, 0, 0, 0) // Default to 10:00 AM (1 hour duration)
-        form.end_datetime = endDate
+        // Load users if not provided as props
+        if (props.users && props.users.length > 0) {
+            availableUsers.value = props.users
+            usersLoading.value = false
+        } else {
+            loadUsers().catch(error => {
+                console.error('Failed to load users:', error)
+                usersLoading.value = false
+            })
+        }
+    } catch (error) {
+        console.error('Error in onMounted:', error)
+        usersLoading.value = false
     }
 })
+
+// Load users from API
+const loadUsers = async () => {
+    try {
+        usersLoading.value = true
+        const response = await fetch('/api/users')
+        const users = await response.json()
+        availableUsers.value = users
+    } catch (error) {
+        console.error('Error loading users:', error)
+    } finally {
+        usersLoading.value = false
+    }
+}
+
+// Get user name by ID
+const getUserName = (userId) => {
+    try {
+        if (!availableUsers.value || !Array.isArray(availableUsers.value) || availableUsers.value.length === 0) {
+            return 'Loading...'
+        }
+        const user = availableUsers.value.find(u => u && u.id === userId)
+        return (user && user.full_name) ? user.full_name : 'Unknown User'
+    } catch (error) {
+        console.error('Error in getUserName:', error)
+        return 'Error loading user'
+    }
+}
+
+// Remove user from selection
+const removeUser = (userId) => {
+    const index = selectedUsers.value.indexOf(userId)
+    if (index > -1) {
+        selectedUsers.value.splice(index, 1)
+    }
+}
 
 // Validation
 const validateForm = () => {
@@ -263,25 +379,38 @@ const removeAttendee = (index) => {
 
 // Form submission
 const submit = () => {
-    // Client-side validation
-    const validationErrors = validateForm()
-    errors.value = validationErrors
-    
-    if (Object.keys(validationErrors).length > 0) {
-        return
-    }
-    
-    // Filter out empty attendees
-    form.attendees = form.attendees.filter(attendee => attendee.trim() !== '')
-    
-    form.post(route('schedule-calendar.store'), {
-        onSuccess: () => {
-            errors.value = {}
-        },
-        onError: (serverErrors) => {
-            errors.value = { ...errors.value, ...serverErrors }
+    try {
+        // Client-side validation
+        const validationErrors = validateForm()
+        if (errors.value) {
+            errors.value = validationErrors
         }
-    })
+        
+        if (Object.keys(validationErrors).length > 0) {
+            return
+        }
+        
+        // Clean up attendees array (remove empty strings)
+        form.attendees = form.attendees.filter(attendee => attendee.trim() !== '')
+        
+        // Add selected users to the form
+        form.selected_users = selectedUsers.value || []
+        
+        form.post(route('schedule-calendar.store'), {
+            onSuccess: () => {
+                if (errors.value) {
+                    errors.value = {}
+                }
+            },
+            onError: (serverErrors) => {
+                if (errors.value) {
+                    errors.value = { ...errors.value, ...serverErrors }
+                }
+            }
+        })
+    } catch (error) {
+        console.error('Error in submit:', error)
+    }
 }
 </script>
 

@@ -600,29 +600,80 @@ class StudentController extends Controller
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',
             'complaint' => 'required|string',
-            'actions_taken' => 'required|string',
-            'timer_status' => 'nullable|in:not_started,active,paused,completed,expired',
-            'grade_level' => 'required|string',
-            'school_year' => 'required|string'
+            'actions_taken' => 'required|string'
         ]);
 
-        // Set default status to pending
-        $validated['status'] = 'pending';
+        // Get student to determine grade level and school year
+        $student = Student::findOrFail($validated['student_id']);
         
-        // Set default timer status if not provided
-        if (!isset($validated['timer_status'])) {
-            $validated['timer_status'] = 'not_started';
-        }
+        // Set default values
+        $validated['status'] = 'pending';
+        $validated['timer_status'] = 'not_started';
+        $validated['grade_level'] = $student->grade_level ?? 'Unknown';
+        $validated['school_year'] = $this->getSchoolYearForGrade($validated['grade_level']);
 
         $incident = Incident::create($validated);
-        
-        // Start the timer automatically when incident is created
-        $incident->startTimer();
 
+        // Redirect using Inertia
         return redirect()->route('pupil-health.incident', [
             'student' => $validated['student_id'],
             'grade' => $validated['grade_level']
         ])->with('success', 'Incident report created successfully.');
+    }
+
+    public function viewIncident(Incident $incident)
+    {
+        // Check if user has access to this incident
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($incident->student_id)) {
+                abort(403, 'Access denied. You can only view incidents for your assigned students.');
+            }
+        }
+
+        $student = Student::findOrFail($incident->student_id);
+
+        return Inertia::render('Incident/View', [
+            'incident' => $incident,
+            'student' => $student
+        ]);
+    }
+
+    public function editIncident(Incident $incident)
+    {
+        // Only nurses can edit incidents
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can edit incidents.');
+        }
+
+        $student = Student::findOrFail($incident->student_id);
+
+        return Inertia::render('Incident/Edit', [
+            'incident' => $incident,
+            'student' => $student
+        ]);
+    }
+
+    public function updateIncident(Request $request, Incident $incident)
+    {
+        // Only nurses can update incidents
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can update incidents.');
+        }
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'complaint' => 'required|string',
+            'actions_taken' => 'required|string'
+        ]);
+
+        $incident->update($validated);
+
+        return redirect()->route('pupil-health.incident', [
+            'student' => $incident->student_id,
+            'grade' => $incident->grade_level
+        ])->with('success', 'Incident report updated successfully.');
     }
 
     public function updateTimerStatus(Request $request, $id)
@@ -707,7 +758,6 @@ class StudentController extends Controller
     {
         // Map grade levels to school years
         $gradeToYear = [
-            'Kinder 1' => '2022-2023',
             'Kinder 2' => '2023-2024', 
             'Grade 1' => '2024-2025',
             'Grade 2' => '2023-2024',

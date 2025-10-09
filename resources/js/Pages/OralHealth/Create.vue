@@ -225,56 +225,29 @@
                         </div>
                     </div>
 
-                    <!-- Oral Health Conditions Section -->
+                    <!-- Oral Health Conditions Section - SIMPLIFIED -->
                     <div class="border rounded-lg p-6">
                         <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full border-collapse border border-gray-300">
-                                <thead>
-                                    <tr class="bg-gray-50">
-                                        <th class="border border-gray-300 px-3 py-2 text-left font-medium text-gray-700" style="width: 200px;">Condition</th>
-                                        <th v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center font-medium text-gray-700">
-                                            {{ gradeRange.label }}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="condition in oralHealthConditions" :key="condition.key">
-                                        <td class="border border-gray-300 px-3 py-2 font-medium">{{ condition.label }}</td>
-                                        <td v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center">
-                                            <div class="flex flex-col items-center space-y-1">
-                                                <!-- Checkbox -->
-                                                <label class="flex items-center space-x-1 text-xs">
-                                                    <input
-                                                        v-model="form.conditions[condition.key][gradeRange.key].present"
-                                                        type="checkbox"
-                                                        class="w-3 h-3"
-                                                    >
-                                                    <span>Present</span>
-                                                </label>
-
-                                                <!-- Date Input (only show if present is checked) -->
-                                                <input
-                                                    v-if="form.conditions[condition.key][gradeRange.key].present"
-                                                    v-model="form.conditions[condition.key][gradeRange.key].date"
-                                                    type="date"
-                                                    class="w-20 text-xs border border-gray-300 rounded px-1 py-0.5"
-                                                >
-
-                                                <!-- Text Input for "Others, specify" (only show if present is checked and it's the others_specify condition) -->
-                                                <input
-                                                    v-if="condition.key === 'others_specify' && form.conditions[condition.key][gradeRange.key].present"
-                                                    v-model="form.conditions[condition.key][gradeRange.key].specification"
-                                                    type="text"
-                                                    placeholder="Specify..."
-                                                    class="w-24 text-xs border border-gray-300 rounded px-1 py-0.5"
-                                                >
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <p class="text-center text-gray-600 mb-4">Select any conditions present for this examination:</p>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div v-for="condition in oralHealthConditions" :key="condition.key" class="border rounded p-3">
+                                <label class="flex items-center space-x-2">
+                                    <input 
+                                        type="checkbox" 
+                                        class="w-4 h-4"
+                                        v-model="form.conditions[condition.key + '_present']"
+                                    >
+                                    <span class="text-sm font-medium">{{ condition.label }}</span>
+                                </label>
+                                <input 
+                                    v-if="form.conditions[condition.key + '_present']"
+                                    v-model="form.conditions[condition.key + '_date']"
+                                    type="date" 
+                                    class="mt-2 w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                    placeholder="Date detected"
+                                >
+                            </div>
                         </div>
                     </div>
 
@@ -400,7 +373,7 @@ const oralHealthConditions = [
     { key: 'others_specify', label: 'Others, specify' }
 ]
 
-// Show only current grade being examined
+// Show only current grade being examined - define this first
 const getCurrentGradeRange = (currentGrade) => {
     const gradeNum = parseInt(currentGrade) || 0
 
@@ -416,7 +389,7 @@ const getCurrentGradeRange = (currentGrade) => {
     }
 
     // Handle Kinder cases
-    if (currentGrade === 'K' || currentGrade === 'Kinder' || gradeNum === 0) {
+    if (currentGrade === 'K' || currentGrade === 'Kinder' || currentGrade === 'Kinder 2' || gradeNum === 0) {
         return [gradeMapping[0]]
     }
 
@@ -426,14 +399,16 @@ const getCurrentGradeRange = (currentGrade) => {
 
 const relevantGradeRanges = computed(() => getCurrentGradeRange(gradeLevel.value))
 
-// Initialize conditions structure immediately
+// Initialize conditions structure for current grade only
 const initializeConditions = () => {
-    const allGradeRanges = ['kinder', 'grade_1_7', 'grade_2_8', 'grade_3_9', 'grade_4_10', 'grade_5_11', 'grade_6_12']
+    const currentGradeRanges = getCurrentGradeRange(gradeLevel.value)
     const conditions = {}
+    
     oralHealthConditions.forEach(condition => {
         conditions[condition.key] = {}
-        allGradeRanges.forEach(grade => {
-            conditions[condition.key][grade] = {
+        // Only initialize for the current grade range
+        currentGradeRanges.forEach(gradeRange => {
+            conditions[condition.key][gradeRange.key] = {
                 present: false,
                 date: '',
                 specification: '' // For "Others, specify" text input
@@ -463,7 +438,7 @@ const form = useForm({
     temporary_for_extraction: 0,
     temporary_for_filling: 0,
     tooth_symbols: {},
-    conditions: initializeConditions()
+    conditions: {}
 })
 
 // Set up form persistence
@@ -804,6 +779,17 @@ const errors = ref({})
 
 const submit = () => {
     updateFormData()
+    
+    // Convert conditions to database format
+    const dbConditions = {}
+    oralHealthConditions.forEach(condition => {
+        if (form.conditions[condition.key + '_present']) {
+            dbConditions[condition.key] = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
+        }
+    })
+    
+    // Update conditions in database format
+    form.conditions = dbConditions
 
     // Validate form
     const validationErrors = validateForm()

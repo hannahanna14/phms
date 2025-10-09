@@ -43,6 +43,10 @@ class SettingsController extends Controller
 
         $validated = $request->validate([
             'school_name' => 'nullable|string|max:255',
+            'school_id' => 'nullable|string|max:50',
+            'region' => 'nullable|string|max:255',
+            'division' => 'nullable|string|max:255',
+            'telephone_no' => 'nullable|string|max:20',
             'school_address' => 'nullable|string|max:1000',
             'school_phone' => 'nullable|string|max:20',
             'school_email' => 'nullable|email|max:255',

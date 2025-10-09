@@ -38,11 +38,15 @@ const saveNotificationsToStorage = () => {
 // Role-based notification filtering
 const getFilteredNotifications = (userRole) => {
     return notifications.value.filter(notification => {
+        // First filter out dismissed notifications
+        if (notification.dismissed) {
+            return false
+        }
         // Define which notification types each role should see
         const rolePermissions = {
             'admin': ['all'], // Admins see everything
-            'nurse': ['health_exam', 'treatment', 'oral_health_treatment', 'incident', 'system', 'timer_expired', 'timer_warning'],
-            'teacher': ['health_exam', 'report', 'system'] // Teachers only see basic health info and reports
+            'nurse': ['health_exam', 'treatment', 'oral_health_treatment', 'incident', 'system', 'timer_expired', 'timer_warning', 'schedule'],
+            'teacher': ['health_exam', 'report', 'system', 'schedule'] // Teachers can see schedules too
         }
         
         const allowedTypes = rolePermissions[userRole] || []
@@ -74,7 +78,7 @@ const getFilteredNotifications = (userRole) => {
 
 // Computed
 const unreadCount = computed(() => {
-    return notifications.value.filter(n => !n.read).length
+    return notifications.value.filter(n => !n.read && !n.dismissed).length
 })
 
 // Actions
@@ -97,13 +101,12 @@ const checkExpiredTimers = async () => {
 }
 
 const addNotification = (notification) => {
-    // Check for duplicate notifications (same type, student, and treatment)
+    // Check for duplicate notifications (same type and message)
+    // Only prevent duplicates if the notification still exists (not deleted)
     const isDuplicate = notifications.value.some(existing => 
         existing.type === notification.type &&
-        existing.student_id === notification.student_id &&
-        existing.treatment_id === notification.treatment_id &&
         existing.message === notification.message &&
-        !existing.read // Only check unread notifications
+        !existing.dismissed // Only check non-dismissed notifications
     )
     
     if (isDuplicate) {
@@ -114,6 +117,7 @@ const addNotification = (notification) => {
     const newNotification = {
         id: Date.now(),
         read: false,
+        dismissed: false,
         created_at: new Date(),
         ...notification
     }
@@ -139,11 +143,11 @@ const markAllAsRead = () => {
 }
 
 const removeNotification = (notificationId) => {
-    const index = notifications.value.findIndex(n => n.id === notificationId)
-    if (index > -1) {
-        notifications.value.splice(index, 1)
+    const notification = notifications.value.find(n => n.id === notificationId)
+    if (notification) {
+        notification.dismissed = true
         saveNotificationsToStorage()
-        console.log('🗑️ Notification removed and saved')
+        console.log('🗑️ Notification dismissed and saved')
     }
 }
 
@@ -169,6 +173,11 @@ const notificationTypes = {
         icon: 'document',
         color: 'purple',
         title: 'Report'
+    },
+    schedule: {
+        icon: 'calendar',
+        color: 'blue',
+        title: 'Schedule'
     },
     system: {
         icon: 'information-circle',

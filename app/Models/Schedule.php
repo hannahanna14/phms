@@ -20,13 +20,15 @@ class Schedule extends Model
         'location',
         'created_by',
         'attendees',
+        'selected_users',
         'notes'
     ];
 
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
-        'attendees' => 'array'
+        'attendees' => 'array',
+        'selected_users' => 'array'
     ];
 
     /**
@@ -35,6 +37,41 @@ class Schedule extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the users who are attendees of this schedule
+     */
+    public function attendeeUsers()
+    {
+        if (!$this->selected_users || !is_array($this->selected_users)) {
+            return collect();
+        }
+        
+        return User::whereIn('id', $this->selected_users)->get();
+    }
+
+    /**
+     * Check if a user can view this schedule
+     */
+    public function canBeViewedBy($user)
+    {
+        // Admins and nurses can see all schedules
+        if (in_array($user->role, ['admin', 'nurse'])) {
+            return true;
+        }
+        
+        // Schedule creator can see their own schedules
+        if ($this->created_by === $user->id) {
+            return true;
+        }
+        
+        // Check if user is in the attendees list
+        if ($this->selected_users && is_array($this->selected_users)) {
+            return in_array($user->id, $this->selected_users);
+        }
+        
+        return false;
     }
 
     /**

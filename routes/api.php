@@ -44,6 +44,11 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/students/search', [HealthReportController::class, 'searchStudents']);
     Route::post('/health-report/generate', [HealthReportController::class, 'generate']);
     
+    // Users API Routes
+    Route::get('/users', function() {
+        return response()->json(\App\Models\User::select('id', 'full_name', 'role')->get());
+    });
+    
     // Incident API Routes
     Route::get('/incidents/student/{studentId}', [StudentController::class, 'getIncidentsByStudent']);
     Route::put('/incidents/{id}/timer-status', [StudentController::class, 'updateTimerStatus']);
@@ -51,6 +56,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Notification API Routes
     Route::get('/notifications/check-timers', [NotificationController::class, 'checkTimerNotifications']);
     Route::get('/notifications/check-unrecorded', [NotificationController::class, 'checkUnrecordedStudents']);
+    Route::get('/notifications/check-schedules', [NotificationController::class, 'checkScheduleNotifications']);
     
     // Timer Status API Routes for notifications
     Route::get('/health-treatment/timer-status/{id}', [HealthTreatmentController::class, 'getTimerStatus']);

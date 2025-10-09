@@ -14,52 +14,6 @@
                 </div>
             </div>
 
-            <!-- Timer Status -->
-            <div v-if="timer_status" class="mb-6 p-4 rounded-lg" :class="getAlertClass()">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <strong>Timer:</strong> {{ timer_status.display }}
-                        <div v-if="remaining_minutes > 0" class="text-sm text-gray-600 mt-1">
-                            {{ remaining_minutes }} minutes remaining
-                        </div>
-                    </div>
-                    
-                    <!-- Timer Controls -->
-                    <div class="flex gap-2" v-if="timer_status.status !== 'expired'">
-                        <Button 
-                            v-if="timer_status.status === 'not_started'"
-                            label="Start Timer" 
-                            icon="pi pi-play" 
-                            size="small"
-                            @click="startTimer"
-                        />
-                        <Button 
-                            v-if="timer_status.status === 'active'"
-                            label="Pause" 
-                            icon="pi pi-pause" 
-                            size="small"
-                            severity="warning"
-                            @click="pauseTimer"
-                        />
-                        <Button 
-                            v-if="timer_status.status === 'paused'"
-                            label="Resume" 
-                            icon="pi pi-play" 
-                            size="small"
-                            severity="success"
-                            @click="resumeTimer"
-                        />
-                        <Button 
-                            v-if="timer_status.status === 'active' || timer_status.status === 'paused'"
-                            label="Complete" 
-                            icon="pi pi-check" 
-                            size="small"
-                            severity="success"
-                            @click="completeTimer"
-                        />
-                    </div>
-                </div>
-            </div>
 
             <!-- Treatment Details -->
             <div class="bg-white rounded-lg shadow p-6">

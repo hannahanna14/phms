@@ -47,7 +47,7 @@
                                     <i class="pi pi-calendar mr-1"></i>
                                     Date
                                 </label>
-                                <Calendar 
+                                <DatePicker 
                                     v-model="form.date" 
                                     dateFormat="mm/dd/yy"
                                     placeholder="MM/DD/YYYY"
@@ -88,30 +88,6 @@
                             </div>
                         </div>
 
-                        <!-- Status -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Status
-                                </label>
-                                <Select 
-                                    v-model="form.status" 
-                                    :options="statusOptions"
-                                    placeholder="Select status"
-                                    class="w-full"
-                                    :class="{ 'p-invalid': form.errors.status }"
-                                />
-                                <small v-if="form.errors.status" class="text-red-500">{{ form.errors.status }}</small>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                    <div class="flex items-center text-blue-700">
-                                        <i class="pi pi-clock mr-2"></i>
-                                        <span class="text-sm font-medium">Timer will start automatically (2 hours)</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Action Buttons -->
                         <div class="flex justify-end gap-3 pt-4">
@@ -140,8 +116,7 @@ import { ref, onMounted } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
-import Calendar from 'primevue/calendar';
-import Select from 'primevue/select';
+import DatePicker from 'primevue/datepicker';
 import Card from 'primevue/card';
 import { useFormPersistence } from '@/composables/useFormPersistence';
 
@@ -152,8 +127,7 @@ const form = useForm({
     student_id: student.id,
     date: new Date(),
     complaint: '',
-    actions_taken: '',
-    status: 'pending'
+    actions_taken: ''
 });
 
 // Set up form persistence
@@ -170,12 +144,6 @@ const {
     showNotification: true
 });
 
-const statusOptions = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'In Progress', value: 'in_progress' },
-    { label: 'Resolved', value: 'resolved' },
-    { label: 'Closed', value: 'closed' }
-];
 
 // Initialize form persistence
 onMounted(() => {
@@ -185,15 +153,15 @@ onMounted(() => {
 
 const submit = () => {
     form.post(route('incident.store'), {
-        onSuccess: () => {
+        onSuccess: (response) => {
             // Clear saved form data on successful submission
             onSubmitSuccess();
-            // Redirect back to incident page
-            window.history.back();
+            // Backend handles the redirect automatically
         },
-        onError: () => {
+        onError: (errors) => {
             // Keep saved data if there's an error
             console.log('Form submission failed, keeping saved data');
+            console.log('Validation errors:', errors);
         }
     });
 };

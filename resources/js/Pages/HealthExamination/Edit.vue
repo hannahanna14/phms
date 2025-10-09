@@ -47,13 +47,29 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Vision Screening</label>
-                        <Select v-model="form.vision_screening" :options="['Passed', 'Failed']" class="w-full" />
+                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.vision_screening">{{ errors.vision_screening }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.vision_screening === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.vision_screening_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Auditory Screening</label>
-                        <Select v-model="form.auditory_screening" :options="['Passed', 'Failed']" class="w-full" />
+                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.auditory_screening">{{ errors.auditory_screening }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.auditory_screening === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.auditory_screening_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -61,48 +77,96 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Skin</label>
-                        <Select v-model="form.skin" :options="['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin']" class="w-full" />
+                        <Select v-model="form.skin" :options="skinOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.skin">{{ errors.skin }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.skin === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.skin_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Scalp</label>
-                        <Select v-model="form.scalp" :options="['Normal', 'Presence of Lice']" class="w-full" />
+                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.scalp">{{ errors.scalp }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.scalp === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.scalp_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Eye</label>
-                        <Select v-model="form.eye" :options="['Normal', 'Eye Redness', 'Pale Conjunctiva']" class="w-full" />
+                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.eye">{{ errors.eye }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.eye === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.eye_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Ear</label>
-                        <Select v-model="form.ear" :options="['Normal', 'Ear discharge']" class="w-full" />
+                        <Select v-model="form.ear" :options="earOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.ear">{{ errors.ear }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.ear === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.ear_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Nose</label>
-                        <Select v-model="form.nose" :options="['Normal', 'Mucus discharge', 'Nose Bleeding']" class="w-full" />
+                        <Select v-model="form.nose" :options="noseOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nose">{{ errors.nose }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.nose === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.nose_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Mouth</label>
-                        <Select v-model="form.mouth" :options="['Normal', 'Enlarged tonsil', 'Inflamed pharynx']" class="w-full" />
+                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.mouth">{{ errors.mouth }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.mouth === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.mouth_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full" 
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Lungs</label>
-                        <Select v-model="form.lungs" :options="['Normal', 'Rales', 'Wheeze', 'Other specify']" class="w-full" />
+                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
-                        <!-- Additional text box for "Other specify" -->
-                        <div v-if="form.lungs === 'Other specify'" class="mt-2">
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.lungs === 'Others (specify)'" class="mt-2">
                             <InputText 
-                                v-model="form.lungs_other_specify" 
+                                v-model="form.lungs_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                             />
@@ -110,12 +174,12 @@
                     </div>
                     <div class="form-group">
                         <label>Heart</label>
-                        <Select v-model="form.heart" :options="['Normal', 'Murmur', 'Irregular heart rate', 'Other specify']" class="w-full" />
+                        <Select v-model="form.heart" :options="heartOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
-                        <!-- Additional text box for "Other specify" -->
-                        <div v-if="form.heart === 'Other specify'" class="mt-2">
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.heart === 'Others (specify)'" class="mt-2">
                             <InputText 
-                                v-model="form.heart_other_specify" 
+                                v-model="form.heart_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                             />
@@ -123,13 +187,29 @@
                     </div>
                     <div class="form-group">
                         <label>Abdomen</label>
-                        <Select v-model="form.abdomen" :options="['Normal', 'Distended', 'Tenderness']" class="w-full" />
+                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.abdomen">{{ errors.abdomen }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.abdomen === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.abdomen_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Deformities</label>
-                        <Select v-model="form.deformities" :options="['None', 'Acquired', 'Congenital']" class="w-full" />
+                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.deformities">{{ errors.deformities }}</small>
+                        <!-- Additional text box for "Others (specify)" -->
+                        <div v-if="form.deformities === 'Others (specify)'" class="mt-2">
+                            <InputText 
+                                v-model="form.deformities_specify" 
+                                placeholder="Please specify..." 
+                                class="w-full text-sm" 
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -229,11 +309,26 @@ const bmiOptions = [
 ]
 
 const heightOptions = [
-    'Severely Stunted',
-    'Stunted',
-    'Normal',
-    'Tall'
+    'Normal (≥-2 SD)',
+    'Mild Stunting (-2 to -3 SD)',
+    'Severe Stunting (<-3 SD)'
 ]
+
+const screeningOptions = ['Normal', 'Abnormal', 'Others (specify)']
+
+const skinOptions = ['Normal', 'Redness of Skin', 'White Spots', 'Flaky Skin', 'Others (specify)']
+const scalpOptions = ['Normal', 'Presence of Lice', 'Others (specify)']
+const eyeOptions = ['Normal', 'Eye Redness', 'Pale Conjunctiva', 'Others (specify)']
+const earOptions = ['Normal', 'Ear discharge', 'Others (specify)']
+const noseOptions = ['Normal', 'Mucus discharge', 'Nose Bleeding', 'Others (specify)']
+const mouthOptions = ['Normal', 'Enlarged tonsil', 'Inflamed pharynx', 'Others (specify)']
+const lungsOptions = ['Normal', 'Rales', 'Wheeze', 'Others (specify)']
+const heartOptions = ['Normal', 'Murmur', 'Irregular heart rate', 'Others (specify)']
+const abdomenOptions = ['Normal', 'Distended', 'Tenderness', 'Others (specify)']
+const deformitiesOptions = ['None', 'Acquired', 'Congenital', 'Others (specify)']
+
+const yesNoOptions = ['Yes', 'No']
+const dewormingOptions = ['dewormed', 'not_dewormed']
 
 
 const form = useForm({
@@ -244,21 +339,31 @@ const form = useForm({
     nutritional_status_bmi: props.healthExamination.nutritional_status_bmi || '',
     nutritional_status_height: props.healthExamination.nutritional_status_height || '',
     vision_screening: props.healthExamination.vision_screening || '',
+    vision_screening_specify: props.healthExamination.vision_screening_specify || '',
     auditory_screening: props.healthExamination.auditory_screening || '',
+    auditory_screening_specify: props.healthExamination.auditory_screening_specify || '',
     skin: props.healthExamination.skin || '',
+    skin_specify: props.healthExamination.skin_specify || '',
     scalp: props.healthExamination.scalp || '',
+    scalp_specify: props.healthExamination.scalp_specify || '',
     eye: props.healthExamination.eye || '',
+    eye_specify: props.healthExamination.eye_specify || '',
     ear: props.healthExamination.ear || '',
+    ear_specify: props.healthExamination.ear_specify || '',
     nose: props.healthExamination.nose || '',
+    nose_specify: props.healthExamination.nose_specify || '',
     mouth: props.healthExamination.mouth || '',
+    mouth_specify: props.healthExamination.mouth_specify || '',
     neck: props.healthExamination.neck || '',
     throat: props.healthExamination.throat || '',
     lungs: props.healthExamination.lungs || props.healthExamination.lungs_heart || '',
-    lungs_other_specify: props.healthExamination.lungs_other_specify || '',
+    lungs_specify: props.healthExamination.lungs_specify || props.healthExamination.lungs_other_specify || '',
     heart: props.healthExamination.heart || props.healthExamination.lungs_heart || '',
-    heart_other_specify: props.healthExamination.heart_other_specify || '',
+    heart_specify: props.healthExamination.heart_specify || props.healthExamination.heart_other_specify || '',
     abdomen: props.healthExamination.abdomen || '',
+    abdomen_specify: props.healthExamination.abdomen_specify || '',
     deformities: props.healthExamination.deformities || '',
+    deformities_specify: props.healthExamination.deformities_specify || '',
     // Checkbox fields for UI (convert from backend values)
     iron_supplementation_check: props.healthExamination.iron_supplementation === 'Yes',
     deworming_check: props.healthExamination.deworming_status === 'dewormed',

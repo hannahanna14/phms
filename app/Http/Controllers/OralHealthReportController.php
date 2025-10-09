@@ -29,7 +29,7 @@ class OralHealthReportController extends Controller
             ->toArray();
         
         $standardGradeLevels = [
-            'Kinder 1', 'Kinder 2', 
+            'Kinder 2', 
             'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'
         ];
         
@@ -38,8 +38,8 @@ class OralHealthReportController extends Controller
         // Sort grade levels
         usort($allGradeLevels, function($a, $b) {
             $order = [
-                'Kinder 1' => 1, 'Kinder 2' => 2,
-                'Grade 1' => 3, 'Grade 2' => 4, 'Grade 3' => 5, 'Grade 4' => 6, 'Grade 5' => 7, 'Grade 6' => 8
+                'Kinder 2' => 1,
+                'Grade 1' => 2, 'Grade 2' => 3, 'Grade 3' => 4, 'Grade 4' => 5, 'Grade 5' => 6, 'Grade 6' => 7
             ];
             
             $aOrder = $order[$a] ?? 999;

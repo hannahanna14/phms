@@ -96,7 +96,7 @@ const props = defineProps({
 // Grade level management
 const selectedGrade = ref('')
 const gradeLevels = [
-    'Kinder 1', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 
+    'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 
     'Grade 4', 'Grade 5', 'Grade 6'
 ]
 

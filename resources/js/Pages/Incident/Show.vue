@@ -62,85 +62,46 @@
                                 @click="$inertia.visit(`/pupil-health/incident/${student.id}/create`)"
                             />
                         </div>
-                        <div class="p-6">
-                            <div v-if="incidents.length === 0" class="text-center py-8 text-gray-500">
-                                No incident reports found. Click the + button to add a new record.
-                            </div>
-                            <div v-else class="space-y-4">
-                                <div v-for="incident in incidents" :key="incident.id" class="border rounded-lg p-4 bg-gray-50">
-                                    <!-- Timer Status Display -->
-                                    <div v-if="incident.timer_display" class="mb-4 p-3 rounded-lg" :class="getTimerAlertClass(incident.timer_display)">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <strong>Timer:</strong> {{ incident.timer_display.display }}
-                                                <div v-if="incident.remaining_minutes > 0" class="text-sm text-gray-600 mt-1">
-                                                    {{ incident.remaining_minutes }} minutes remaining
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Timer Controls -->
-                                            <div class="flex gap-2" v-if="incident.timer_display.status !== 'expired'">
+                        <div class="p-3">
+                            <table class="w-full text-xs">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="text-left py-1">Date</th>
+                                        <th class="text-left py-1">Complaint</th>
+                                        <th class="text-left py-1">Actions Taken</th>
+                                        <th class="text-left py-1">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="incidents.length === 0">
+                                        <td colspan="4" class="text-center py-2 text-gray-500">No records available</td>
+                                    </tr>
+                                    <tr v-for="incident in incidents" :key="incident.id" class="border-b hover:bg-gray-50">
+                                        <td class="py-2">{{ formatDate(incident.date) }}</td>
+                                        <td class="py-2">{{ incident.complaint }}</td>
+                                        <td class="py-2">{{ incident.actions_taken }}</td>
+                                        <td class="py-2">
+                                            <div class="flex gap-1">
                                                 <Button 
-                                                    v-if="incident.timer_display.status === 'not_started'"
-                                                    label="Start Timer" 
-                                                    icon="pi pi-play" 
+                                                    icon="pi pi-eye" 
                                                     size="small"
-                                                    @click="startIncidentTimer(incident)"
+                                                    severity="info"
+                                                    @click="viewIncident(incident)"
+                                                    class="!p-1 !text-xs"
                                                 />
                                                 <Button 
-                                                    v-if="incident.timer_display.status === 'active'"
-                                                    label="Pause" 
-                                                    icon="pi pi-pause" 
+                                                    v-if="userRole === 'nurse'"
+                                                    icon="pi pi-pencil" 
                                                     size="small"
                                                     severity="warning"
-                                                    @click="pauseIncidentTimer(incident)"
-                                                />
-                                                <Button 
-                                                    v-if="incident.timer_display.status === 'paused'"
-                                                    label="Resume" 
-                                                    icon="pi pi-play" 
-                                                    size="small"
-                                                    severity="success"
-                                                    @click="resumeIncidentTimer(incident)"
-                                                />
-                                                <Button 
-                                                    v-if="incident.timer_display.status === 'active' || incident.timer_display.status === 'paused'"
-                                                    label="Complete" 
-                                                    icon="pi pi-check" 
-                                                    size="small"
-                                                    severity="success"
-                                                    @click="completeIncidentTimer(incident)"
+                                                    @click="editIncident(incident)"
+                                                    class="!p-1 !text-xs"
                                                 />
                                             </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span class="font-medium">Date:</span>
-                                            <span class="ml-2">{{ formatDate(incident.date) }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="font-medium">Status:</span>
-                                            <Tag 
-                                                :value="incident.status" 
-                                                :severity="getStatusSeverity(incident.status)" 
-                                                class="ml-2" 
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="mb-2">
-                                            <span class="font-medium">Complaint:</span>
-                                            <p class="text-gray-700 mt-1">{{ incident.complaint }}</p>
-                                        </div>
-                                        <div>
-                                            <span class="font-medium">Actions Taken:</span>
-                                            <p class="text-gray-700 mt-1">{{ incident.actions_taken }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -180,7 +141,7 @@ const incidents = ref([])
 
 // Grade level management
 const gradeLevels = computed(() => {
-    const standardGrades = ['Kinder 1', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+    const standardGrades = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
     // Convert student grade to match format (e.g., "6" becomes "Grade 6")
     const studentGradeFormatted = isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
     return standardGrades.includes(studentGradeFormatted) ? standardGrades : [...standardGrades, studentGradeFormatted];
@@ -392,6 +353,18 @@ onUnmounted(() => {
     stopTimerMonitoring()
     activeTimers.value.clear()
 });
+
+// View incident details
+const viewIncident = (incident) => {
+    // Navigate to incident view page (you can create this route)
+    window.location.href = `/pupil-health/incident/${incident.id}/view`;
+};
+
+// Edit incident
+const editIncident = (incident) => {
+    // Navigate to incident edit page (you can create this route)
+    window.location.href = `/pupil-health/incident/${incident.id}/edit`;
+};
 </script>
 
 <style scoped>

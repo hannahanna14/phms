@@ -101,6 +101,7 @@
             padding-left: 5px;
             display: inline-block;
             text-align: left;
+            text-decoration: underline;
         }
         
         .info-label-right {
@@ -117,6 +118,7 @@
             padding-left: 5px;
             display: inline-block;
             text-align: left;
+            text-decoration: underline;
         }
         
         .three-column {
@@ -140,6 +142,7 @@
             text-align: center;
             display: inline-block;
             margin-right: 5px;
+            text-decoration: underline;
         }
         
         .date-label {
@@ -321,7 +324,7 @@
             <td class="info-label">Name:</td>
             <td class="info-value">{{ $student->full_name ?? '' }}</td>
             <td class="info-label-right">School ID:</td>
-            <td class="info-value-right">{{ $student->school_id ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->school_id ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">LRN:</td>
@@ -333,26 +336,26 @@
             <td class="info-label">Date of Birth:</td>
             <td class="date-cell">
                 <span class="date-label">Month:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('M') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('M') : '' }}</span>
                 <span class="date-label">Day:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('d') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('d') : '' }}</span>
                 <span class="date-label">Year:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('Y') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('Y') : '' }}</span>
             </td>
             <td class="info-label-right">Region:</td>
-            <td class="info-value-right">{{ $student->region ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->region ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Birthplace:</td>
             <td class="info-value">{{ $student->birthplace ?? '' }}</td>
             <td class="info-label-right">Division:</td>
-            <td class="info-value-right">{{ $student->division ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->division ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Parent/Guardian:</td>
             <td class="info-value">{{ $student->parent_guardian ?? '' }}</td>
             <td class="info-label-right">Telephone No:</td>
-            <td class="info-value-right">{{ $student->telephone_no ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->telephone_no ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Address:</td>
@@ -442,31 +445,105 @@
             <tr>
                 <td class="examination-item">Vision Screening using appropriate chart</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->vision_screening ? $exam->vision_screening : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $visionDisplay = $exam->vision_screening ?? '';
+                                if ($exam->vision_screening === 'Others (specify)' && $exam->vision_screening_specify) {
+                                    $visionDisplay = $exam->vision_screening_specify;
+                                }
+                                echo $visionDisplay;
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Auditory Screening (Tuning Fork)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->auditory_screening ? $exam->auditory_screening : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $auditoryDisplay = $exam->auditory_screening ?? '';
+                                if ($exam->auditory_screening === 'Others (specify)' && $exam->auditory_screening_specify) {
+                                    $auditoryDisplay = $exam->auditory_screening_specify;
+                                }
+                                echo $auditoryDisplay;
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Skin/Scalp</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && ($exam->skin || $exam->scalp) ? ($exam->skin ?? $exam->scalp) : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $skinDisplay = $exam->skin ?? '';
+                                if ($exam->skin === 'Others (specify)' && $exam->skin_specify) {
+                                    $skinDisplay = $exam->skin_specify;
+                                }
+                                
+                                $scalpDisplay = $exam->scalp ?? '';
+                                if ($exam->scalp === 'Others (specify)' && $exam->scalp_specify) {
+                                    $scalpDisplay = $exam->scalp_specify;
+                                }
+                                
+                                $combined = array_filter([$skinDisplay, $scalpDisplay]);
+                                echo implode('<br>', $combined);
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Eyes/Ears/Nose</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && ($exam->eye || $exam->ear || $exam->nose) ? ($exam->eye ?? $exam->ear ?? $exam->nose) : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $eyeDisplay = $exam->eye ?? '';
+                                if ($exam->eye === 'Others (specify)' && $exam->eye_specify) {
+                                    $eyeDisplay = $exam->eye_specify;
+                                }
+                                
+                                $earDisplay = $exam->ear ?? '';
+                                if ($exam->ear === 'Others (specify)' && $exam->ear_specify) {
+                                    $earDisplay = $exam->ear_specify;
+                                }
+                                
+                                $noseDisplay = $exam->nose ?? '';
+                                if ($exam->nose === 'Others (specify)' && $exam->nose_specify) {
+                                    $noseDisplay = $exam->nose_specify;
+                                }
+                                
+                                $combined = array_filter([$eyeDisplay, $earDisplay, $noseDisplay]);
+                                echo implode('<br>', $combined);
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Mouth/Throat/Neck</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && ($exam->mouth || $exam->throat || $exam->neck) ? ($exam->mouth ?? $exam->throat ?? $exam->neck) : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $mouthDisplay = $exam->mouth ?? '';
+                                if ($exam->mouth === 'Others (specify)' && $exam->mouth_specify) {
+                                    $mouthDisplay = $exam->mouth_specify;
+                                }
+                                
+                                $throatDisplay = $exam->throat ?? '';
+                                $neckDisplay = $exam->neck ?? '';
+                                
+                                $combined = array_filter([$mouthDisplay, $throatDisplay, $neckDisplay]);
+                                echo implode('<br>', $combined);
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
@@ -476,13 +553,13 @@
                         @if($exam)
                             @php
                                 $lungsDisplay = $exam->lungs ?? '';
-                                if ($exam->lungs === 'Other specify' && $exam->lungs_other_specify) {
-                                    $lungsDisplay = $exam->lungs_other_specify;
+                                if ($exam->lungs === 'Others (specify)' && $exam->lungs_specify) {
+                                    $lungsDisplay = $exam->lungs_specify;
                                 }
                                 
                                 $heartDisplay = $exam->heart ?? '';
-                                if ($exam->heart === 'Other specify' && $exam->heart_other_specify) {
-                                    $heartDisplay = $exam->heart_other_specify;
+                                if ($exam->heart === 'Others (specify)' && $exam->heart_specify) {
+                                    $heartDisplay = $exam->heart_specify;
                                 }
                                 
                                 $combined = array_filter([$lungsDisplay, $heartDisplay]);
@@ -495,37 +572,45 @@
             <tr>
                 <td class="examination-item">Abdomen</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->abdomen ? $exam->abdomen : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $abdomenDisplay = $exam->abdomen ?? '';
+                                if ($exam->abdomen === 'Others (specify)' && $exam->abdomen_specify) {
+                                    $abdomenDisplay = $exam->abdomen_specify;
+                                }
+                                echo $abdomenDisplay;
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Deformities</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>{{ $exam && $exam->deformities ? $exam->deformities : '' }}</td>
+                    <td>
+                        @if($exam)
+                            @php
+                                $deformitiesDisplay = $exam->deformities ?? '';
+                                if ($exam->deformities === 'Others (specify)' && $exam->deformities_specify) {
+                                    $deformitiesDisplay = $exam->deformities_specify;
+                                }
+                                echo $deformitiesDisplay;
+                            @endphp
+                        @endif
+                    </td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Iron Supplementation (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>
-                        @if($exam)
-                            /
-                        @else
-                            X
-                        @endif
-                    </td>
+                    <td>{{ $exam && $exam->iron_supplementation ? $exam->iron_supplementation : '' }}</td>
                 @endforeach
             </tr>
             <tr>
                 <td class="examination-item">Deworming (✓ or X)</td>
                 @foreach($orderedExaminations as $grade => $exam)
-                    <td>
-                        @if($exam)
-                            /
-                        @else
-                            X
-                        @endif
-                    </td>
+                    <td>{{ $exam && $exam->deworming ? $exam->deworming : '' }}</td>
                 @endforeach
             </tr>
             <tr>

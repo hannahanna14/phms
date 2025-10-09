@@ -1,16 +1,16 @@
 <template>
-    <Head title="Chat" />
+    <Head title="Consultation" />
     <div class="chat-container">
         <div class="chat-layout">
             <!-- Sidebar - Conversations List -->
             <div class="chat-sidebar">
                 <div class="sidebar-header">
-                    <h2 class="text-lg font-semibold text-gray-900">Chats</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Consultations</h2>
                     <Button
                         @click="showNewChatDialog = true"
                         icon="pi pi-plus"
                         class="p-button-text p-button-sm"
-                        v-tooltip="'New Chat'"
+                        v-tooltip="'New Consultation'"
                     />
                 </div>
 
@@ -68,7 +68,7 @@
                     <div v-if="conversations.length === 0" class="p-6 text-center text-gray-500">
                         <i class="pi pi-comments text-3xl mb-3 block"></i>
                         <p>No conversations yet</p>
-                        <p class="text-sm">Start a new chat to begin messaging</p>
+                        <p class="text-sm">Start a new consultation to begin messaging</p>
                     </div>
                 </div>
             </div>
@@ -78,12 +78,12 @@
                 <div v-if="!selectedConversation" class="chat-welcome">
                     <div class="text-center">
                         <i class="pi pi-comments text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-medium text-gray-900 mb-2">Welcome to PHMS Chat</h3>
-                        <p class="text-gray-600 mb-6">Select a conversation to start messaging or create a new chat</p>
+                        <h3 class="text-xl font-medium text-gray-900 mb-2">Welcome to PHMS Consultation</h3>
+                        <p class="text-gray-600 mb-6">Select a conversation to start messaging or create a new consultation</p>
                         <Button
                             @click="showNewChatDialog = true"
                             icon="pi pi-plus"
-                            label="Start New Chat"
+                            label="Start New Consultation"
                             class="p-button-primary"
                         />
                     </div>
@@ -166,12 +166,7 @@
         </div>
 
         <!-- New Chat Dialog -->
-        <Dialog
-            v-model:visible="showNewChatDialog"
-            modal
-            header="Start New Chat"
-            class="w-96"
-        >
+        <Dialog v-model:visible="showNewChatDialog" modal header="Start New Consultation" :style="{width: '400px'}">
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Select User</label>
@@ -180,7 +175,7 @@
                         :options="users"
                         optionLabel="full_name"
                         optionValue="id"
-                        placeholder="Choose a user to chat with"
+                        placeholder="Choose a user to consult with"
                         class="w-full"
                     >
                         <template #option="slotProps">
@@ -209,7 +204,7 @@
                         @click="showNewChatDialog = false"
                     />
                     <Button
-                        label="Start Chat"
+                        label="Start Consultation"
                         class="p-button-primary"
                         @click="startNewChat"
                         :disabled="!selectedUserId"
@@ -275,13 +270,13 @@ const getConversationInitials = (conversation) => {
 // Actions
 const selectConversation = async (conversationId) => {
     // First, visit the conversation
-    router.visit(route('chat.index', { conversation: conversationId }), {
+    router.visit(route('consultation.index', { conversation: conversationId }), {
         preserveState: true,
         preserveScroll: false,
         onSuccess: async () => {
             // After successfully loading the conversation, mark it as read
             try {
-                await fetch(route('chat.read', conversationId), {
+                await fetch(route('consultation.read', conversationId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -307,7 +302,7 @@ const sendMessage = async () => {
     sending.value = true
     
     try {
-        const response = await fetch(route('chat.send'), {
+        const response = await fetch(route('consultation.send'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -344,7 +339,7 @@ const sendMessage = async () => {
 const startNewChat = () => {
     if (!selectedUserId.value) return
     
-    router.post(route('chat.start'), {
+    router.post(route('consultation.start'), {
         user_id: selectedUserId.value
     })
     
@@ -457,7 +452,7 @@ onMounted(() => {
 .messages-list {
     display: flex;
     flex-direction: column;
-    space-y: 0.5rem;
+    gap: 0.5rem;
 }
 
 .message-wrapper {

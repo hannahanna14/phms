@@ -70,6 +70,8 @@
                                     :notifications="filteredNotifications"
                                     @mark-as-read="markNotificationAsRead"
                                     @mark-all-as-read="markAllNotificationsAsRead"
+                                    @delete-notification="deleteNotification"
+                                    @clear-all-notifications="handleClearAllNotifications"
                                 />
                                 
                                 <button
@@ -185,6 +187,14 @@ const markAllNotificationsAsRead = () => {
     markAllAsRead()
 }
 
+const deleteNotification = (notificationId) => {
+    removeNotification(notificationId)
+}
+
+const handleClearAllNotifications = () => {
+    clearAllNotifications()
+}
+
 // Toast store
 const { 
     toasts, 
@@ -268,9 +278,9 @@ const sideBarItems = computed(() => {
             route: '/schedule-calendar'
         },
         {
-            label: 'Chat',
+            label: 'Consultation',
             icon: 'pi pi-comments',
-            route: '/chat'
+            route: '/consultation'
         }
     ]
 
@@ -309,7 +319,46 @@ const sideBarItems = computed(() => {
     return baseItems
 })
 
-// Check for unrecorded students notifications
+// Helper functions for creating notifications
+const createUnrecordedStudentNotification = (studentName, missingType) => {
+    return {
+        id: Date.now() + Math.random(),
+        type: 'warning',
+        title: 'Missing Health Record',
+        message: `${studentName} is missing ${missingType} record`,
+        timestamp: new Date().toISOString(),
+        actions: [
+            {
+                label: 'View Student',
+                action: () => {
+                    // Navigate to student's health page
+                    router.visit(`/pupil-health/student/${studentName}`)
+                }
+            }
+        ]
+    }
+}
+
+const createBatchUnrecordedNotification = (count, recordType) => {
+    return {
+        id: Date.now() + Math.random(),
+        type: 'info',
+        title: 'Multiple Missing Records',
+        message: `${count} students are missing ${recordType} records`,
+        timestamp: new Date().toISOString(),
+        actions: [
+            {
+                label: 'View Report',
+                action: () => {
+                    // Navigate to health report page
+                    router.visit('/health-report')
+                }
+            }
+        ]
+    }
+}
+
+// Check for unrecorded students
 const checkUnrecordedStudents = async () => {
     try {
         const response = await fetch('/api/notifications/check-unrecorded')
@@ -332,6 +381,43 @@ const checkUnrecordedStudents = async () => {
         }
     } catch (error) {
         console.error('Error checking unrecorded students:', error)
+    }
+}
+
+// Check for schedule notifications
+const checkScheduleNotifications = async () => {
+    try {
+        const response = await fetch('/api/notifications/check-schedules')
+        const data = await response.json()
+        
+        if (data.notifications && data.notifications.length > 0) {
+            data.notifications.forEach(notification => {
+                addNotification(createScheduleNotification(notification))
+            })
+        }
+    } catch (error) {
+        console.error('Error checking schedule notifications:', error)
+    }
+}
+
+// Helper function for creating schedule notifications
+const createScheduleNotification = (scheduleData) => {
+    return {
+        id: scheduleData.id,
+        type: 'schedule',
+        title: scheduleData.title,
+        message: scheduleData.message,
+        timestamp: new Date().toISOString(),
+        priority: scheduleData.priority || 'medium',
+        schedule_id: scheduleData.schedule_id,
+        actions: [
+            {
+                label: 'View Schedule',
+                action: () => {
+                    router.visit(`/schedule-calendar/show/${scheduleData.schedule_id}`)
+                }
+            }
+        ]
     }
 }
 
@@ -399,8 +485,14 @@ onMounted(() => {
     // Check for unrecorded students on load
     checkUnrecordedStudents()
     
+    // Check for schedule notifications on load
+    checkScheduleNotifications()
+    
     // Check for unrecorded students every 10 minutes
     setInterval(checkUnrecordedStudents, 600000)
+    
+    // Check for schedule notifications every 5 minutes
+    setInterval(checkScheduleNotifications, 300000)
     
     // Start global timer monitoring
     startGlobalTimerMonitoring()

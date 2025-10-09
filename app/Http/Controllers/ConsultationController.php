@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conversation;
-use App\Models\ChatMessage;
+use App\Models\ConsultationMessage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class ChatController extends Controller
+class ConsultationController extends Controller
 {
     /**
-     * Display chat interface
+     * Display consultation interface
      */
     public function index(Request $request)
     {
@@ -82,13 +82,10 @@ class ChatController extends Controller
             }
         }
 
-        // Get all users for starting new conversations
-        $users = User::where('id', '!=', $user->id)
-                    ->select('id', 'full_name', 'role')
-                    ->orderBy('full_name')
-                    ->get();
+        // Get available users for consultations based on role restrictions
+        $users = $this->getAvailableUsersForConsultation($user);
 
-        return Inertia::render('Chat/Index', [
+        return Inertia::render('Consultation/Index', [
             'conversations' => $conversations,
             'selectedConversation' => $selectedConversation ? [
                 'id' => $selectedConversation->id,
@@ -102,7 +99,7 @@ class ChatController extends Controller
     }
 
     /**
-     * Start new conversation
+     * Start new consultation
      */
     public function startConversation(Request $request)
     {
@@ -110,12 +107,20 @@ class ChatController extends Controller
             'user_id' => 'required|exists:users,id|different:' . auth()->id()
         ]);
 
+        $currentUser = auth()->user();
+        $targetUser = User::findOrFail($request->user_id);
+        
+        // Validate consultation permissions
+        if (!$this->canStartConsultation($currentUser, $targetUser)) {
+            abort(403, 'You cannot start a consultation with this user. Teachers can only consult with nurses.');
+        }
+
         $conversation = Conversation::findOrCreateDirectConversation(
             auth()->id(), 
             $request->user_id
         );
 
-        return redirect()->route('chat.index', ['conversation' => $conversation->id]);
+        return redirect()->route('consultation.index', ['conversation' => $conversation->id]);
     }
 
     /**
@@ -136,7 +141,7 @@ class ChatController extends Controller
             abort(403, 'You are not a participant in this conversation.');
         }
 
-        $message = ChatMessage::create([
+        $message = ConsultationMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
             'content' => $request->content,
@@ -210,5 +215,52 @@ class ChatController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Get available users for consultation based on role restrictions
+     */
+    private function getAvailableUsersForConsultation($user)
+    {
+        $query = User::where('id', '!=', $user->id)
+                    ->select('id', 'full_name', 'role')
+                    ->orderBy('full_name');
+
+        // Apply role-based restrictions
+        if ($user->role === 'teacher') {
+            // Teachers can only consult with nurses
+            $query->where('role', 'nurse');
+        } elseif ($user->role === 'nurse') {
+            // Nurses can consult with admins and teachers
+            $query->whereIn('role', ['admin', 'teacher']);
+        } elseif ($user->role === 'admin') {
+            // Admins can consult with anyone
+            $query->whereIn('role', ['teacher', 'nurse']);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Check if current user can start consultation with target user
+     */
+    private function canStartConsultation($currentUser, $targetUser)
+    {
+        // Admin can consult with anyone
+        if ($currentUser->role === 'admin') {
+            return in_array($targetUser->role, ['teacher', 'nurse']);
+        }
+
+        // Teacher can only consult with nurses
+        if ($currentUser->role === 'teacher') {
+            return $targetUser->role === 'nurse';
+        }
+
+        // Nurse can consult with admins and teachers
+        if ($currentUser->role === 'nurse') {
+            return in_array($targetUser->role, ['admin', 'teacher']);
+        }
+
+        return false;
     }
 }

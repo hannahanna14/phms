@@ -13,7 +13,7 @@ console.log('Current URL:', window.location.href);
 console.log('URL search params:', new URLSearchParams(window.location.search).get('grade'));
 
 const gradeLevels = computed(() => {
-    const standardGrades = ['Kinder 1', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+    const standardGrades = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
     // Convert student grade to match format (e.g., "6" becomes "Grade 6")
     const studentGradeFormatted = isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
     return standardGrades.includes(studentGradeFormatted) ? standardGrades : [...standardGrades, studentGradeFormatted];
@@ -225,26 +225,18 @@ const viewTreatment = (treatment) => {
                                         <th class="text-left py-1">Title</th>
                                         <th class="text-left py-1">Chief Complaint</th>
                                         <th class="text-left py-1">Treatment</th>
-                                        <th class="text-left py-1">Timer Status</th>
                                         <th class="text-left py-1">Date</th>
                                         <th class="text-left py-1">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-if="treatmentRecords.length === 0">
-                                        <td colspan="6" class="text-center py-2 text-gray-500">No records available</td>
+                                        <td colspan="5" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in treatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2">{{ treatment.title }}</td>
                                         <td class="py-2">{{ treatment.chief_complaint }}</td>
                                         <td class="py-2">{{ treatment.treatment }}</td>
-                                        <td class="py-2">
-                                            <Tag 
-                                                :value="treatment.timer_status?.display || 'Unknown'"
-                                                :severity="treatment.timer_status?.color || 'secondary'"
-                                                class="text-xs"
-                                            />
-                                        </td>
                                         <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
@@ -314,8 +306,8 @@ const viewTreatment = (treatment) => {
                                         <span class="font-medium text-blue-600">{{ currentRecord.weight ? `${currentRecord.weight} kg` : 'Not recorded' }}</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span>Temperature/BP:</span>
-                                        <span class="font-medium">{{ currentRecord.temperature_bp || 'Not recorded' }}</span>
+                                        <span>Temperature:</span>
+                                        <span class="font-medium">{{ currentRecord.temperature ? `${currentRecord.temperature}°C` : 'Not recorded' }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Heart Rate:</span>
@@ -330,41 +322,91 @@ const viewTreatment = (treatment) => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Skin:</span>
-                                        <span class="font-medium">{{ currentRecord.skin || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify 
+                                                    ? currentRecord.skin_specify 
+                                                    : (currentRecord.skin || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Scalp:</span>
-                                        <span class="font-medium">{{ currentRecord.scalp || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify 
+                                                    ? currentRecord.scalp_specify 
+                                                    : (currentRecord.scalp || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Eyes:</span>
-                                        <span class="font-medium">{{ currentRecord.eye || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify 
+                                                    ? currentRecord.eye_specify 
+                                                    : (currentRecord.eye || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Ears:</span>
-                                        <span class="font-medium">{{ currentRecord.ear || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify 
+                                                    ? currentRecord.ear_specify 
+                                                    : (currentRecord.ear || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Nose:</span>
-                                        <span class="font-medium">{{ currentRecord.nose || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify 
+                                                    ? currentRecord.nose_specify 
+                                                    : (currentRecord.nose || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Mouth:</span>
-                                        <span class="font-medium">{{ currentRecord.mouth || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify 
+                                                    ? currentRecord.mouth_specify 
+                                                    : (currentRecord.mouth || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Throat:</span>
-                                        <span class="font-medium">{{ currentRecord.throat || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify 
+                                                    ? currentRecord.throat_specify 
+                                                    : (currentRecord.throat || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Neck:</span>
-                                        <span class="font-medium">{{ currentRecord.neck || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify 
+                                                    ? currentRecord.neck_specify 
+                                                    : (currentRecord.neck || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Lungs:</span>
                                         <span class="font-medium">
                                             {{ 
-                                                currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify 
+                                                currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify 
+                                                    ? currentRecord.lungs_specify 
+                                                    : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify 
                                                     ? currentRecord.lungs_other_specify 
                                                     : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')
                                             }}
@@ -374,7 +416,9 @@ const viewTreatment = (treatment) => {
                                         <span>Heart:</span>
                                         <span class="font-medium">
                                             {{ 
-                                                currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify 
+                                                currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify 
+                                                    ? currentRecord.heart_specify 
+                                                    : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify 
                                                     ? currentRecord.heart_other_specify 
                                                     : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')
                                             }}
@@ -382,11 +426,23 @@ const viewTreatment = (treatment) => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Abdomen:</span>
-                                        <span class="font-medium">{{ currentRecord.abdomen || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify 
+                                                    ? currentRecord.abdomen_specify 
+                                                    : (currentRecord.abdomen || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Deformities:</span>
-                                        <span class="font-medium">{{ currentRecord.deformities || 'Not examined' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify 
+                                                    ? currentRecord.deformities_specify 
+                                                    : (currentRecord.deformities || 'Not examined')
+                                            }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -415,11 +471,23 @@ const viewTreatment = (treatment) => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Vision Screening:</span>
-                                        <span class="font-medium">{{ currentRecord.vision_screening || 'Not tested' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify 
+                                                    ? currentRecord.vision_screening_specify 
+                                                    : (currentRecord.vision_screening || 'Not tested')
+                                            }}
+                                        </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Auditory Screening:</span>
-                                        <span class="font-medium">{{ currentRecord.auditory_screening || 'Not tested' }}</span>
+                                        <span class="font-medium">
+                                            {{ 
+                                                currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify 
+                                                    ? currentRecord.auditory_screening_specify 
+                                                    : (currentRecord.auditory_screening || 'Not tested')
+                                            }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

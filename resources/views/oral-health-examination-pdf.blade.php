@@ -137,6 +137,7 @@
             padding-left: 5px;
             display: inline-block;
             text-align: left;
+            text-decoration: underline;
         }
 
         .info-label-right {
@@ -153,6 +154,7 @@
             padding-left: 5px;
             display: inline-block;
             text-align: left;
+            text-decoration: underline;
         }
 
         .date-section {
@@ -167,6 +169,7 @@
             text-align: center;
             display: inline-block;
             margin-right: 5px;
+            text-decoration: underline;
         }
 
         .date-label {
@@ -334,7 +337,7 @@
             <td class="info-label">Name:</td>
             <td class="info-value">{{ $student->full_name ?? '' }}</td>
             <td class="info-label-right">School ID:</td>
-            <td class="info-value-right">{{ $student->school_id ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->school_id ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">LRN:</td>
@@ -346,26 +349,26 @@
             <td class="info-label">Date of Birth:</td>
             <td class="date-cell">
                 <span class="date-label">Month:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('M') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('M') : '' }}</span>
                 <span class="date-label">Day:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('d') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('d') : '' }}</span>
                 <span class="date-label">Year:</span>
-                <span class="date-box">{{ $student->birthdate ? \Carbon\Carbon::parse($student->birthdate)->format('Y') : '' }}</span>
+                <span class="date-box">{{ $student->date_of_birth ? $student->date_of_birth->format('Y') : '' }}</span>
             </td>
             <td class="info-label-right">Region:</td>
-            <td class="info-value-right">{{ $student->region ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->region ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Birthplace:</td>
             <td class="info-value">{{ $student->birthplace ?? '' }}</td>
             <td class="info-label-right">Division:</td>
-            <td class="info-value-right">{{ $student->division ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->division ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Parent/Guardian:</td>
             <td class="info-value">{{ $student->parent_guardian ?? '' }}</td>
             <td class="info-label-right">Telephone No:</td>
-            <td class="info-value-right">{{ $student->telephone_no ?? '' }}</td>
+            <td class="info-value-right">{{ $schoolSettings->telephone_no ?? '' }}</td>
         </tr>
         <tr>
             <td class="info-label">Address:</td>

@@ -8,6 +8,10 @@ class SchoolSettings extends Model
 {
     protected $fillable = [
         'school_name',
+        'school_id',
+        'region',
+        'division',
+        'telephone_no',
         'school_address',
         'school_phone',
         'school_email',

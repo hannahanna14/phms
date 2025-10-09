@@ -224,6 +224,39 @@
                         </div>
                     </div>
 
+                    <!-- TEST SECTION -->
+                    <div class="border rounded-lg p-6 mt-6 bg-red-100">
+                        <h2 class="text-lg font-semibold text-center mb-6">🚨 TEST SECTION</h2>
+                        <p class="text-center">If you can see this red section, the template is working!</p>
+                        <p class="text-center">Oral Health Conditions Length: {{ oralHealthConditions.length }}</p>
+                    </div>
+
+                    <!-- Oral Health Conditions Section - SIMPLIFIED -->
+                    <div class="border rounded-lg p-6 mt-6">
+                        <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
+                        <p class="text-center text-gray-600 mb-4">Select any conditions present for this examination:</p>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div v-for="condition in oralHealthConditions" :key="condition.key" class="border rounded p-3">
+                                <label class="flex items-center space-x-2">
+                                    <input 
+                                        type="checkbox" 
+                                        class="w-4 h-4"
+                                        v-model="form.conditions[condition.key + '_present']"
+                                    >
+                                    <span class="text-sm font-medium">{{ condition.label }}</span>
+                                </label>
+                                <input 
+                                    v-if="form.conditions[condition.key + '_present']"
+                                    v-model="form.conditions[condition.key + '_date']"
+                                    type="date" 
+                                    class="mt-2 w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                    placeholder="Date detected"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex justify-end gap-4 mt-6">
                         <Button 
                             type="button" 
@@ -295,79 +328,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Oral Health Conditions Section -->
-        <div class="border rounded-lg p-6 mt-6">
-            <h2 class="text-lg font-semibold text-center mb-6">Oral Health Conditions</h2>
-
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="border border-gray-300 px-3 py-2 text-left font-medium text-gray-700" style="width: 200px;">Condition</th>
-                            <th v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center font-medium text-gray-700">
-                                {{ gradeRange.label }}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="condition in oralHealthConditions" :key="condition.key">
-                            <td class="border border-gray-300 px-3 py-2 font-medium">{{ condition.label }}</td>
-                            <td v-for="gradeRange in relevantGradeRanges" :key="gradeRange.key" class="border border-gray-300 px-2 py-2 text-center">
-                                <div class="flex flex-col items-center space-y-1">
-                                    <!-- Checkbox -->
-                                    <label class="flex items-center space-x-1 text-xs">
-                                        <input
-                                            v-model="form.conditions[condition.key][gradeRange.key].present"
-                                            type="checkbox"
-                                            class="w-3 h-3"
-                                        >
-                                        <span>Present</span>
-                                    </label>
-
-                                    <!-- Date Input (only show if present is checked) -->
-                                    <input
-                                        v-if="form.conditions[condition.key][gradeRange.key].present"
-                                        v-model="form.conditions[condition.key][gradeRange.key].date"
-                                        type="date"
-                                        class="w-20 text-xs border border-gray-300 rounded px-1 py-0.5"
-                                    >
-
-                                    <!-- Text Input for "Others, specify" (only show if present is checked and it's the others_specify condition) -->
-                                    <input
-                                        v-if="condition.key === 'others_specify' && form.conditions[condition.key][gradeRange.key].present"
-                                        v-model="form.conditions[condition.key][gradeRange.key].specification"
-                                        type="text"
-                                        placeholder="Specify..."
-                                        class="w-24 text-xs border border-gray-300 rounded px-1 py-0.5"
-                                    >
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex justify-end gap-4 mt-6">
-            <button 
-                type="button" 
-                @click="onCancel"
-                class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-                Cancel
-            </button>
-            <button 
-                type="button" 
-                @click="submitForm"
-                :disabled="form.processing"
-                class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-                <span v-if="form.processing">Updating...</span>
-                <span v-else>Update Examination</span>
-            </button>
-        </div>
     </div>
 </template>
 
@@ -412,14 +372,32 @@ const oralHealthConditions = [
     { key: 'others_specify', label: 'Others, specify' }
 ]
 
-// Initialize conditions structure
+// Grade level logic - define this first
+const getCurrentGradeRange = (grade) => {
+    const gradeRanges = {
+        'Kinder 2': [{ key: 'kinder', label: 'Kinder' }],
+        'Grade 1': [{ key: 'grade_1_7', label: 'Grade 1/7' }],
+        'Grade 2': [{ key: 'grade_2_8', label: 'Grade 2/8' }],
+        'Grade 3': [{ key: 'grade_3_9', label: 'Grade 3/9' }],
+        'Grade 4': [{ key: 'grade_4_10', label: 'Grade 4/10' }],
+        'Grade 5': [{ key: 'grade_5_11', label: 'Grade 5/11' }],
+        'Grade 6': [{ key: 'grade_6_12', label: 'Grade 6/12' }]
+    }
+    
+    return gradeRanges[grade] || [{ key: 'grade_1_7', label: 'Grade 1/7' }]
+}
+
+// Initialize conditions structure for current grade only
 const initializeConditions = () => {
-    const allGradeRanges = ['kinder', 'grade_1_7', 'grade_2_8', 'grade_3_9', 'grade_4_10', 'grade_5_11', 'grade_6_12']
+    const currentGrade = props.selectedGrade || props.oralHealthExamination?.grade_level || '';
+    const currentGradeRanges = getCurrentGradeRange(currentGrade)
     const conditions = {}
+    
     oralHealthConditions.forEach(condition => {
         conditions[condition.key] = {}
-        allGradeRanges.forEach(grade => {
-            conditions[condition.key][grade] = {
+        // Only initialize for the current grade range
+        currentGradeRanges.forEach(gradeRange => {
+            conditions[condition.key][gradeRange.key] = {
                 present: false,
                 date: '',
                 specification: '' // For "Others, specify" text input
@@ -450,7 +428,7 @@ const form = useForm({
     grade_level: props.selectedGrade || props.oralHealthExamination?.grade_level || '',
     school_year: props.oralHealthExamination?.school_year || '2024-2025',
     tooth_symbols: props.oralHealthExamination?.tooth_symbols || {},
-    conditions: props.oralHealthExamination?.conditions || initializeConditions()
+    conditions: {}
 })
 
 // Dental chart state
@@ -461,20 +439,8 @@ let toothSymbols = {}
 // Grade level logic
 const gradeLevel = computed(() => props.selectedGrade || props.oralHealthExamination?.grade_level || '')
 
-const getCurrentGradeRange = (grade) => {
-    const gradeRanges = {
-        'Kinder': [{ key: 'kinder', label: 'Kinder' }],
-        'Grade 1': [{ key: 'grade_1_7', label: 'Grade 1/7' }],
-        'Grade 2': [{ key: 'grade_2_8', label: 'Grade 2/8' }],
-        'Grade 3': [{ key: 'grade_3_9', label: 'Grade 3/9' }],
-        'Grade 4': [{ key: 'grade_4_10', label: 'Grade 4/10' }],
-        'Grade 5': [{ key: 'grade_5_11', label: 'Grade 5/11' }],
-        'Grade 6': [{ key: 'grade_6_12', label: 'Grade 6/12' }]
-    }
-    return gradeRanges[grade] || [{ key: 'grade_1_7', label: 'Grade 1/7' }]
-}
+// const relevantGradeRanges = computed(() => getCurrentGradeRange(gradeLevel.value))
 
-const relevantGradeRanges = computed(() => getCurrentGradeRange(gradeLevel.value))
 
 const toggleChartType = (type) => {
     showPermanent.value = type === 'permanent'
@@ -496,10 +462,18 @@ const {
 
 // Submit function
 const submitForm = () => {
+    // Convert conditions back to database format
+    const dbConditions = {}
+    oralHealthConditions.forEach(condition => {
+        if (form.conditions[condition.key + '_present']) {
+            dbConditions[condition.key] = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
+        }
+    })
+    
     console.log('Submitting form with data:', {
         formData: form.data(),
         toothSymbols: toothSymbols,
-        conditions: form.conditions
+        conditions: dbConditions
     })
     
     // Validate required fields
@@ -515,6 +489,9 @@ const submitForm = () => {
     
     // Update tooth symbols from the dental chart
     form.tooth_symbols = toothSymbols
+    
+    // Update conditions in database format
+    form.conditions = dbConditions
     
     form.put(`/pupil-health/oral-health/${props.oralHealthExamination.id}`, {
         onSuccess: (response) => {
@@ -541,17 +518,37 @@ const submitForm = () => {
     })
 }
 
-// Debug logging
-console.log('OralHealth Edit - Props received:', {
-    student: props.student,
-    oralHealthExamination: props.oralHealthExamination,
-    selectedGrade: props.selectedGrade
-})
+// Debug logging removed to prevent errors
+
+// Initialize conditions data
+const initializeConditionsData = () => {
+    // Initialize all conditions as false
+    oralHealthConditions.forEach(condition => {
+        form.conditions[condition.key + '_present'] = false
+        form.conditions[condition.key + '_date'] = ''
+    })
+    
+    // Load existing conditions if they exist
+    if (props.oralHealthExamination?.conditions) {
+        const existingConditions = typeof props.oralHealthExamination.conditions === 'string' 
+            ? JSON.parse(props.oralHealthExamination.conditions) 
+            : props.oralHealthExamination.conditions
+        
+        // Handle seeded format: {"gingivitis": "10/06/24"}
+        if (existingConditions && typeof existingConditions === 'object') {
+            Object.keys(existingConditions).forEach(conditionKey => {
+                form.conditions[conditionKey + '_present'] = true
+                form.conditions[conditionKey + '_date'] = existingConditions[conditionKey]
+            })
+        }
+    }
+}
 
 // Initialize form persistence and dental chart
 onMounted(() => {
     initializeForm()
     setupAutoSave()
+    initializeConditionsData()
     
     nextTick(() => {
         initializeDentalChart()
@@ -866,6 +863,20 @@ const submit = () => {
         console.error('Cannot submit: No examination ID available')
         return
     }
+    
+    // Convert conditions back to database format
+    const dbConditions = {}
+    oralHealthConditions.forEach(condition => {
+        if (form.conditions[condition.key + '_present']) {
+            dbConditions[condition.key] = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
+        }
+    })
+    
+    // Update conditions in database format
+    form.conditions = dbConditions
+    
+    // Update tooth symbols from the dental chart
+    form.tooth_symbols = toothSymbols
     
     // Validate form
     const validationErrors = validateForm()

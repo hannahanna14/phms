@@ -121,25 +121,77 @@
                 <!-- Attendees -->
                 <div class="form-group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Attendees</label>
-                    <div class="space-y-2">
-                        <div v-for="(attendee, index) in form.attendees" :key="index" class="flex items-center space-x-2">
-                            <InputText
-                                v-model="form.attendees[index]"
-                                class="flex-1"
-                                placeholder="Enter attendee name"
-                            />
-                            <Button
-                                @click="removeAttendee(index)"
-                                icon="pi pi-trash"
-                                class="p-button-danger p-button-text p-button-sm"
-                            />
+                    <div class="space-y-3">
+                        <!-- User Picker -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Select Users</label>
+                            <div v-if="usersLoading" class="text-center py-4 text-gray-500">
+                                Loading users...
+                            </div>
+                            <div v-else class="border rounded-lg p-4 max-h-60 overflow-y-auto">
+                                <div v-if="availableUsers.length === 0" class="text-center py-4 text-gray-500">
+                                    No users available
+                                </div>
+                                <div v-else class="space-y-2">
+                                    <div v-for="user in availableUsers" :key="user.id" class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                        <input 
+                                            type="checkbox" 
+                                            :id="`user-${user.id}`"
+                                            :value="user.id"
+                                            v-model="selectedUsers"
+                                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        >
+                                        <div class="flex items-center space-x-2 flex-1">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                {{ user.full_name ? user.full_name.charAt(0).toUpperCase() : '?' }}
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-sm">{{ user.full_name || 'Unknown User' }}</div>
+                                                <div class="text-xs text-gray-500 capitalize">{{ user.role || 'No role' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Selected Users Display -->
+                            <div v-if="selectedUsers && selectedUsers.length > 0 && !usersLoading" class="mt-2">
+                                <div class="text-xs font-medium text-gray-600 mb-1">Selected Users ({{ selectedUsers.length }})</div>
+                                <div class="flex flex-wrap gap-1">
+                                    <span v-for="userId in selectedUsers" :key="userId" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ availableUsers && availableUsers.length > 0 ? getUserName(userId) : 'Loading...' }}
+                                        <button @click="removeUser(userId)" class="ml-1 text-blue-600 hover:text-blue-800">
+                                            ×
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <Button
-                            @click="addAttendee"
-                            icon="pi pi-plus"
-                            label="Add Attendee"
-                            class="p-button-text p-button-sm"
-                        />
+
+                        <!-- Manual Entry (Optional) -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Additional Attendees (Manual Entry)</label>
+                            <div class="space-y-2">
+                                <div v-for="(attendee, index) in form.attendees" :key="index" class="flex items-center space-x-2">
+                                    <InputText
+                                        v-model="form.attendees[index]"
+                                        class="flex-1"
+                                        placeholder="Enter external attendee name"
+                                    />
+                                    <Button
+                                        @click="removeAttendee(index)"
+                                        icon="pi pi-trash"
+                                        class="p-button-danger p-button-text p-button-sm"
+                                    />
+                                </div>
+                                <Button
+                                    @click="addAttendee"
+                                    icon="pi pi-plus"
+                                    label="Add External Attendee"
+                                    class="p-button-text p-button-sm"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -184,6 +236,8 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Calendar from 'primevue/calendar'
 import Dropdown from 'primevue/dropdown'
+// Remove unused import
+// import AutoComplete from 'primevue/autocomplete'
 
 const props = defineProps({
     schedule: Object
@@ -191,6 +245,11 @@ const props = defineProps({
 
 // Form validation errors
 const errors = ref({})
+
+// User selection
+const selectedUsers = ref([])
+const availableUsers = ref([])
+const usersLoading = ref(true)
 
 // Helper function to parse dates safely
 const parseDate = (dateString) => {
@@ -212,39 +271,92 @@ const form = useForm({
     notes: ''
 })
 
+// Load users from API
+const loadUsers = async () => {
+    try {
+        usersLoading.value = true
+        const response = await fetch('/api/users')
+        const users = await response.json()
+        availableUsers.value = users
+    } catch (error) {
+        console.error('Error loading users:', error)
+    } finally {
+        usersLoading.value = false
+    }
+}
+
+// Get user name by ID
+const getUserName = (userId) => {
+    try {
+        if (!availableUsers.value || !Array.isArray(availableUsers.value) || availableUsers.value.length === 0) {
+            return 'Loading...'
+        }
+        const user = availableUsers.value.find(u => u && u.id === userId)
+        return (user && user.full_name) ? user.full_name : 'Unknown User'
+    } catch (error) {
+        console.error('Error in getUserName:', error)
+        return 'Error loading user'
+    }
+}
+
+// Remove user from selection
+const removeUser = (userId) => {
+    const index = selectedUsers.value.indexOf(userId)
+    if (index > -1) {
+        selectedUsers.value.splice(index, 1)
+    }
+}
+
 // Debug logging and form population
 onMounted(() => {
-    console.log('Props received:', props)
-    console.log('Schedule data:', props.schedule)
-    console.log('Schedule keys:', props.schedule ? Object.keys(props.schedule) : 'No schedule')
-    
-    // If schedule data exists, populate the form
-    if (props.schedule) {
-        console.log('Raw schedule data:', props.schedule)
+    try {
+        console.log('Props received:', props)
+        console.log('Schedule data:', props.schedule)
+        console.log('Schedule keys:', props.schedule ? Object.keys(props.schedule) : 'No schedule')
         
-        form.title = props.schedule.title || ''
-        form.description = props.schedule.description || ''
-        form.start_datetime = parseDate(props.schedule.start_datetime)
-        form.end_datetime = parseDate(props.schedule.end_datetime)
-        form.type = props.schedule.type || 'other'
-        form.status = props.schedule.status || 'scheduled'
-        form.location = props.schedule.location || ''
-        form.attendees = props.schedule.attendees?.length > 0 ? props.schedule.attendees : ['']
-        form.notes = props.schedule.notes || ''
-        
-        console.log('Form populated with:', {
-            title: form.title,
-            description: form.description,
-            start_datetime: form.start_datetime,
-            end_datetime: form.end_datetime,
-            type: form.type,
-            status: form.status,
-            location: form.location,
-            attendees: form.attendees,
-            notes: form.notes
+        // Load users first
+        loadUsers().catch(error => {
+            console.error('Failed to load users:', error)
+            usersLoading.value = false
         })
-    } else {
-        console.error('No schedule data received!')
+        
+        // If schedule data exists, populate the form
+        if (props.schedule) {
+            console.log('Raw schedule data:', props.schedule)
+            
+            form.title = props.schedule.title || ''
+            form.description = props.schedule.description || ''
+            form.start_datetime = parseDate(props.schedule.start_datetime)
+            form.end_datetime = parseDate(props.schedule.end_datetime)
+            form.type = props.schedule.type || 'other'
+            form.status = props.schedule.status || 'scheduled'
+            form.location = props.schedule.location || ''
+            form.attendees = props.schedule.attendees?.length > 0 ? props.schedule.attendees : ['']
+            form.notes = props.schedule.notes || ''
+            
+            // Load selected users if they exist
+            if (props.schedule.selected_users && Array.isArray(props.schedule.selected_users)) {
+                selectedUsers.value = props.schedule.selected_users
+            }
+            
+            console.log('Form populated with:', {
+                title: form.title,
+                description: form.description,
+                start_datetime: form.start_datetime,
+                end_datetime: form.end_datetime,
+                type: form.type,
+                status: form.status,
+                location: form.location,
+                attendees: form.attendees,
+                notes: form.notes,
+                selected_users: selectedUsers.value
+            })
+        } else {
+            console.error('No schedule data received!')
+        }
+    } catch (error) {
+        console.error('Error in onMounted:', error)
+        usersLoading.value = false
     }
 })
 

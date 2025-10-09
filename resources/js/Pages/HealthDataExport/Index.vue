@@ -145,20 +145,11 @@
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-2">
                                 <Button 
-                                    label="Excel" 
-                                    icon="pi pi-file-excel"
-                                    @click="exportOralHealthExaminations('xlsx')"
-                                    :loading="loading.oralHealthExam"
-                                    class="!bg-purple-600 !border-purple-600 hover:!bg-purple-700 flex-1"
-                                />
-                                <Button 
-                                    label="CSV" 
+                                    label="Export CSV" 
                                     icon="pi pi-file"
                                     @click="exportOralHealthExaminations('csv')"
                                     :loading="loading.oralHealthExam"
-                                    outlined
-                                    severity="secondary"
-                                    class="flex-1"
+                                    class="!bg-purple-600 !border-purple-600 hover:!bg-purple-700 w-full"
                                 />
                             </div>
                         </div>
@@ -212,20 +203,11 @@
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
                                 <Button 
-                                    label="Excel" 
-                                    icon="pi pi-file-excel"
-                                    @click="exportHealthTreatments('xlsx')"
-                                    :loading="loading.healthTreatment"
-                                    class="!bg-orange-600 !border-orange-600 hover:!bg-orange-700 flex-1"
-                                />
-                                <Button 
-                                    label="CSV" 
+                                    label="Export CSV" 
                                     icon="pi pi-file"
                                     @click="exportHealthTreatments('csv')"
                                     :loading="loading.healthTreatment"
-                                    outlined
-                                    severity="secondary"
-                                    class="flex-1"
+                                    class="!bg-orange-600 !border-orange-600 hover:!bg-orange-700 w-full"
                                 />
                             </div>
                         </div>
@@ -279,20 +261,11 @@
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
                                 <Button 
-                                    label="Excel" 
-                                    icon="pi pi-file-excel"
-                                    @click="exportOralHealthTreatments('xlsx')"
-                                    :loading="loading.oralHealthTreatment"
-                                    class="!bg-teal-600 !border-teal-600 hover:!bg-teal-700 flex-1"
-                                />
-                                <Button 
-                                    label="CSV" 
+                                    label="Export CSV" 
                                     icon="pi pi-file"
                                     @click="exportOralHealthTreatments('csv')"
                                     :loading="loading.oralHealthTreatment"
-                                    outlined
-                                    severity="secondary"
-                                    class="flex-1"
+                                    class="!bg-teal-600 !border-teal-600 hover:!bg-teal-700 w-full"
                                 />
                             </div>
                         </div>
@@ -346,20 +319,11 @@
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
                                 <Button 
-                                    label="Excel" 
-                                    icon="pi pi-file-excel"
-                                    @click="exportIncidents('xlsx')"
-                                    :loading="loading.incident"
-                                    class="!bg-red-600 !border-red-600 hover:!bg-red-700 flex-1"
-                                />
-                                <Button 
-                                    label="CSV" 
+                                    label="Export CSV" 
                                     icon="pi pi-file"
                                     @click="exportIncidents('csv')"
                                     :loading="loading.incident"
-                                    outlined
-                                    severity="secondary"
-                                    class="flex-1"
+                                    class="!bg-red-600 !border-red-600 hover:!bg-red-700 w-full"
                                 />
                             </div>
                         </div>
@@ -378,13 +342,13 @@
                     <div class="p-6">
                         <div class="space-y-4">
                             <div class="text-center text-gray-600 text-sm">
-                                This will export all health examinations, treatments, and incidents in a single Excel file with multiple sheets.
+                                This will export all health examinations, treatments, and incidents in separate CSV files.
                             </div>
 
                             <!-- Export All Button -->
                             <div class="pt-2">
                                 <Button 
-                                    label="Export All Data" 
+                                    label="Export All Data (CSV)" 
                                     icon="pi pi-download"
                                     @click="exportAllData()"
                                     :loading="loading.all"
@@ -554,9 +518,17 @@ const exportIncidents = async (format) => {
 const exportAllData = async () => {
     loading.value.all = true
     try {
-        window.open('/health-data-export/all-data?format=xlsx', '_blank')
+        // Export all data types as separate CSV files
+        await exportHealthExaminations('csv')
+        await exportOralHealthExaminations('csv')
+        await exportHealthTreatments('csv')
+        await exportOralHealthTreatments('csv')
+        await exportIncidents('csv')
+        
+        alert('✅ All data exports started! Check your Downloads folder for the CSV files.')
     } catch (error) {
         console.error('Export failed:', error)
+        alert('❌ Export failed. Please try again.')
     } finally {
         loading.value.all = false
     }

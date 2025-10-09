@@ -19,9 +19,17 @@ class Student extends Model
         'full_name',
         'age',
         'sex',
+        'date_of_birth',
+        'birthplace',
+        'parent_guardian',
+        'address',
         'grade_level',
         'lrn',
         'school_year'
+    ];
+
+    protected $casts = [
+        'date_of_birth' => 'date',
     ];
 
     public function healthExaminations(): HasMany
@@ -49,7 +57,7 @@ class Student extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['full_name', 'age', 'sex', 'grade_level', 'lrn', 'school_year'])
+            ->logOnly(['full_name', 'age', 'sex', 'date_of_birth', 'birthplace', 'parent_guardian', 'address', 'grade_level', 'lrn', 'school_year'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

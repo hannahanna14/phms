@@ -135,22 +135,36 @@ class PupilHealthController extends Controller
                 'nutritional_status_bmi' => 'nullable|string',
                 'nutritional_status_height' => 'nullable|string',
                 'vision_screening' => 'nullable|string',
+                'vision_screening_specify' => 'nullable|string',
                 'auditory_screening' => 'nullable|string',
+                'auditory_screening_specify' => 'nullable|string',
                 'skin' => 'nullable|string',
+                'skin_specify' => 'nullable|string',
                 'scalp' => 'nullable|string',
+                'scalp_specify' => 'nullable|string',
                 'eye' => 'nullable|string',
+                'eye_specify' => 'nullable|string',
                 'ear' => 'nullable|string',
+                'ear_specify' => 'nullable|string',
                 'nose' => 'nullable|string',
+                'nose_specify' => 'nullable|string',
                 'mouth' => 'nullable|string',
+                'mouth_specify' => 'nullable|string',
                 'neck' => 'nullable|string',
+                'neck_specify' => 'nullable|string',
                 'throat' => 'nullable|string',
+                'throat_specify' => 'nullable|string',
                 'lungs' => 'nullable|string',
                 'lungs_other_specify' => 'nullable|string',
+                'lungs_specify' => 'nullable|string',
                 'heart' => 'nullable|string',
                 'heart_other_specify' => 'nullable|string',
+                'heart_specify' => 'nullable|string',
                 'lungs_heart' => 'nullable|string',
                 'abdomen' => 'nullable|string',
+                'abdomen_specify' => 'nullable|string',
                 'deformities' => 'nullable|string',
+                'deformities_specify' => 'nullable|string',
                 'iron_supplementation' => 'nullable|string',
                 'deworming_status' => 'nullable|string',
                 'immunization' => 'nullable|string',
@@ -546,21 +560,35 @@ class PupilHealthController extends Controller
             'nutritional_status_bmi' => 'nullable|string',
             'nutritional_status_height' => 'nullable|string',
             'vision_screening' => 'nullable|string',
+            'vision_screening_specify' => 'nullable|string',
             'auditory_screening' => 'nullable|string',
+            'auditory_screening_specify' => 'nullable|string',
             'skin' => 'nullable|string',
+            'skin_specify' => 'nullable|string',
             'scalp' => 'nullable|string',
+            'scalp_specify' => 'nullable|string',
             'eye' => 'nullable|string',
+            'eye_specify' => 'nullable|string',
             'ear' => 'nullable|string',
+            'ear_specify' => 'nullable|string',
             'nose' => 'nullable|string',
+            'nose_specify' => 'nullable|string',
             'mouth' => 'nullable|string',
+            'mouth_specify' => 'nullable|string',
             'neck' => 'nullable|string',
+            'neck_specify' => 'nullable|string',
             'throat' => 'nullable|string',
+            'throat_specify' => 'nullable|string',
             'lungs' => 'nullable|string',
             'lungs_other_specify' => 'nullable|string',
+            'lungs_specify' => 'nullable|string',
             'heart' => 'nullable|string',
             'heart_other_specify' => 'nullable|string',
+            'heart_specify' => 'nullable|string',
             'abdomen' => 'nullable|string',
+            'abdomen_specify' => 'nullable|string',
             'deformities' => 'nullable|string',
+            'deformities_specify' => 'nullable|string',
             'iron_supplementation' => 'nullable|string',
             'deworming_status' => 'nullable|string',
             'immunization' => 'nullable|string',
@@ -608,8 +636,25 @@ class PupilHealthController extends Controller
             'student_name' => $oralHealthExamination->student->full_name ?? 'Unknown'
         ]);
         
+        // Ensure conditions and tooth_symbols are properly formatted for frontend
+        $examData = $oralHealthExamination->toArray();
+        
+        // Handle conditions data format
+        if (isset($examData['conditions'])) {
+            if (is_string($examData['conditions'])) {
+                $examData['conditions'] = json_decode($examData['conditions'], true);
+            }
+        }
+        
+        // Handle tooth_symbols data format  
+        if (isset($examData['tooth_symbols'])) {
+            if (is_string($examData['tooth_symbols'])) {
+                $examData['tooth_symbols'] = json_decode($examData['tooth_symbols'], true);
+            }
+        }
+        
         return Inertia::render('OralHealth/Edit', [
-            'oralHealthExamination' => $oralHealthExamination,
+            'oralHealthExamination' => $examData,
             'student' => $oralHealthExamination->student,
             'selectedGrade' => $grade ?: $oralHealthExamination->grade_level
         ]);

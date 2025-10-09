@@ -369,7 +369,6 @@ const props = defineProps({
 const gradeLevels = computed(() => {
     const standardGrades = [
         'All',
-        'Kinder 1',
         'Kinder 2', 
         'Grade 1',
         'Grade 2',
@@ -551,7 +550,6 @@ const healthExamFields = [
 // School year mapping
 const getSchoolYearForGrade = (grade) => {
     const gradeToYear = {
-        'Kinder 1': '2024-2025',
         'Kinder 2': '2024-2025',
         'Grade 1': '2023-2024',
         'Grade 2': '2022-2023',

@@ -132,7 +132,6 @@ onMounted(() => {
 
 const getSchoolYearForGrade = (grade) => {
     const gradeToYear = {
-        'Kinder 1': '2022-2023',
         'Kinder 2': '2023-2024', 
         'Grade 1': '2024-2025',
         'Grade 2': '2023-2024',

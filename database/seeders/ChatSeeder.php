@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Conversation;
-use App\Models\ChatMessage;
+use App\Models\ConsultationMessage;
 
 class ChatSeeder extends Seeder
 {
@@ -26,19 +26,19 @@ class ChatSeeder extends Seeder
         ]);
 
         // Create some sample messages
-        ChatMessage::create([
+        ConsultationMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => 1,
             'content' => 'Hello! Welcome to the new PHMS Chat system! 🎉'
         ]);
 
-        ChatMessage::create([
+        ConsultationMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => 1,
             'content' => 'This is a modern messaging interface similar to WhatsApp or Messenger. You can now have real-time conversations!'
         ]);
 
-        ChatMessage::create([
+        ConsultationMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => 1,
             'content' => 'Features include:

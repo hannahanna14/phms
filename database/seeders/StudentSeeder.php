@@ -27,7 +27,24 @@ class StudentSeeder extends Seeder
             '789 Mabini St., Brgy. San Jose, Makati',
             '321 Del Pilar St., Brgy. Poblacion, Pasig',
             '654 Luna St., Brgy. San Miguel, Marikina',
-            '987 Burgos St., Brgy. Santo Niño, San Juan'
+            '987 Burgos St., Brgy. Santo Niño, San Juan',
+            '111 Aguinaldo St., Brgy. Poblacion, Taguig',
+            '222 Lapu-Lapu Ave., Brgy. San Pedro, Muntinlupa',
+            '333 Katipunan St., Brgy. Bagong Silang, Caloocan',
+            '444 EDSA, Brgy. Cubao, Quezon City'
+        ];
+        
+        $birthplaces = [
+            'Quezon City',
+            'Manila',
+            'Makati',
+            'Pasig',
+            'Marikina',
+            'San Juan',
+            'Taguig',
+            'Muntinlupa',
+            'Caloocan',
+            'Mandaluyong'
         ];
         
         $grades = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
@@ -61,6 +78,10 @@ class StudentSeeder extends Seeder
                     'full_name' => $firstName . ' ' . $lastName,
                     'sex' => $gender,
                     'age' => $age,
+                    'date_of_birth' => $birthDate,
+                    'birthplace' => $birthplaces[array_rand($birthplaces)],
+                    'parent_guardian' => $this->generateParentName($lastName),
+                    'address' => $addresses[array_rand($addresses)],
                     'grade_level' => $grade,
                     'lrn' => '1' . str_pad($studentId, 11, '0', STR_PAD_LEFT),
                     'school_year' => $schoolYear

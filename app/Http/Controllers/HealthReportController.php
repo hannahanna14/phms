@@ -26,7 +26,7 @@ class HealthReportController extends Controller
         
         // Standard grade levels that should always be available
         $standardGradeLevels = [
-            'Kinder 1', 'Kinder 2', 
+            'Kinder 2', 
             'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
             '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'
         ];
@@ -38,10 +38,10 @@ class HealthReportController extends Controller
         usort($allGradeLevels, function($a, $b) {
             // Define order priority
             $order = [
-                'Kinder 1' => 1, 'Kinder 2' => 2,
-                'Grade 1' => 3, 'Grade 2' => 4, 'Grade 3' => 5, 'Grade 4' => 6, 'Grade 5' => 7, 'Grade 6' => 8,
-                '1' => 9, '2' => 10, '3' => 11, '4' => 12, '5' => 13, '6' => 14,
-                '7' => 15, '8' => 16, '9' => 17, '10' => 18, '11' => 19, '12' => 20
+                'Kinder 2' => 1,
+                'Grade 1' => 2, 'Grade 2' => 3, 'Grade 3' => 4, 'Grade 4' => 5, 'Grade 5' => 6, 'Grade 6' => 7,
+                '1' => 8, '2' => 9, '3' => 10, '4' => 11, '5' => 12, '6' => 13,
+                '7' => 14, '8' => 15, '9' => 16, '10' => 17, '11' => 18, '12' => 19
             ];
             
             $aOrder = $order[$a] ?? 999;
@@ -563,10 +563,19 @@ class HealthReportController extends Controller
             // Try to find examination with exact match first
             $exam = $healthExaminations->firstWhere('grade_level', $grade);
             
-            // If not found, try variations (e.g., "6" for "Grade 6")
+            // If not found, try variations
             if (!$exam) {
-                $gradeNumber = str_replace('Grade ', '', $grade);
-                $exam = $healthExaminations->firstWhere('grade_level', $gradeNumber);
+                if ($grade === 'Kinder') {
+                    // For Kinder, try "Kinder 2" and "K-2"
+                    $exam = $healthExaminations->firstWhere('grade_level', 'Kinder 2');
+                    if (!$exam) {
+                        $exam = $healthExaminations->firstWhere('grade_level', 'K-2');
+                    }
+                } else {
+                    // For grades, try numeric format (e.g., "6" for "Grade 6")
+                    $gradeNumber = str_replace('Grade ', '', $grade);
+                    $exam = $healthExaminations->firstWhere('grade_level', $gradeNumber);
+                }
             }
             
             $orderedExaminations[$grade] = $exam;
@@ -577,7 +586,10 @@ class HealthReportController extends Controller
             ->orderBy('date', 'desc')
             ->get();
         
-        $pdf = PDF::loadView('health-examination-pdf', compact('student', 'orderedExaminations', 'healthTreatments'));
+        // Get school settings for PDF header
+        $schoolSettings = \App\Models\SchoolSettings::getInstance();
+        
+        $pdf = PDF::loadView('health-examination-pdf', compact('student', 'orderedExaminations', 'healthTreatments', 'schoolSettings'));
         
         return $pdf->stream('health-examination-' . $student->lrn . '.pdf');
     }
@@ -601,6 +613,12 @@ class HealthReportController extends Controller
                           ->orWhere('grade_level', $gradeName)
                           ->orWhere('grade_level', strtolower($gradeName))
                           ->orWhere('grade_level', ucfirst(strtolower($gradeName)));
+                    
+                    // Special handling for Kinder variations
+                    if ($gradeNum === 'K' || $gradeName === 'Kinder') {
+                        $query->orWhere('grade_level', 'Kinder 2')
+                              ->orWhere('grade_level', 'K-2');
+                    }
                 })
                 ->first();
             
@@ -639,6 +657,12 @@ class HealthReportController extends Controller
                           ->orWhere('grade_level', $gradeName)
                           ->orWhere('grade_level', strtolower($gradeName))
                           ->orWhere('grade_level', ucfirst(strtolower($gradeName)));
+                    
+                    // Special handling for Kinder variations
+                    if ($gradeNum === 'K' || $gradeName === 'Kinder') {
+                        $query->orWhere('grade_level', 'Kinder 2')
+                              ->orWhere('grade_level', 'K-2');
+                    }
                 })
                 ->orderBy('date', 'asc')
                 ->get();
@@ -649,7 +673,10 @@ class HealthReportController extends Controller
         Log::info('Oral Health Data Retrieved:', $oralHealthDataByGrade);
         Log::info('Oral Health Treatments Retrieved:', $oralHealthTreatmentsByGrade);
         
-        $pdf = PDF::loadView('oral-health-examination-pdf', compact('student', 'oralHealthDataByGrade', 'oralHealthTreatmentsByGrade'));
+        // Get school settings for PDF header
+        $schoolSettings = \App\Models\SchoolSettings::getInstance();
+        
+        $pdf = PDF::loadView('oral-health-examination-pdf', compact('student', 'oralHealthDataByGrade', 'oralHealthTreatmentsByGrade', 'schoolSettings'));
         
         return $pdf->stream('oral-health-examination-' . $student->lrn . '.pdf');
     }
@@ -674,20 +701,41 @@ class HealthReportController extends Controller
         // Create an ordered array with data only for grades where student has records
         $orderedExaminations = [];
         foreach ($allGradeLevels as $grade) {
+            $exam = null;
+            
+            // Try exact match first
             if (isset($healthExaminations[$grade])) {
-                $orderedExaminations[$grade] = $healthExaminations[$grade];
+                $exam = $healthExaminations[$grade];
             } else {
-                $orderedExaminations[$grade] = null; // No data for this grade
+                // Try variations
+                if ($grade === 'Kinder') {
+                    // For Kinder, try "Kinder 2" and "K-2"
+                    if (isset($healthExaminations['Kinder 2'])) {
+                        $exam = $healthExaminations['Kinder 2'];
+                    } elseif (isset($healthExaminations['K-2'])) {
+                        $exam = $healthExaminations['K-2'];
+                    }
+                } else {
+                    // For grades, try numeric format (e.g., "6" for "Grade 6")
+                    $gradeNumber = str_replace('Grade ', '', $grade);
+                    if (isset($healthExaminations[$gradeNumber])) {
+                        $exam = $healthExaminations[$gradeNumber];
+                    }
+                }
             }
+            
+            $orderedExaminations[$grade] = $exam;
         }
         
-        return view('health-examination-pdf', compact('student', 'orderedExaminations', 'allGradeLevels'));
+        // Get school settings for PDF header
+        $schoolSettings = \App\Models\SchoolSettings::getInstance();
+        
+        return view('health-examination-pdf', compact('student', 'orderedExaminations', 'allGradeLevels', 'schoolSettings'));
     }
 
     private function getSchoolYearForGrade($grade)
     {
         $gradeToYear = [
-            'Kinder 1' => '2024-2025',
             'Kinder 2' => '2024-2025',
             'Grade 1' => '2023-2024',
             'Grade 2' => '2022-2023',

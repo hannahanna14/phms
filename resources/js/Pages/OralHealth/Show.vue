@@ -74,26 +74,18 @@
                                         <th class="text-left py-1">Title</th>
                                         <th class="text-left py-1">Chief Complaint</th>
                                         <th class="text-left py-1">Treatment</th>
-                                        <th class="text-left py-1">Timer Status</th>
                                         <th class="text-left py-1">Date</th>
                                         <th class="text-left py-1">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-if="oralTreatmentRecords.length === 0">
-                                        <td colspan="6" class="text-center py-2 text-gray-500">No records available</td>
+                                        <td colspan="5" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in oralTreatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2">{{ treatment.title }}</td>
                                         <td class="py-2">{{ treatment.chief_complaint }}</td>
                                         <td class="py-2">{{ treatment.treatment }}</td>
-                                        <td class="py-2">
-                                            <Tag 
-                                                :value="treatment.timer_status?.display || 'Unknown'"
-                                                :severity="treatment.timer_status?.color || 'secondary'"
-                                                class="text-xs"
-                                            />
-                                        </td>
                                         <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
@@ -314,7 +306,7 @@ import axios from 'axios'
 
 const page = usePage()
 
-const gradeLevels = ['Kinder 1', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+const gradeLevels = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
 
 // Initialize grade from URL parameter, session storage, or flash data
 const initializeGrade = () => {

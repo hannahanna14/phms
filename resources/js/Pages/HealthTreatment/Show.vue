@@ -14,10 +14,6 @@
                 </div>
             </div>
 
-            <!-- Timer Status -->
-            <div v-if="timer_status" class="mb-6 p-4 rounded-lg" :class="getAlertClass()">
-                <strong>Timer:</strong> {{ timer_status.display }}
-            </div>
 
             <!-- Treatment Details -->
             <div class="bg-white rounded-lg shadow p-6">

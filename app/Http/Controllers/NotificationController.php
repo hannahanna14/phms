@@ -156,4 +156,91 @@ class NotificationController extends Controller
             'unrecorded_oral_health' => $studentsWithoutOralHealth->count()
         ]);
     }
+
+    /**
+     * Check for schedule notifications for the current user
+     */
+    public function checkScheduleNotifications()
+    {
+        $user = auth()->user();
+        $notifications = [];
+
+        // Get upcoming schedules where the user can view them
+        $upcomingQuery = \App\Models\Schedule::where('start_datetime', '>', now())
+            ->where('start_datetime', '<=', now()->addDays(7)) // Next 7 days
+            ->where('status', 'scheduled');
+
+        // Apply user-based filtering
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            $upcomingQuery->where(function($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereJsonContains('selected_users', $user->id);
+            });
+        }
+
+        $upcomingSchedules = $upcomingQuery->get()
+            ->filter(function ($schedule) use ($user) {
+                return $schedule->canBeViewedBy($user);
+            });
+
+        foreach ($upcomingSchedules as $schedule) {
+            $timeUntil = now()->diffInHours($schedule->start_datetime);
+            
+            // Create notifications for schedules starting soon
+            if ($timeUntil <= 24 && $timeUntil > 0) {
+                $notifications[] = [
+                    'id' => 'schedule_' . $schedule->id . '_reminder',
+                    'type' => 'schedule_reminder',
+                    'title' => 'Upcoming Schedule',
+                    'message' => "'{$schedule->title}' starts in " . ($timeUntil < 1 ? 'less than an hour' : ceil($timeUntil) . ' hours'),
+                    'schedule_id' => $schedule->id,
+                    'schedule_title' => $schedule->title,
+                    'schedule_type' => $schedule->type,
+                    'start_datetime' => $schedule->start_datetime->format('M d, Y h:i A'),
+                    'location' => $schedule->location,
+                    'priority' => $timeUntil <= 2 ? 'high' : 'medium',
+                    'created_at' => now()->toISOString()
+                ];
+            }
+        }
+
+        // Get today's schedules
+        $todayQuery = \App\Models\Schedule::whereDate('start_datetime', today())
+            ->where('status', 'scheduled');
+
+        // Apply user-based filtering
+        if (!in_array($user->role, ['admin', 'nurse'])) {
+            $todayQuery->where(function($q) use ($user) {
+                $q->where('created_by', $user->id)
+                  ->orWhereJsonContains('selected_users', $user->id);
+            });
+        }
+
+        $todaySchedules = $todayQuery->get()
+            ->filter(function ($schedule) use ($user) {
+                return $schedule->canBeViewedBy($user);
+            });
+
+        foreach ($todaySchedules as $schedule) {
+            $notifications[] = [
+                'id' => 'schedule_' . $schedule->id . '_today',
+                'type' => 'schedule_today',
+                'title' => 'Today\'s Schedule',
+                'message' => "You have '{$schedule->title}' scheduled today at " . $schedule->start_datetime->format('h:i A'),
+                'schedule_id' => $schedule->id,
+                'schedule_title' => $schedule->title,
+                'schedule_type' => $schedule->type,
+                'start_datetime' => $schedule->start_datetime->format('M d, Y h:i A'),
+                'location' => $schedule->location,
+                'priority' => 'medium',
+                'created_at' => now()->toISOString()
+            ];
+        }
+
+        return response()->json([
+            'notifications' => $notifications,
+            'upcoming_count' => $upcomingSchedules->count(),
+            'today_count' => $todaySchedules->count()
+        ]);
+    }
 }

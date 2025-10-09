@@ -65,6 +65,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('incident.create');
     Route::post('/pupil-health/incident', [StudentController::class, 'storeIncident'])
         ->name('incident.store');
+    Route::get('/pupil-health/incident/{incident}/view', [StudentController::class, 'viewIncident'])
+        ->name('incident.view');
+    Route::get('/pupil-health/incident/{incident}/edit', [StudentController::class, 'editIncident'])
+        ->name('incident.edit');
+    Route::put('/pupil-health/incident/{incident}', [StudentController::class, 'updateIncident'])
+        ->name('incident.update');
 
     // Health Treatment Routes
     Route::get('/pupil-health/health-treatment/{student}/create', [HealthTreatmentController::class, 'create'])
@@ -130,12 +136,12 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('schedule-calendar', App\Http\Controllers\ScheduleController::class);
     Route::get('/api/schedule/events', [App\Http\Controllers\ScheduleController::class, 'getEvents'])->name('schedule.events');
     
-    // Chat Routes (Modern Messaging)
-    Route::get('/chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
-    Route::post('/chat/start', [App\Http\Controllers\ChatController::class, 'startConversation'])->name('chat.start');
-    Route::post('/chat/send', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::get('/chat/{conversation}/messages', [App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
-    Route::post('/chat/{conversation}/read', [App\Http\Controllers\ChatController::class, 'markAsRead'])->name('chat.read');
+    // Consultation Routes (Modern Messaging)
+    Route::get('/consultation', [App\Http\Controllers\ConsultationController::class, 'index'])->name('consultation.index');
+    Route::post('/consultation/start', [App\Http\Controllers\ConsultationController::class, 'startConversation'])->name('consultation.start');
+    Route::post('/consultation/send', [App\Http\Controllers\ConsultationController::class, 'sendMessage'])->name('consultation.send');
+    Route::get('/consultation/{conversation}/messages', [App\Http\Controllers\ConsultationController::class, 'getMessages'])->name('consultation.messages');
+    Route::post('/consultation/{conversation}/read', [App\Http\Controllers\ConsultationController::class, 'markAsRead'])->name('consultation.read');
     
     // Settings Routes (Admin Only)
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');

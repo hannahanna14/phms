@@ -6,11 +6,6 @@
                 <Button label="Back" icon="pi pi-arrow-left" outlined @click="goBack" />
             </div>
 
-            <!-- Timer Status -->
-            <div v-if="timer_status" class="mb-6 p-4 rounded-lg" :class="getAlertClass()">
-                <strong>Timer:</strong> {{ timer_status.display }}
-                <div v-if="!canEdit" class="text-sm mt-1">This treatment can no longer be edited.</div>
-            </div>
 
             <!-- Form -->
             <div class="bg-white rounded-lg shadow p-6">
