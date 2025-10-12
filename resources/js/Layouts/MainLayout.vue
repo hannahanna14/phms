@@ -66,14 +66,14 @@
                         <template #end>
                             <div class="flex items-center space-x-3">
                                 <!-- Notification Dropdown -->
-                                <NotificationDropdown 
+                                <NotificationDropdown
                                     :notifications="filteredNotifications"
                                     @mark-as-read="markNotificationAsRead"
                                     @mark-all-as-read="markAllNotificationsAsRead"
                                     @delete-notification="deleteNotification"
                                     @clear-all-notifications="handleClearAllNotifications"
                                 />
-                                
+
                                 <button
                                     @click="toggleUserMenu"
                                     v-ripple
@@ -102,7 +102,7 @@
         </div>
 
         <!-- Toast Notifications -->
-        <ToastNotification 
+        <ToastNotification
             :toasts="toasts"
             @remove-toast="removeToast"
         />
@@ -146,11 +146,11 @@ const user = computed(() => {
 })
 
 // Notification store
-const { 
-    notifications, 
-    unreadCount, 
-    initializeNotifications, 
-    markAsRead, 
+const {
+    notifications,
+    unreadCount,
+    initializeNotifications,
+    markAsRead,
     markAllAsRead,
     addNotification
 } = useNotificationStore()
@@ -158,7 +158,7 @@ const {
 // Computed property for role-based filtered notifications
 const filteredNotifications = computed(() => {
     const userRole = page.props.auth?.user?.role || 'teacher'
-    
+
     // Simple role-based filtering
     if (userRole === 'teacher') {
         return notifications.value.filter(notification => {
@@ -173,7 +173,7 @@ const filteredNotifications = computed(() => {
             return true
         })
     }
-    
+
     // For admin and nurse, show all notifications
     return notifications.value
 })
@@ -196,11 +196,11 @@ const handleClearAllNotifications = () => {
 }
 
 // Toast store
-const { 
-    toasts, 
-    removeToast, 
-    showSuccess, 
-    showInfo, 
+const {
+    toasts,
+    removeToast,
+    showSuccess,
+    showInfo,
     showHealthExamComplete,
     showTreatmentScheduled,
     showReportGenerated
@@ -216,17 +216,6 @@ const toggleSidebar = () => {
     isSidebarOpen.value = !isSidebarOpen.value
     console.log('Sidebar toggled:', isSidebarOpen.value)
 }
-
-const logout = () => {
-    router.post('/logout', {}, {
-        onSuccess: () => {
-            console.log('Logged out successfully');
-        },
-        onError: (errors) => {
-            console.error('Logout failed', errors);
-        }
-    });
-};
 
 const userMenuItems = ref([
     {
@@ -245,9 +234,13 @@ const toggleUserMenu = (event) => {
     userMenu.value.toggle(event);
 };
 
+const logout = () => {
+    router.post('/logout');
+};
+
 const sideBarItems = computed(() => {
     const userRole = page.props.auth?.user?.role || 'teacher'
-    
+
     const baseItems = [
         {
             label: 'Dashboard',
@@ -363,12 +356,12 @@ const checkUnrecordedStudents = async () => {
     try {
         const response = await fetch('/api/notifications/check-unrecorded')
         const data = await response.json()
-        
+
         if (data.notifications && data.notifications.length > 0) {
             data.notifications.forEach(notification => {
                 if (notification.type === 'unrecorded_student') {
                     addNotification(createUnrecordedStudentNotification(
-                        notification.student_name, 
+                        notification.student_name,
                         notification.missing_type
                     ))
                 } else if (notification.type === 'batch_unrecorded') {
@@ -389,7 +382,7 @@ const checkScheduleNotifications = async () => {
     try {
         const response = await fetch('/api/notifications/check-schedules')
         const data = await response.json()
-        
+
         if (data.notifications && data.notifications.length > 0) {
             data.notifications.forEach(notification => {
                 addNotification(createScheduleNotification(notification))
@@ -426,35 +419,35 @@ const globalTimerInterval = ref(null)
 
 const startGlobalTimerMonitoring = () => {
     console.log('🌍 Starting global timer monitoring...')
-    
+
     // Check all active timers every minute
     globalTimerInterval.value = setInterval(async () => {
         try {
             console.log('🔍 Checking all active timers...')
-            
+
             // Check Health Treatments
             const healthResponse = await fetch('/api/notifications/check-timers')
             if (healthResponse.ok) {
                 const healthData = await healthResponse.json()
-                
+
                 if (healthData.treatments && healthData.treatments.length > 0) {
                     const healthIntegration = integrateHealthTreatmentNotifications()
-                    
+
                     healthData.treatments.forEach(treatment => {
                         const remainingMinutes = treatment.remaining_minutes
-                        
+
                         // 30-minute warning
                         if (remainingMinutes <= 30 && remainingMinutes > 29 && !treatment.thirty_min_notified) {
                             console.log(`🔔 30-minute warning for Health Treatment: ${treatment.title}`)
                             healthIntegration.handleTimerCheck(30, treatment.student, treatment)
                         }
-                        
-                        // 15-minute warning  
+
+                        // 15-minute warning
                         if (remainingMinutes <= 15 && remainingMinutes > 14 && !treatment.fifteen_min_notified) {
                             console.log(`🚨 15-minute warning for Health Treatment: ${treatment.title}`)
                             healthIntegration.handleTimerCheck(15, treatment.student, treatment)
                         }
-                        
+
                         // Expired
                         if (remainingMinutes <= 0 && !treatment.expired_notified) {
                             console.log(`⏰ Timer expired for Health Treatment: ${treatment.title}`)
@@ -463,7 +456,7 @@ const startGlobalTimerMonitoring = () => {
                     })
                 }
             }
-            
+
         } catch (error) {
             console.error('Error in global timer monitoring:', error)
         }
@@ -481,19 +474,19 @@ const stopGlobalTimerMonitoring = () => {
 // Initialize notifications when component mounts
 onMounted(() => {
     initializeNotifications()
-    
+
     // Check for unrecorded students on load
     checkUnrecordedStudents()
-    
+
     // Check for schedule notifications on load
     checkScheduleNotifications()
-    
+
     // Check for unrecorded students every 10 minutes
     setInterval(checkUnrecordedStudents, 600000)
-    
+
     // Check for schedule notifications every 5 minutes
     setInterval(checkScheduleNotifications, 300000)
-    
+
     // Start global timer monitoring
     startGlobalTimerMonitoring()
 })
