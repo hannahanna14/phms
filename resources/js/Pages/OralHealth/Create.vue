@@ -38,7 +38,7 @@
                                 :class="['chart-btn', { active: !showPermanent }]"
                                 @click="toggleChartType('primary')"
                             >
-                                Primary Teeth
+                                Temporary Teeth
                             </button>
                         </div>
                     </div>
@@ -55,12 +55,12 @@
                         </div>
 
                         <div v-show="!showPermanent" class="dental-chart compact">
-                            <h3 class="text-center text-lg font-semibold mb-4">Primary Teeth (20 teeth)</h3>
+                            <h3 class="text-center text-lg font-semibold mb-4">Temporary Teeth (20 teeth)</h3>
                             <div class="teeth-section">
-                                <div class="arch-label">Upper Primary Teeth</div>
+                                <div class="arch-label">Upper Temporary Teeth</div>
                                 <div id="upper-primary" class="teeth-row upper primary compact"></div>
                                 <div id="lower-primary" class="teeth-row lower primary compact"></div>
-                                <div class="arch-label">Lower Primary Teeth</div>
+                                <div class="arch-label">Lower Temporary Teeth</div>
                             </div>
                         </div>
                     </div>
@@ -258,6 +258,13 @@
                                     type="date" 
                                     class="mt-2 w-full text-xs border border-gray-300 rounded px-2 py-1"
                                     placeholder="Date detected"
+                                >
+                                <input 
+                                    v-if="form.conditions[condition.key + '_present'] && condition.key === 'others_specify'"
+                                    v-model="form.conditions[condition.key + '_specification']"
+                                    type="text" 
+                                    class="mt-2 w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                    placeholder="Please specify the condition..."
                                 >
                             </div>
                         </div>
@@ -468,9 +475,9 @@ const {
 })
 
 // Determine which teeth to show based on grade level
-const shouldShowPrimaryTeeth = computed(() => {
+const shouldShowTemporaryTeeth = computed(() => {
     const grade = parseInt(gradeLevel.value) || 0
-    return grade <= 3 // Show primary teeth for Kinder and Grades 1-3
+    return grade <= 3 // Show temporary teeth for Kinder and Grades 1-3
 })
 
 const toggleChartType = (type) => {
@@ -479,6 +486,9 @@ const toggleChartType = (type) => {
 
 // Dental chart functionality
 onMounted(() => {
+    // Initialize conditions for the form
+    initializeConditionsForForm()
+    
     // Initialize form persistence
     initializeForm()
     setupAutoSave()
@@ -488,15 +498,26 @@ onMounted(() => {
     })
 })
 
+// Initialize conditions for form binding
+const initializeConditionsForForm = () => {
+    oralHealthConditions.forEach(condition => {
+        form.conditions[condition.key + '_present'] = false
+        form.conditions[condition.key + '_date'] = ''
+        if (condition.key === 'others_specify') {
+            form.conditions[condition.key + '_specification'] = ''
+        }
+    })
+}
+
 const initializeDentalChart = () => {
     createUpperTeeth()
     createLowerTeeth()
-    createPrimaryTeeth()
+    createTemporaryTeeth()
     addToothSelectionFunctionality()
     addPanelFunctionality()
 
     // Set initial chart based on grade level
-    if (shouldShowPrimaryTeeth.value) {
+    if (shouldShowTemporaryTeeth.value) {
         showPermanent.value = false
     }
 }
@@ -547,12 +568,12 @@ const createLowerTeeth = () => {
     }
 }
 
-const createPrimaryTeeth = () => {
+const createTemporaryTeeth = () => {
     const upperContainer = document.getElementById('upper-primary')
     const lowerContainer = document.getElementById('lower-primary')
     if (!upperContainer || !lowerContainer) return
 
-    // Upper Primary Teeth
+    // Upper Temporary Teeth
     const upperNumbers = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65]
     const upperTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
 
@@ -563,7 +584,7 @@ const createPrimaryTeeth = () => {
         tooth.textContent = upperNumbers[i]
         tooth.setAttribute('data-number', upperNumbers[i])
         tooth.setAttribute('data-type', upperTypes[i])
-        tooth.setAttribute('data-category', 'Primary')
+        tooth.setAttribute('data-category', 'Temporary')
 
         const curve = Math.sin((i / (upperNumbers.length - 1)) * Math.PI) * 6
         tooth.style.left = `${i * 55 + 30}px`
@@ -572,7 +593,7 @@ const createPrimaryTeeth = () => {
         upperContainer.appendChild(tooth)
     }
 
-    // Lower Primary Teeth
+    // Lower Temporary Teeth
     const lowerNumbers = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
     const lowerTypes = ['Molar', 'Molar', 'Canine', 'Incisor', 'Incisor', 'Incisor', 'Incisor', 'Canine', 'Molar', 'Molar']
 
@@ -583,7 +604,7 @@ const createPrimaryTeeth = () => {
         tooth.textContent = lowerNumbers[i]
         tooth.setAttribute('data-number', lowerNumbers[i])
         tooth.setAttribute('data-type', lowerTypes[i])
-        tooth.setAttribute('data-category', 'Primary')
+        tooth.setAttribute('data-category', 'Temporary')
 
         const curve = Math.sin((i / (lowerNumbers.length - 1)) * Math.PI) * 6
         tooth.style.left = `${i * 55 + 30}px`
@@ -796,7 +817,14 @@ const submit = () => {
     const dbConditions = {}
     oralHealthConditions.forEach(condition => {
         if (form.conditions[condition.key + '_present']) {
-            dbConditions[condition.key] = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
+            let conditionValue = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
+            
+            // For "others_specify", append the specification text
+            if (condition.key === 'others_specify' && form.conditions[condition.key + '_specification']) {
+                conditionValue += ` - ${form.conditions[condition.key + '_specification']}`
+            }
+            
+            dbConditions[condition.key] = conditionValue
         }
     })
     

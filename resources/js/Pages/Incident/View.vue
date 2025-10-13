@@ -4,12 +4,6 @@
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800">View Incident Report</h1>
                 <div class="flex gap-3">
-                    <Button 
-                        v-if="userRole === 'nurse'" 
-                        label="Edit" 
-                        icon="pi pi-pencil" 
-                        @click="editIncident"
-                    />
                     <Button label="Back" icon="pi pi-arrow-left" outlined @click="goBack" />
                 </div>
             </div>
@@ -64,10 +58,13 @@
 </template>
 
 <script setup>
+import { computed, onMounted, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 import Button from 'primevue/button'
+import { useTimerNotifications } from '@/Utils/timerMixin.js';
+import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js';
 
-const { incident, student } = usePage().props
+const { incident, student, timer_status, remaining_minutes } = usePage().props
 const userRole = usePage().props.auth?.user?.role
 
 const editIncident = () => {
@@ -77,6 +74,66 @@ const editIncident = () => {
 const goBack = () => {
     window.history.back()
 }
+
+// Initialize timer notifications with error handling
+let startTimerMonitoring, stopTimerMonitoring;
+
+try {
+    const timerNotifications = useTimerNotifications('incident');
+    startTimerMonitoring = timerNotifications.startTimerMonitoring;
+    stopTimerMonitoring = timerNotifications.stopTimerMonitoring;
+    console.log('✅ Incident timer notifications imported successfully');
+} catch (error) {
+    console.error('❌ Failed to import incident timer notifications:', error);
+}
+
+// Start monitoring timer when component mounts
+onMounted(() => {
+    console.log('🚀 Incident View mounted');
+    console.log('Timer status:', timer_status);
+    console.log('Remaining minutes:', remaining_minutes);
+    console.log('Student:', student?.full_name);
+    console.log('Incident:', incident?.complaint);
+    
+    // Test if we can trigger a manual notification
+    try {
+        const integration = integrateIncidentNotifications();
+        console.log('✅ Incident notification integration loaded successfully');
+        
+        // If timer is at 30 minutes or less, trigger notification immediately for testing
+        if (remaining_minutes <= 30 && remaining_minutes > 0) {
+            console.log('🔔 Incident timer is at 30 minutes or less - triggering notification');
+            integration.handleTimerCheck(remaining_minutes, student, incident);
+        }
+    } catch (error) {
+        console.error('❌ Failed to load incident notification integration:', error);
+    }
+    
+    // Start timer monitoring if timer is active and functions are available
+    if (timer_status?.status === 'active' && remaining_minutes > 0 && startTimerMonitoring) {
+        console.log('✅ Starting timer monitoring for incident:', incident?.complaint);
+        try {
+            startTimerMonitoring(student, incident, remaining_minutes);
+            console.log('Incident timer monitoring started successfully');
+        } catch (error) {
+            console.error('❌ Failed to start incident timer monitoring:', error);
+        }
+    } else {
+        console.log('❌ Incident timer monitoring not started. Status:', timer_status?.status, 'Minutes:', remaining_minutes, 'Function available:', !!startTimerMonitoring);
+    }
+});
+
+// Stop monitoring when component unmounts
+onUnmounted(() => {
+    console.log('🛑 Stopping incident timer monitoring');
+    if (stopTimerMonitoring) {
+        try {
+            stopTimerMonitoring();
+        } catch (error) {
+            console.error('Error stopping incident timer monitoring:', error);
+        }
+    }
+});
 </script>
 
 <style scoped>

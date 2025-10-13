@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
@@ -63,8 +63,30 @@ const getInitialGrade = () => {
 const initialGrade = getInitialGrade();
 const selectedGrade = ref(initialGrade);
 
+// Validate that selectedGrade is in gradeLevels array
+const currentGradeLevels = gradeLevels.value;
+if (!currentGradeLevels.includes(selectedGrade.value)) {
+    console.warn('selectedGrade not found in gradeLevels, defaulting to student grade:', selectedGrade.value);
+    selectedGrade.value = student.grade_level;
+}
+
+// Debug logging
+console.log('Initial selectedGrade value:', selectedGrade.value);
+console.log('gradeLevels:', currentGradeLevels);
+console.log('Student grade level:', student.grade_level);
+console.log('Is selectedGrade in gradeLevels?', currentGradeLevels.includes(selectedGrade.value));
+
 onMounted(async () => {
-    console.log('Initial grade set to:', selectedGrade.value);
+    console.log('onMounted - Initial grade set to:', selectedGrade.value);
+    
+    // Ensure the component is fully rendered before setting the grade
+    await nextTick();
+    
+    // Force re-validation of selectedGrade
+    if (!currentGradeLevels.includes(selectedGrade.value)) {
+        console.log('Forcing selectedGrade to student grade level:', student.grade_level);
+        selectedGrade.value = student.grade_level;
+    }
     
     // Initial load with current grade
     await fetchRecordByGrade(selectedGrade.value);
@@ -501,8 +523,8 @@ const viewTreatment = (treatment) => {
                                         <span>Iron Supplementation: {{ currentRecord.iron_supplementation || 'No' }}</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <i :class="currentRecord.deworming_status === 'Yes' ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'" class="mr-2"></i>
-                                        <span>Dewormed: {{ currentRecord.deworming_status || 'No' }}</span>
+                                        <i :class="currentRecord.deworming_status === 'dewormed' ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'" class="mr-2"></i>
+                                        <span>Dewormed: {{ currentRecord.deworming_status === 'dewormed' ? 'Yes' : 'No' }}</span>
                                     </div>
                                     <div class="flex items-center">
                                         <i :class="currentRecord.sbfp_beneficiary ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'" class="mr-2"></i>

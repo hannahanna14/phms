@@ -54,6 +54,15 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Record Information -->
+                    <div class="md:col-span-2 mt-6">
+                        <h3 class="font-semibold text-gray-700 mb-4">Record Information</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><strong>Created:</strong> {{ formatDateTime(treatment.created_at) }}</div>
+                            <div><strong>Last Updated:</strong> {{ formatDateTime(treatment.updated_at) }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,6 +97,18 @@ const editTreatment = () => {
 
 const goBack = () => {
     window.history.back();
+};
+
+const formatDateTime = (dateTime) => {
+    if (!dateTime) return 'N/A';
+    return new Date(dateTime).toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
 };
 
 // Timer control methods

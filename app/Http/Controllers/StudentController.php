@@ -614,6 +614,9 @@ class StudentController extends Controller
 
         $incident = Incident::create($validated);
 
+        // Automatically start the timer for the incident (2 hours)
+        $incident->startTimer();
+
         // Redirect using Inertia
         return redirect()->route('pupil-health.incident', [
             'student' => $validated['student_id'],
@@ -634,9 +637,15 @@ class StudentController extends Controller
 
         $student = Student::findOrFail($incident->student_id);
 
+        // Get timer status and remaining time
+        $timerStatus = $incident->getTimerStatus();
+        $remainingMinutes = $incident->getRemainingMinutes();
+
         return Inertia::render('Incident/View', [
             'incident' => $incident,
-            'student' => $student
+            'student' => $student,
+            'timer_status' => $timerStatus,
+            'remaining_minutes' => $remainingMinutes
         ]);
     }
 

@@ -211,7 +211,7 @@
 
     <div class="footer">
         <div>Printed by: {{ $user_name ?? 'System' }}</div>
-        <div>Date: {{ date('F d, Y') }}</div>
+        <div>Date: {{ \Carbon\Carbon::now('Asia/Manila')->format('F d, Y') }} at {{ \Carbon\Carbon::now('Asia/Manila')->format('g:i A') }}</div>
     </div>
 </body>
 </html>

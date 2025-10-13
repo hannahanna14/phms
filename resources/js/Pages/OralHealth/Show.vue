@@ -59,12 +59,12 @@
                     <!-- Oral Health Treatment Card -->
                     <div class="border rounded-lg bg-white shadow">
                         <div class="bg-blue-700 text-white p-2 flex justify-between items-center text-sm">
+                            <span>Oral Health Treatment</span>
                             <Button 
                                 v-if="userRole === 'nurse'"
-                                label="Add Treatment" 
                                 icon="pi pi-plus" 
-                                class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
-                                @click="$inertia.visit(`/pupil-health/oral-health-treatment/${student.id}/create`)" 
+                                class="p-button-text text-white text-xs" 
+                                @click="$inertia.visit(`/pupil-health/oral-health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" 
                             />
                         </div>
                         <div class="p-3">
@@ -266,7 +266,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import Button from 'primevue/button';
@@ -313,16 +313,19 @@ const initializeGrade = () => {
     const urlGrade = new URLSearchParams(window.location.search).get('grade');
     const flashGrade = page.props.flash?.grade;
     const sessionGrade = sessionStorage.getItem(`currentGrade_${props.student.id}`);
-    const defaultGrade = 'Grade 6'; // Default to Grade 6 instead of student's current grade
+    // Default to student's actual grade level
+    const defaultGrade = props.student.grade_level;
     
     console.log('Grade initialization:', { urlGrade, flashGrade, sessionGrade, defaultGrade, studentGrade: props.student.grade_level });
     
     if (urlGrade) {
-        const gradeValue = `Grade ${urlGrade}`;
+        // Handle both "K-2" and numeric grades
+        const gradeValue = urlGrade === 'K-2' ? 'Kinder 2' : `Grade ${urlGrade}`;
         sessionStorage.setItem(`currentGrade_${props.student.id}`, gradeValue);
         return gradeValue;
     } else if (flashGrade) {
-        const gradeValue = `Grade ${flashGrade}`;
+        // Handle both "K-2" and numeric grades
+        const gradeValue = flashGrade === 'K-2' ? 'Kinder 2' : `Grade ${flashGrade}`;
         sessionStorage.setItem(`currentGrade_${props.student.id}`, gradeValue);
         return gradeValue;
     } else if (sessionGrade) {
@@ -334,9 +337,17 @@ const initializeGrade = () => {
 
 const selectedGrade = ref(initializeGrade());
 
+// Validate that selectedGrade is in gradeLevels array
+if (!gradeLevels.includes(selectedGrade.value)) {
+    console.warn('selectedGrade not found in gradeLevels, defaulting to student grade:', selectedGrade.value);
+    selectedGrade.value = props.student.grade_level;
+}
+
 // Debug logging
 console.log('Initial selectedGrade value:', selectedGrade.value);
 console.log('gradeLevels:', gradeLevels);
+console.log('Student grade level:', props.student.grade_level);
+console.log('Is selectedGrade in gradeLevels?', gradeLevels.includes(selectedGrade.value));
 const currentExam = ref(null);
 const oralHealthRecords = ref([]);
 const oralTreatmentRecords = ref([]);
@@ -670,7 +681,19 @@ watch(chartType, (newType) => {
     }
 });
 
-onMounted(() => {
+onMounted(async () => {
+    console.log('onMounted - selectedGrade.value:', selectedGrade.value);
+    console.log('onMounted - gradeLevels includes selectedGrade?', gradeLevels.includes(selectedGrade.value));
+    
+    // Ensure the component is fully rendered before setting the grade
+    await nextTick();
+    
+    // Force re-validation of selectedGrade
+    if (!gradeLevels.includes(selectedGrade.value)) {
+        console.log('Forcing selectedGrade to student grade level:', props.student.grade_level);
+        selectedGrade.value = props.student.grade_level;
+    }
+    
     fetchOralHealthByGrade(selectedGrade.value);
     fetchOralTreatmentRecords();
     

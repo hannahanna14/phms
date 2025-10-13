@@ -257,11 +257,6 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Remarks</label>
-                    <InputText v-model="form.remarks" class="w-full" />
-                    <small class="text-red-500" v-if="errors.remarks">{{ errors.remarks }}</small>
-                </div>
 
                 <div class="flex justify-end gap-2">
                     <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${selectedGrade.replace('Grade ', '')}`)" />
@@ -374,7 +369,6 @@ const form = useForm({
     deworming_status: props.healthExamination.deworming_status,
     immunization: props.healthExamination.immunization,
     other_specify: props.healthExamination.other_specify,
-    remarks: props.healthExamination.remarks,
     grade_level: props.selectedGrade || props.healthExamination.grade_level,
     school_year: props.healthExamination.school_year
 })

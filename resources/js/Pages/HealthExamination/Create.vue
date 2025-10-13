@@ -19,12 +19,12 @@
                     </div>
                     <div class="form-group">
                         <label>Height (cm) <span class="text-red-500">*</span></label>
-                        <InputText v-model="form.height" class="w-full" type="number" step="0.1" @input="calculateBMI" required />
+                        <InputText v-model="form.height" class="w-full" type="number" step="0.1" required />
                         <small class="text-red-500" v-if="errors.height">{{ errors.height }}</small>
                     </div>
                     <div class="form-group">
                         <label>Weight (kg) <span class="text-red-500">*</span></label>
-                        <InputText v-model="form.weight" class="w-full" type="number" step="0.1" @input="calculateBMI" required />
+                        <InputText v-model="form.weight" class="w-full" type="number" step="0.1" required />
                         <small class="text-red-500" v-if="errors.weight">{{ errors.weight }}</small>
                     </div>
                 </div>
@@ -286,11 +286,6 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Remarks</label>
-                    <InputText v-model="form.remarks" class="w-full" />
-                    <small class="text-red-500" v-if="errors.remarks">{{ errors.remarks }}</small>
-                </div>
 
                 <div class="flex justify-end gap-2">
                     <Button type="button" label="Cancel" class="p-button-secondary" @click="$inertia.visit(`/pupil-health/health-examination/${student.id}?grade=${props.grade_level || props.selectedGrade?.replace('Grade ', '') || '6'}`)" />
@@ -335,11 +330,11 @@ console.log('Create form - student:', props.student)
 
 // Form options
 const bmiOptions = [
-    'Normal (18.5-24.9)',
-    'Underweight (16.0-18.4)', 
-    'Severely Underweight (<16.0)',
-    'Overweight (25.0-29.9)',
-    'Obese (≥30.0)'
+    'Severely Wasted',
+    'Wasted',
+    'Normal',
+    'Overweight',
+    'Obese'
 ]
 
 const heightOptions = [
@@ -410,35 +405,12 @@ const form = useForm({
     deworming_status: '',
     immunization: '',
     other_specify: '',
-    remarks: '',
     student_id: props.student.id,
     grade_level: props.grade_level || props.selectedGrade?.replace('Grade ', '') || '6',
     school_year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
     examination_date: new Date().toISOString().split('T')[0]
 })
 
-// BMI calculation
-const calculateBMI = () => {
-    const height = parseFloat(form.height)
-    const weight = parseFloat(form.weight)
-    
-    if (height && weight && height > 0 && weight > 0) {
-        const heightInMeters = height / 100
-        const bmi = weight / (heightInMeters * heightInMeters)
-        
-        if (bmi < 16.0) {
-            form.nutritional_status_bmi = 'Severely Underweight (<16.0)'
-        } else if (bmi < 18.5) {
-            form.nutritional_status_bmi = 'Underweight (16.0-18.4)'
-        } else if (bmi < 25.0) {
-            form.nutritional_status_bmi = 'Normal (18.5-24.9)'
-        } else if (bmi < 30.0) {
-            form.nutritional_status_bmi = 'Overweight (25.0-29.9)'
-        } else {
-            form.nutritional_status_bmi = 'Obese (≥30.0)'
-        }
-    }
-}
 
 // Validation rules
 const validateForm = () => {

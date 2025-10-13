@@ -1,9 +1,8 @@
 <template>
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-4xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
+            <div class="mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800">Edit Oral Health Treatment</h1>
-                <Button label="Back" icon="pi pi-arrow-left" outlined @click="goBack" />
             </div>
 
             <!-- Form -->

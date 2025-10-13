@@ -454,10 +454,9 @@ const {
     showNotification: true
 });
 
-// Grade options will come from the controller
+// Grade options will come from the controller (already includes "All")
 const gradeOptions = computed(() => {
-    const grades = props.gradeLevels || [];
-    return ['All', ...grades];
+    return props.gradeLevels || [];
 });
 
 
@@ -619,7 +618,8 @@ const toggleStudent = (student) => {
 };
 
 // Remove student from selection
-const removeStudent = (studentId) => {
+const removeStudent = (student) => {
+    const studentId = typeof student === 'object' ? student.id : student;
     selectedStudents.value = selectedStudents.value.filter(s => s.id !== studentId);
 };
 

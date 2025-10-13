@@ -641,7 +641,8 @@ const toggleStudent = (student) => {
 };
 
 // Remove student from selection
-const removeStudent = (studentId) => {
+const removeStudent = (student) => {
+    const studentId = typeof student === 'object' ? student.id : student;
     selectedStudents.value = selectedStudents.value.filter(s => s.id !== studentId);
 };
 
