@@ -147,7 +147,10 @@
 
             <!-- Footer -->
             <div class="px-4 py-3 border-t border-gray-200 text-center">
-                <button class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                <button 
+                    @click="viewAllNotifications"
+                    class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
                     View all notifications
                 </button>
             </div>
@@ -174,7 +177,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['mark-as-read', 'mark-all-as-read', 'delete-notification', 'clear-all-notifications'])
+const emit = defineEmits(['mark-as-read', 'mark-all-as-read', 'delete-notification', 'clear-all-notifications', 'view-all-notifications'])
 
 // State
 const isOpen = ref(false)
@@ -207,6 +210,11 @@ const deleteNotification = (notificationId) => {
 
 const clearAllNotifications = () => {
     emit('clear-all-notifications')
+}
+
+const viewAllNotifications = () => {
+    emit('view-all-notifications')
+    closeDropdown()
 }
 
 const getNotificationIconClass = (type) => {

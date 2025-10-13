@@ -72,6 +72,7 @@
                                     @mark-all-as-read="markAllNotificationsAsRead"
                                     @delete-notification="deleteNotification"
                                     @clear-all-notifications="handleClearAllNotifications"
+                                    @view-all-notifications="handleViewAllNotifications"
                                 />
 
                                 <button
@@ -152,7 +153,10 @@ const {
     initializeNotifications,
     markAsRead,
     markAllAsRead,
-    addNotification
+    addNotification,
+    removeNotification,
+    clearAllNotifications,
+    clearNotificationsForRole
 } = useNotificationStore()
 
 // Computed property for role-based filtered notifications
@@ -195,6 +199,11 @@ const handleClearAllNotifications = () => {
     clearAllNotifications()
 }
 
+const handleViewAllNotifications = () => {
+    // Navigate to a dedicated notifications page
+    router.visit('/notifications')
+}
+
 // Toast store
 const {
     toasts,
@@ -218,14 +227,7 @@ const toggleSidebar = () => {
 }
 
 const userMenuItems = ref([
-    {
-        label: 'Profile',
-        icon: 'pi pi-user',
-        command: () => {
-            // Navigate to profile page if needed
-            // router.visit('/profile');
-        }
-    }
+    // Profile functionality removed - not needed for health management system
 ]);
 
 const userMenu = ref(null);
@@ -474,6 +476,12 @@ const stopGlobalTimerMonitoring = () => {
 // Initialize notifications when component mounts
 onMounted(() => {
     initializeNotifications()
+    
+    // Clear cached notifications based on current user role
+    const userRole = page.props.auth?.user?.role
+    if (userRole) {
+        clearNotificationsForRole(userRole)
+    }
 
     // Check for unrecorded students on load
     checkUnrecordedStudents()

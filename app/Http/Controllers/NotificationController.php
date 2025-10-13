@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\HealthTreatment;
 use App\Models\OralHealthTreatment;
 use App\Models\Incident;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
@@ -14,9 +15,18 @@ class NotificationController extends Controller
      */
     public function checkTimerNotifications()
     {
+        $user = auth()->user();
         $treatments = [];
 
-        // Check Health Treatment timers
+        // Teachers should not receive timer notifications
+        if ($user->role === 'teacher') {
+            return response()->json([
+                'treatments' => [],
+                'count' => 0
+            ]);
+        }
+
+        // Check Health Treatment timers (admins and nurses only)
         $healthTreatments = HealthTreatment::with('student')
             ->where('timer_status', 'active')
             ->get();
@@ -47,7 +57,7 @@ class NotificationController extends Controller
             }
         }
 
-        // Check Oral Health Treatment timers
+        // Check Oral Health Treatment timers (admins and nurses only)
         $oralHealthTreatments = OralHealthTreatment::with('student')
             ->where('timer_status', 'active')
             ->get();
@@ -77,7 +87,7 @@ class NotificationController extends Controller
             }
         }
 
-        // Check Incident timers
+        // Check Incident timers (admins and nurses only)
         $incidents = Incident::with('student')
             ->where('timer_status', 'active')
             ->get();
@@ -118,12 +128,23 @@ class NotificationController extends Controller
      */
     public function checkUnrecordedStudents()
     {
-        // Students without any health examinations
+        $user = auth()->user();
+        
+        // Teachers should not receive unrecorded student notifications
+        if ($user->role === 'teacher') {
+            return response()->json([
+                'notifications' => [],
+                'unrecorded_health' => 0,
+                'unrecorded_oral_health' => 0
+            ]);
+        }
+        
+        // Students without any health examinations (admins and nurses only)
         $studentsWithoutHealthExam = \App\Models\Student::whereDoesntHave('healthExaminations')
             ->limit(10)
             ->get();
 
-        // Students without any oral health examinations  
+        // Students without any oral health examinations (admins and nurses only)
         $studentsWithoutOralHealth = \App\Models\Student::whereDoesntHave('oralHealthExaminations')
             ->limit(10)
             ->get();
@@ -241,6 +262,23 @@ class NotificationController extends Controller
             'notifications' => $notifications,
             'upcoming_count' => $upcomingSchedules->count(),
             'today_count' => $todaySchedules->count()
+        ]);
+    }
+
+    /**
+     * Display all notifications page
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        
+        // Get all notifications from the notification store
+        // For now, we'll return empty array since notifications are handled client-side
+        // In a real implementation, you might want to store notifications in database
+        $notifications = [];
+        
+        return Inertia::render('Notifications/Index', [
+            'notifications' => $notifications
         ]);
     }
 }

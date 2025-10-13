@@ -160,4 +160,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/error-logs', [App\Http\Controllers\ErrorLogsController::class, 'index'])->name('error-logs.index');
     Route::post('/error-logs/clear', [App\Http\Controllers\ErrorLogsController::class, 'clearLogs'])->name('error-logs.clear');
     Route::get('/error-logs/download', [App\Http\Controllers\ErrorLogsController::class, 'downloadLogs'])->name('error-logs.download');
+    
+    // Notifications Routes
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
 });

@@ -145,4 +145,33 @@ class Schedule extends Model
     {
         return $query->where('status', $status);
     }
+
+    /**
+     * Check if schedule has ended
+     */
+    public function hasEnded()
+    {
+        return $this->end_datetime->isPast();
+    }
+
+    /**
+     * Update status to completed if schedule has ended
+     */
+    public function updateStatusIfEnded()
+    {
+        if ($this->hasEnded() && $this->status === 'scheduled') {
+            $this->update(['status' => 'completed']);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Scope to get schedules that should be auto-completed
+     */
+    public function scopeShouldBeCompleted($query)
+    {
+        return $query->where('status', 'scheduled')
+                    ->where('end_datetime', '<', now());
+    }
 }

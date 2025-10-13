@@ -55,10 +55,11 @@ const pupilRecords = computed(() => {
     // Filter by search query
     if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
-        records = records.filter(student =>
-            student.full_name?.toLowerCase().includes(query) ||
-            student.lrn?.toLowerCase().includes(query)
-        );
+        records = records.filter(student => {
+            const nameMatch = (student.full_name || student.name || '')?.toLowerCase().includes(query);
+            const lrnMatch = (student.lrn || '')?.toLowerCase().includes(query);
+            return nameMatch || lrnMatch;
+        });
     }
 
     return records;
@@ -134,11 +135,15 @@ const viewHealthExam = (student) => {
         <DataTable
             :value="pupilRecords"
             paginator
-            :rows="5"
+            :rows="10"
             tableStyle="min-width: 50rem"
             class="shadow-md rounded-lg"
         >
-            <Column field="name" header="Name" class="font-semibold"></Column>
+            <Column header="Name" class="font-semibold">
+                <template #body="slotProps">
+                    {{ slotProps.data.full_name || slotProps.data.name || 'N/A' }}
+                </template>
+            </Column>
             <Column field="grade_level" header="Grade Level"></Column>
             <Column field="lrn" header="LRN"></Column>
             <Column field="school_year" header="School Year"></Column>

@@ -8,9 +8,7 @@
                     <i class="pi pi-download mr-2 text-green-600"></i>
                     Health Data Export
                 </h1>
-                <Link href="/dashboard" class="no-underline">
-                    <Button label="Back to Dashboard" icon="pi pi-arrow-left" outlined severity="secondary" class="text-sm" />
-                </Link>
+                
             </div>
 
             <!-- Export Cards Grid -->

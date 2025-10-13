@@ -3,14 +3,11 @@
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
-            <div class="flex justify-between items-center mb-6">
+            <div class="mb-6">
                 <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
                     <i class="pi pi-cog mr-2 text-blue-600"></i>
                     School Settings
                 </h1>
-                <Link href="/dashboard" class="no-underline">
-                    <Button label="Back to Dashboard" icon="pi pi-arrow-left" outlined severity="secondary" class="text-sm" />
-                </Link>
             </div>
 
             <!-- Settings Form -->

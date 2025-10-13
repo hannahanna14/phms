@@ -272,7 +272,8 @@ const monthOptions = [
 const yearOptions = computed(() => {
     const currentYear = new Date().getFullYear()
     const years = []
-    for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+    // Extended range: 5 years back to 10 years forward for better coverage
+    for (let i = currentYear - 5; i <= currentYear + 10; i++) {
         years.push({ label: i.toString(), value: i })
     }
     return years
@@ -294,7 +295,36 @@ const initializeCalendar = () => {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        events: '/api/schedule/events',
+        events: (fetchInfo, successCallback, failureCallback) => {
+            // Build URL with filter parameters
+            const params = new URLSearchParams({
+                start: fetchInfo.startStr,
+                end: fetchInfo.endStr
+            })
+            
+            // Add filter parameters if they're not 'all' or default values
+            if (filters.value.type && filters.value.type !== 'all') {
+                params.append('type', filters.value.type)
+            }
+            if (filters.value.status && filters.value.status !== 'all') {
+                params.append('status', filters.value.status)
+            }
+            if (filters.value.month) {
+                params.append('month', filters.value.month)
+            }
+            if (filters.value.year) {
+                params.append('year', filters.value.year)
+            }
+            
+            // Fetch events with filters
+            fetch(`/api/schedule/events?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => successCallback(data))
+                .catch(error => {
+                    console.error('Error fetching calendar events:', error)
+                    failureCallback(error)
+                })
+        },
         eventClick: (info) => {
             // Find the full schedule data
             const scheduleId = parseInt(info.event.id)
@@ -359,6 +389,12 @@ const getStatusSeverity = (status) => {
 }
 
 const applyFilters = () => {
+    // Refresh the calendar events with new filters
+    if (calendar) {
+        calendar.refetchEvents()
+    }
+    
+    // Also update the page data for sidebar schedules
     router.visit(route('schedule-calendar.index'), {
         data: filters.value,
         preserveState: true,

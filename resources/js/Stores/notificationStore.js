@@ -45,8 +45,8 @@ const getFilteredNotifications = (userRole) => {
         // Define which notification types each role should see
         const rolePermissions = {
             'admin': ['all'], // Admins see everything
-            'nurse': ['health_exam', 'treatment', 'oral_health_treatment', 'incident', 'system', 'timer_expired', 'timer_warning', 'schedule'],
-            'teacher': ['health_exam', 'report', 'system', 'schedule'] // Teachers can see schedules too
+            'nurse': ['health_exam', 'treatment', 'oral_health_treatment', 'incident', 'system', 'timer_expired', 'timer_warning', 'schedule', 'unrecorded_student', 'batch_unrecorded'],
+            'teacher': ['schedule_reminder', 'schedule_today'] // Teachers only see schedule notifications
         }
         
         const allowedTypes = rolePermissions[userRole] || []
@@ -218,6 +218,17 @@ const createBatchUnrecordedNotification = (count, recordType) => {
     }
 }
 
+// Clear notifications for role change or reset
+const clearNotificationsForRole = (userRole) => {
+    if (userRole === 'teacher') {
+        // For teachers, remove all non-schedule notifications
+        notifications.value = notifications.value.filter(notification => {
+            return ['schedule_reminder', 'schedule_today'].includes(notification.type)
+        })
+    }
+    saveNotificationsToStorage()
+}
+
 // Export the store
 export const useNotificationStore = () => {
     return {
@@ -236,6 +247,7 @@ export const useNotificationStore = () => {
         removeNotification,
         clearAllNotifications,
         getFilteredNotifications,
+        clearNotificationsForRole,
         
         // Note: Notification creator functions can be added here when needed
         

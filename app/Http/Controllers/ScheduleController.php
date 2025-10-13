@@ -15,6 +15,10 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        
+        // Auto-update ended schedules to completed status
+        Schedule::shouldBeCompleted()->update(['status' => 'completed']);
+        
         $query = Schedule::with('creator')->orderBy('start_datetime', 'asc');
 
         // Filter by month/year if provided
@@ -242,8 +246,30 @@ class ScheduleController extends Controller
         $start = $request->start;
         $end = $request->end;
 
+        // Auto-update ended schedules to completed status
+        Schedule::shouldBeCompleted()->update(['status' => 'completed']);
+
         $query = Schedule::with('creator')
             ->whereBetween('start_datetime', [$start, $end]);
+
+        // Apply the same filters as the main index method
+        // Filter by type if provided
+        if ($request->has('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by status if provided
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by month/year if provided (additional to date range)
+        if ($request->has('month') && $request->has('year')) {
+            $month = $request->month;
+            $year = $request->year;
+            $query->whereYear('start_datetime', $year)
+                  ->whereMonth('start_datetime', $month);
+        }
 
         // Apply user-based filtering for calendar events
         if (!in_array($user->role, ['admin', 'nurse'])) {

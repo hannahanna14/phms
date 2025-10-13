@@ -8,9 +8,6 @@
                     <i class="pi pi-list mr-2 text-red-600"></i>
                     Error Logs & Activity Monitor
                 </h1>
-                <Link href="/dashboard" class="no-underline">
-                    <Button label="Back to Dashboard" icon="pi pi-arrow-left" outlined severity="secondary" class="text-sm" />
-                </Link>
             </div>
 
             <!-- Log Type Tabs -->
@@ -91,8 +88,8 @@
                             />
                         </div>
 
-                        <!-- Filter Actions (for other log types) -->
-                        <div v-else class="flex items-end">
+                        <!-- Filter Actions -->
+                        <div class="flex items-end">
                             <Button 
                                 label="Apply Filters" 
                                 icon="pi pi-filter"
@@ -181,7 +178,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="log in logs.data" :key="log.id" class="hover:bg-gray-50">
+                            <tr v-for="log in (logs.data || logs)" :key="log.id" class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ formatDateTime(log.created_at) }}
                                 </td>
@@ -254,7 +251,7 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="(log, index) in logs.data" :key="index" class="hover:bg-gray-50">
+                            <tr v-for="(log, index) in (logs.data || logs)" :key="index" class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ log.timestamp }}
                                 </td>
@@ -285,7 +282,7 @@
 
 
             <!-- Empty State -->
-            <div v-if="!loading && (!logs.data || logs.data.length === 0)" class="bg-white rounded-lg shadow-md p-12 text-center">
+            <div v-if="!loading && (!(logs.data || logs) || (logs.data || logs).length === 0)" class="bg-white rounded-lg shadow-md p-12 text-center">
                 <i class="pi pi-info-circle text-4xl text-gray-400 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No logs found</h3>
                 <p class="text-gray-500">No {{ logType }} logs match your current filters.</p>
@@ -341,6 +338,9 @@ const showClearConfirm = ref(false)
 const selectedLog = ref(null)
 const perPage = ref(50)
 
+// Initialize logs data
+const logs = ref(props.logs || { data: [], total: 0, per_page: 50, current_page: 1, last_page: 1 })
+
 // Filters
 const filters = ref({
     search: props.filters?.search || '',
@@ -378,6 +378,9 @@ const applyFilters = () => {
     
     router.get('/error-logs', params, {
         preserveState: true,
+        onSuccess: (page) => {
+            logs.value = page.props.logs
+        },
         onFinish: () => loading.value = false
     })
 }
@@ -421,7 +424,7 @@ const clearLogs = async () => {
             }
         })
         showClearConfirm.value = false
-        applyFilters() // Refresh logs
+        refreshLogs() // Refresh logs
     } catch (error) {
         console.error('Clear failed:', error)
     } finally {

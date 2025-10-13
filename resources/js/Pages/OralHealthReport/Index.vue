@@ -488,6 +488,7 @@ const isGenerateDisabled = computed(() => {
     try {
         console.log('Oral Health - Computing button state...');
         console.log('Oral Health - Form processing:', form.processing);
+        console.log('Oral Health - User role:', props.userRole);
         
         if (form.processing) return true;
         
@@ -506,7 +507,13 @@ const isGenerateDisabled = computed(() => {
             return !shouldEnable; // Return opposite because this is "disabled"
         }
         
-        // If no students selected, require grade level
+        // For teachers, if no students are selected, they can still generate reports for all their assigned students
+        if (props.userRole === 'teacher') {
+            console.log('Oral Health - Teacher with no students selected, enabling button');
+            return false; // Enable button for teachers even without grade level or gender filter
+        }
+        
+        // For non-teachers, require grade level if no students selected
         const hasGradeLevel = !!form.grade_level;
         console.log('Oral Health - No students selected, grade level:', form.grade_level);
         console.log('Oral Health - Has grade level:', hasGradeLevel);
@@ -534,9 +541,15 @@ const updateButtonState = () => {
         console.log('Oral Health - Students selected, checked count:', checkedCount);
         console.log('Oral Health - Button disabled:', buttonDisabled.value);
     } else {
-        buttonDisabled.value = !form.grade_level;
-        console.log('Oral Health - No students, grade level:', form.grade_level);
-        console.log('Oral Health - Button disabled:', buttonDisabled.value);
+        // For teachers, enable button even without grade level (they can generate reports for all assigned students)
+        if (props.userRole === 'teacher') {
+            buttonDisabled.value = false;
+            console.log('Oral Health - Teacher with no students, enabling button');
+        } else {
+            buttonDisabled.value = !form.grade_level;
+            console.log('Oral Health - No students, grade level:', form.grade_level);
+            console.log('Oral Health - Button disabled:', buttonDisabled.value);
+        }
     }
 };
 
