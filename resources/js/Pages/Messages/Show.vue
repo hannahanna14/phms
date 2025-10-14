@@ -22,7 +22,8 @@
                         @click="$inertia.visit(route('messages.index'))"
                         icon="pi pi-arrow-left"
                         label="Back"
-                        class="p-button-text"
+                        class="p-button-outlined"
+                        style="border: 1px solid #64748b; color: #64748b; font-weight: 500; transition: all 0.2s ease;"
                     />
                 </div>
             </div>

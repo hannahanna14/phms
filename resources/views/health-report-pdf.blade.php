@@ -66,7 +66,7 @@
         .data-table td {
             border: 1px solid #000;
             padding: 4px 2px;
-            text-align: left;
+            text-align: center;
             font-size: 8px;
             word-wrap: break-word;
             overflow: hidden;
@@ -81,7 +81,11 @@
         }
         
         /* Specific column widths based on content */
-        .col-name { width: 14%; }  /* Increased from 12% */
+        .col-name { 
+            width: 14%;  /* Increased from 12% */
+            text-align: left !important;
+            padding-left: 6px;
+        }
         .col-lrn { width: 10%; }   /* Increased from 8% */
         .col-grade { width: 5%; }  /* Increased from 4% */
         .col-section { width: 6%; } /* Increased from 5% */

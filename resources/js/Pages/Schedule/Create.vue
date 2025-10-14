@@ -8,7 +8,8 @@
                     @click="$inertia.visit(route('schedule-calendar.index'))"
                     icon="pi pi-arrow-left"
                     label="Back to Calendar"
-                    class="p-button-text"
+                    class="p-button-outlined"
+                    style="border: 1px solid #64748b; color: #64748b; font-weight: 500; transition: all 0.2s ease;"
                 />
             </div>
 
@@ -445,5 +446,12 @@ const submit = () => {
 
 :deep(.p-calendar .p-inputtext) {
     width: 100%;
+}
+
+/* Enhanced back button hover effect */
+:deep(.p-button-outlined:hover) {
+    background-color: #64748b !important;
+    color: white !important;
+    border-color: #64748b !important;
 }
 </style>

@@ -78,8 +78,8 @@
                 <div v-if="!selectedConversation" class="chat-welcome">
                     <div class="text-center">
                         <i class="pi pi-comments text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-xl font-medium text-gray-900 mb-2">Welcome to PHMS Consultation</h3>
-                        <p class="text-gray-600 mb-6">Select a conversation to start messaging or create a new consultation</p>
+                        <h3 class="text-xl font-medium text-gray-900 mb-2">Welcome to MedPort Consultation</h3>
+                        <p class="text-gray-600 mb-6">Select a conversation to start messaging or create new</p>
                         <Button
                             @click="showNewChatDialog = true"
                             icon="pi pi-plus"

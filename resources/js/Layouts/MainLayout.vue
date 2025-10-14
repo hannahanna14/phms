@@ -27,19 +27,27 @@
                             <Link
                                 v-if="item.route"
                                 :href="item.route"
-                                class="no-underline"
+                                :class="[
+                                    'no-underline w-full text-left p-3 flex items-center transition-all duration-200',
+                                    isActiveRoute(item.route) 
+                                        ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500 font-semibold' 
+                                        : 'hover:bg-gray-100 text-gray-700'
+                                ]"
                                 v-bind="props.action"
                             >
-                                <span :class="item.icon" />
+                                <span :class="[
+                                    item.icon,
+                                    isActiveRoute(item.route) ? 'text-blue-600' : 'text-gray-500'
+                                ]" />
                                 <span class="ml-2">{{ item.label }}</span>
                             </Link>
                             <button
                                 v-else-if="item.command"
                                 @click="item.command"
-                                class="w-full text-left p-3 hover:bg-gray-100 flex items-center no-underline border-none bg-transparent cursor-pointer"
+                                class="w-full text-left p-3 hover:bg-gray-100 flex items-center no-underline border-none bg-transparent cursor-pointer text-gray-700 transition-all duration-200"
                                 v-bind="props.action"
                             >
-                                <span :class="item.icon" />
+                                <span :class="[item.icon, 'text-gray-500']" />
                                 <span class="ml-2">{{ item.label }}</span>
                             </button>
                         </template>
@@ -129,6 +137,23 @@ import { useToastStore } from '@/Stores/toastStore.js'
 import { integrateHealthTreatmentNotifications, integrateOralHealthTreatmentNotifications, integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
 
 const page = usePage()
+
+// Function to check if a route is currently active
+const isActiveRoute = (route) => {
+    const currentUrl = page.url
+    
+    // Handle exact matches
+    if (route === '/' && currentUrl === '/') {
+        return true
+    }
+    
+    // Handle other routes - check if current URL starts with the route
+    if (route !== '/' && currentUrl.startsWith(route)) {
+        return true
+    }
+    
+    return false
+}
 
 // Health alerts data - you can move this to a composable later
 const urgentAlertsCount = computed(() => {

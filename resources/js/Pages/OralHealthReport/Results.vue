@@ -15,7 +15,8 @@
                             label="Back to Report"
                             icon="pi pi-arrow-left"
                             @click="goBack"
-                            severity="secondary"
+                            class="p-button-outlined"
+                            style="border: 1px solid #64748b; color: #64748b; font-weight: 500; transition: all 0.2s ease;"
                         />
                         <Button
                             label="Export PDF"

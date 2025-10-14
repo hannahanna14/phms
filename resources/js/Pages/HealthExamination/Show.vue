@@ -183,7 +183,12 @@ const viewTreatment = (treatment) => {
                     Health Examination Report
                 </h1>
                 <Link href="/pupil-health" class="no-underline">
-                    <Button label="Back" icon="pi pi-arrow-left" outlined severity="secondary" class="text-sm" />
+                    <Button 
+                        label="Back" 
+                        icon="pi pi-arrow-left" 
+                        class="p-button-outlined text-sm" 
+                        style="border: 1px solid #64748b; color: #64748b; font-weight: 500; transition: all 0.2s ease;"
+                    />
                 </Link>
             </div>
 
@@ -554,5 +559,10 @@ const viewTreatment = (treatment) => {
 </template>
 
 <style scoped>
-/* Additional compact styling can be added here if needed */
+/* Enhanced back button hover effect */
+:deep(.p-button-outlined:hover) {
+    background-color: #64748b !important;
+    color: white !important;
+    border-color: #64748b !important;
+}
 </style>

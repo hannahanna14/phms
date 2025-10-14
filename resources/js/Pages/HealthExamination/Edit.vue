@@ -9,22 +9,56 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Temperature (°C) <span class="text-red-500">*</span></label>
-                        <InputNumber v-model="form.temperature" :minFractionDigits="1" :maxFractionDigits="1" class="w-full" required />
+                        <InputNumber 
+                            v-model="form.temperature" 
+                            :minFractionDigits="1" 
+                            :maxFractionDigits="1" 
+                            :min="35" 
+                            :max="42" 
+                            class="w-full" 
+                            required 
+                        />
+                        <small class="text-gray-500">Normal range: 35°C - 42°C</small>
                         <small class="text-red-500" v-if="errors.temperature">{{ errors.temperature }}</small>
                     </div>
                     <div class="form-group">
                         <label>Heart Rate (bpm) <span class="text-red-500">*</span></label>
-                        <InputNumber v-model="form.heart_rate" class="w-full" required />
+                        <InputNumber 
+                            v-model="form.heart_rate" 
+                            :min="40" 
+                            :max="200" 
+                            class="w-full" 
+                            required 
+                        />
+                        <small class="text-gray-500">Normal range: 40-200 bpm</small>
                         <small class="text-red-500" v-if="errors.heart_rate">{{ errors.heart_rate }}</small>
                     </div>
                     <div class="form-group">
                         <label>Height (cm) <span class="text-red-500">*</span></label>
-                        <InputNumber v-model="form.height" :minFractionDigits="1" :maxFractionDigits="1" class="w-full" required />
+                        <InputNumber 
+                            v-model="form.height" 
+                            :minFractionDigits="1" 
+                            :maxFractionDigits="1" 
+                            :min="50" 
+                            :max="200" 
+                            class="w-full" 
+                            required 
+                        />
+                        <small class="text-gray-500">Range: 50-200 cm</small>
                         <small class="text-red-500" v-if="errors.height">{{ errors.height }}</small>
                     </div>
                     <div class="form-group">
                         <label>Weight (kg) <span class="text-red-500">*</span></label>
-                        <InputNumber v-model="form.weight" :minFractionDigits="1" :maxFractionDigits="1" class="w-full" required />
+                        <InputNumber 
+                            v-model="form.weight" 
+                            :minFractionDigits="1" 
+                            :maxFractionDigits="1" 
+                            :min="10" 
+                            :max="150" 
+                            class="w-full" 
+                            required 
+                        />
+                        <small class="text-gray-500">Range: 10-150 kg</small>
                         <small class="text-red-500" v-if="errors.weight">{{ errors.weight }}</small>
                     </div>
                 </div>
@@ -377,11 +411,45 @@ const form = useForm({
 const validateForm = () => {
     const errors = {}
     
-    // Required vital signs
-    if (!form.temperature) errors.temperature = 'Temperature is required'
-    if (!form.heart_rate) errors.heart_rate = 'Heart rate is required'
-    if (!form.height) errors.height = 'Height is required'
-    if (!form.weight) errors.weight = 'Weight is required'
+    // Temperature validation (35°C - 42°C)
+    if (!form.temperature) {
+        errors.temperature = 'Temperature is required'
+    } else {
+        const temp = parseFloat(form.temperature)
+        if (temp < 35 || temp > 42) {
+            errors.temperature = 'Temperature must be between 35°C and 42°C'
+        }
+    }
+    
+    // Heart rate validation (40-200 bpm for children)
+    if (!form.heart_rate) {
+        errors.heart_rate = 'Heart rate is required'
+    } else {
+        const hr = parseInt(form.heart_rate)
+        if (hr < 40 || hr > 200) {
+            errors.heart_rate = 'Heart rate must be between 40 and 200 bpm'
+        }
+    }
+    
+    // Height validation (50-200 cm for school children)
+    if (!form.height) {
+        errors.height = 'Height is required'
+    } else {
+        const height = parseFloat(form.height)
+        if (height < 50 || height > 200) {
+            errors.height = 'Height must be between 50 and 200 cm'
+        }
+    }
+    
+    // Weight validation (10-150 kg for school children)
+    if (!form.weight) {
+        errors.weight = 'Weight is required'
+    } else {
+        const weight = parseFloat(form.weight)
+        if (weight < 10 || weight > 150) {
+            errors.weight = 'Weight must be between 10 and 150 kg'
+        }
+    }
     
     // Required nutritional status
     if (!form.nutritional_status_bmi) errors.nutritional_status_bmi = 'BMI nutritional status is required'

@@ -73,8 +73,8 @@
         /* Column widths */
         .col-name {
             width: 15%;
-            text-align: left;
-            padding-left: 4px;
+            text-align: left !important;
+            padding-left: 6px;
         }
         
         .col-lrn {
