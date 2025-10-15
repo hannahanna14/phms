@@ -18,9 +18,9 @@
                                 <img
                                     :src="logoSrc"
                                     alt="MedPort Logo"
-                                    class="h-10 w-10 mr-2"
+                                    class="h-8 w-8 mr-3"
                                 />
-                                <span class="text-xl font-semibold">MedPort</span>
+                                <span class="text-xl font-bold text-blue-600">MedPort</span>
                             </div>
                         </template>
                         <template #item="{ item, props, hasSubmenu }">
@@ -270,6 +270,9 @@ const sideBarItems = computed(() => {
 
     const baseItems = [
         {
+            separator: true
+        },
+        {
             label: 'Dashboard',
             icon: 'pi pi-home',
             route: '/'
@@ -293,12 +296,12 @@ const sideBarItems = computed(() => {
             separator: true
         },
         {
-            label: 'Schedule Calendar',
+            label: 'Calendar',
             icon: 'pi pi-calendar',
             route: '/schedule-calendar'
         },
         {
-            label: 'Consultation',
+            label: 'Consultation Messages',
             icon: 'pi pi-comments',
             route: '/consultation'
         }
@@ -309,11 +312,11 @@ const sideBarItems = computed(() => {
         baseItems.push({
             separator: true
         })
-        baseItems.push({
-            label: 'Settings',
-            icon: 'pi pi-cog',
-            route: '/settings'
-        })
+        //.push({
+        //    label: 'Pupil Management',
+        //    icon: 'pi pi-users',
+        //    route: '/student-management'
+        //})
         baseItems.push({
             label: 'Export Data',
             icon: 'pi pi-download',

@@ -38,14 +38,14 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow text-center">
                     <div class="text-2xl font-bold text-blue-600">{{ reportData.length }}</div>
-                    <div class="text-sm text-gray-600">Total Students</div>
+                    <div class="text-sm text-gray-600">Total Pupils</div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">
                     <div class="text-2xl font-bold text-green-600">
                         {{ selected_students.length > 0 ? 'Selected' : grade_level }}
                     </div>
                     <div class="text-sm text-gray-600">
-                        {{ selected_students.length > 0 ? 'Students' : 'Grade Level' }}
+                        {{ selected_students.length > 0 ? 'Pupils' : 'Grade Level' }}
                     </div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">

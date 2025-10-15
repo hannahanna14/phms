@@ -108,7 +108,7 @@ const viewHealthExam = (student) => {
                 />
             </div>
             <div class="col-span-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Students</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
                 <IconField iconPosition="left">
                     <InputIcon class="pi pi-search text-gray-400" />
                     <InputText
@@ -124,9 +124,9 @@ const viewHealthExam = (student) => {
         <div class="mb-4">
             <h2 class="text-2xl font-bold text-gray-800 flex items-center">
                 <i class="pi pi-users mr-3 text-indigo-600"></i>
-                Student List
+                Pupil List
                 <span class="ml-3 text-sm text-gray-500 font-normal">
-                    ({{ pupilRecords.length }} students)
+                    ({{ pupilRecords.length }} pupils)
                 </span>
             </h2>
         </div>

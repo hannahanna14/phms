@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\HealthExamination;
 use App\Models\OralHealthExamination;
 use App\Models\Incident;
+use App\Models\User;
+use App\Models\StudentTeacherAssignment;
 
 class Student extends Model
 {
@@ -24,6 +27,7 @@ class Student extends Model
         'parent_guardian',
         'address',
         'grade_level',
+        'section',
         'lrn',
         'school_year'
     ];
@@ -40,6 +44,11 @@ class Student extends Model
     public function oralHealthExaminations()
     {
         return $this->hasMany(OralHealthExamination::class);
+    }
+
+    public function teacherAssignments(): HasMany
+    {
+        return $this->hasMany(StudentTeacherAssignment::class);
     }
 
     public function assignedTeachers(): BelongsToMany

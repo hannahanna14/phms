@@ -8,7 +8,7 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Oral Health Report Results</h1>
-                        <p class="text-gray-600 mt-1">{{ grade_level }} {{ section ? '- Section ' + section : '' }}</p>
+                        <p class="text-gray-600 mt-1">{{ selected_students.length > 0 ? 'Pupils' : 'Grade Level' }} {{ section ? '- Section ' + section : '' }}</p>
                     </div>
                     <div class="flex gap-3">
                         <Button
@@ -32,7 +32,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow text-center">
                     <div class="text-2xl font-bold text-blue-600">{{ reportData.length }}</div>
-                    <div class="text-sm text-gray-600">Total Students</div>
+                    <div class="text-sm text-gray-600">Total Pupils</div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">
                     <div class="text-2xl font-bold text-green-600">{{ grade_level }}</div>

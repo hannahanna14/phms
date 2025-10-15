@@ -1,5 +1,5 @@
 <template>
-    <Head title="Error Logs & Activity Monitor" />
+    <Head title="| Error Logs & Activity Monitor" />
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-7xl mx-auto">
             <!-- Header -->
@@ -167,6 +167,9 @@
                                     User
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    IP Address
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Action
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -200,6 +203,9 @@
                                             </div>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ log.properties?.ip_address || 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="getEventBadgeClass(log.event)" class="px-2 py-1 text-xs font-medium rounded-full">

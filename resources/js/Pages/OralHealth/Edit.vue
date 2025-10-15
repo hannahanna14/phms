@@ -3,10 +3,26 @@
     <div class="min-h-screen bg-gray-50 p-4">
         <div class="max-w-6xl mx-auto">
             <div class="bg-white shadow rounded-lg p-6">
+                <!-- Student Information Header -->
                 <div class="text-center mb-6">
-                    <h1 class="text-xl font-bold text-blue-600">Pupil Oral Health Examination</h1>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Oral Health Examination</h1>
                     <p class="text-gray-600">Naawan Central School</p>
-                    <p class="text-sm text-gray-500">Student: {{ student?.full_name || 'Loading...' }} | Grade: {{ selectedGrade }}</p>
+                </div>
+                
+                <!-- Student Details -->
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="font-semibold text-gray-700">Student:</span> {{ student?.full_name || 'Loading...' }}
+                    </div>
+                    <div>
+                        <span class="font-semibold text-gray-700">Grade Level:</span> {{ selectedGrade }}
+                    </div>
+                    <div>
+                        <span class="font-semibold text-gray-700">LRN:</span> {{ student?.lrn || '10000000001' }}
+                    </div>
+                    <div>
+                        <span class="font-semibold text-gray-700">Section:</span> {{ student?.section || 'Not Assigned' }}
+                    </div>
                 </div>
 
                 <!-- Loading/Error State -->

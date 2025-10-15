@@ -228,8 +228,8 @@ class ConsultationController extends Controller
 
         // Apply role-based restrictions
         if ($user->role === 'teacher') {
-            // Teachers can only consult with nurses
-            $query->where('role', 'nurse');
+            // Teachers can consult with nurses and admins
+            $query->whereIn('role', ['nurse', 'admin']);
         } elseif ($user->role === 'nurse') {
             // Nurses can consult with admins and teachers
             $query->whereIn('role', ['admin', 'teacher']);
@@ -251,9 +251,9 @@ class ConsultationController extends Controller
             return in_array($targetUser->role, ['teacher', 'nurse']);
         }
 
-        // Teacher can only consult with nurses
+        // Teacher can consult with nurses and admins
         if ($currentUser->role === 'teacher') {
-            return $targetUser->role === 'nurse';
+            return in_array($targetUser->role, ['nurse', 'admin']);
         }
 
         // Nurse can consult with admins and teachers

@@ -1,5 +1,5 @@
 <template>
-    <Head title="Oral Health Examination" />
+    <Head title="| Oral Health Examination" />
     <div class="health-examination">
         <div class="main-view">
             <div class="search-container mb-4">

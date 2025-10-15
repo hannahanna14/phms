@@ -198,7 +198,7 @@ const viewTreatment = (treatment) => {
                 <div class="lg:col-span-2 space-y-4">
                     <!-- Student Details Card -->
                     <div class="border rounded-lg bg-white shadow p-4">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Student Details</h2>
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Pupil Details</h2>
                         <div class="space-y-2 text-sm">
                             <div><strong>Name:</strong> {{ student.full_name }}</div>
                             <div><strong>LRN:</strong> {{ student.lrn || '12345678901' }}</div>
@@ -240,8 +240,8 @@ const viewTreatment = (treatment) => {
                             <span>Health Treatment</span>
                             <Button 
                                 v-if="userRole === 'nurse'"
-                                icon="pi pi-plus" 
-                                class="p-button-text text-white text-xs" 
+                                label="Add Treatment"
+                                class="!bg-green-600 !text-white !border-green-600 hover:!bg-green-700 text-xs" 
                                 @click="$inertia.visit(`/pupil-health/health-treatment/${student.id}/create?grade=${encodeURIComponent(selectedGrade)}`)" 
                             />
                         </div>

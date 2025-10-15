@@ -1,5 +1,5 @@
 <template>
-    <Head title="Messages" />
+    <Head title="| Messages" />
     <div class="messages-page">
         <div class="bg-white rounded-lg shadow-sm">
             <!-- Header -->

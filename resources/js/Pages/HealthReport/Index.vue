@@ -1,5 +1,5 @@
 <template>
-    <Head title="Health Report Generator" />
+    <Head title="| Health Report Generator" />
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-6xl mx-auto">
             <!-- Header Card -->
@@ -30,18 +30,18 @@
             <div class="bg-white rounded-lg shadow p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">
                     <i class="pi pi-users mr-2 text-blue-600"></i>
-                    Student Selection
+                    Pupil Selection
                 </h2>
 
                 <!-- Student Search Section -->
                 <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         <i class="pi pi-search mr-1"></i>
-                        Search Students
+                        Search Pupils
                     </label>
                     <InputText
                         v-model="searchQuery"
-                        placeholder="Type to search students by name or LRN..."
+                        placeholder="Type to search pupils by name or LRN..."
                         class="w-full mb-3"
                         @input="onStudentSearch"
                     />
@@ -69,7 +69,7 @@
                 <div v-if="selectedStudents && selectedStudents.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
                     <h3 class="text-lg font-semibold text-green-800 mb-3">
                         <i class="pi pi-list mr-2"></i>
-                        Selected Students ({{ selectedStudents.length }})
+                        Selected Pupils ({{ selectedStudents.length }})
                     </h3>
                     <div class="space-y-2 max-h-60 overflow-y-auto">
                         <div
@@ -140,10 +140,10 @@
                             <div class="flex items-center">
                                 <i class="pi pi-info-circle text-blue-600 mr-2"></i>
                                 <span class="text-blue-800 font-medium">Teacher View:</span>
-                                <span class="text-blue-700 ml-1">You can only generate reports for your assigned students.</span>
+                                <span class="text-blue-700 ml-1">You can only generate reports for your assigned pupils.</span>
                             </div>
                             <Button 
-                                label="Select All My Students" 
+                                label="Select All My Pupils" 
                                 icon="pi pi-users"
                                 size="small"
                                 @click="selectAllAssignedStudents"

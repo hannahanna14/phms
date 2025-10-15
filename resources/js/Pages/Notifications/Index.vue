@@ -1,5 +1,5 @@
 <template>
-    <Head title="All Notifications" />
+    <Head title="| All Notifications" />
     
     <div class="container mx-auto px-4 py-6">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">

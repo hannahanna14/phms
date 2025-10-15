@@ -1,5 +1,5 @@
 <template>
-    <Head title="Schedule Calendar" />
+    <Head title="| Schedule Calendar" />
     <div class="schedule-calendar">
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div class="flex justify-between items-center mb-6">

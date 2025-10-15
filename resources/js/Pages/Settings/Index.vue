@@ -1,5 +1,5 @@
 <template>
-    <Head title="School Settings" />
+    <Head title="| School Settings" />
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-4xl mx-auto">
             <!-- Header -->

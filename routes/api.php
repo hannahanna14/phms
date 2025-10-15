@@ -8,6 +8,7 @@ use App\Http\Controllers\OralHealthTreatmentController;
 use App\Http\Controllers\HealthReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PupilHealthController;
+use App\Http\Controllers\ConsultationController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -79,4 +80,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/incidents/{incident}/pause-timer', [StudentController::class, 'pauseIncidentTimer']);
     Route::post('/incidents/{incident}/resume-timer', [StudentController::class, 'resumeIncidentTimer']);
     Route::post('/incidents/{incident}/complete-timer', [StudentController::class, 'completeIncidentTimer']);
+    
+    // Consultation API Routes
+    Route::get('/consultation/messages/{conversation}', [ConsultationController::class, 'getMessages']);
+    Route::post('/consultation/send', [ConsultationController::class, 'sendMessage']);
+    Route::post('/consultation/{conversation}/read', [ConsultationController::class, 'markAsRead']);
 });

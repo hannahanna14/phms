@@ -163,4 +163,11 @@ Route::middleware(['auth'])->group(function () {
     
     // Notifications Routes
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    
+    // Student Management Routes (Admin Only)
+    Route::get('/student-management', [App\Http\Controllers\StudentManagementController::class, 'index'])->name('student-management.index');
+    Route::post('/api/student-management/promote', [App\Http\Controllers\StudentManagementController::class, 'promoteStudents'])->name('student-management.promote');
+    Route::put('/api/student-management/student/{student}', [App\Http\Controllers\StudentManagementController::class, 'updateStudent'])->name('student-management.update-student');
+    Route::get('/api/student-management/students-by-grade', [App\Http\Controllers\StudentManagementController::class, 'getStudentsByGrade'])->name('student-management.students-by-grade');
+    Route::post('/api/student-management/bulk-assign-teacher', [App\Http\Controllers\StudentManagementController::class, 'bulkAssignTeacher'])->name('student-management.bulk-assign-teacher');
 });

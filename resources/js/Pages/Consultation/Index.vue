@@ -1,5 +1,5 @@
 <template>
-    <Head title="Consultation" />
+    <Head title="| Consultation Messages" />
     <div class="chat-container">
         <div class="chat-layout">
             <!-- Sidebar - Conversations List -->
@@ -276,7 +276,7 @@ const selectConversation = async (conversationId) => {
         onSuccess: async () => {
             // After successfully loading the conversation, mark it as read
             try {
-                await fetch(route('consultation.read', conversationId), {
+                await fetch(`/api/consultation/${conversationId}/read`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -302,7 +302,7 @@ const sendMessage = async () => {
     sending.value = true
     
     try {
-        const response = await fetch(route('consultation.send'), {
+        const response = await fetch('/api/consultation/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

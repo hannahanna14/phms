@@ -2,6 +2,28 @@
     <Head title="Create Health Examination" />
     <div class="health-examination-form">
         <div class="white-container">
+            <!-- Student Information Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Health Examination</h1>
+                <p class="text-gray-600">Naawan Central School</p>
+            </div>
+            
+            <!-- Student Details -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4">
+                <div>
+                    <span class="font-semibold text-gray-700">Student:</span> {{ student.full_name }}
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">Grade Level:</span> {{ student.grade_level }}
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">LRN:</span> {{ student.lrn || '10000000001' }}
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">Section:</span> {{ student.section || 'Not Assigned' }}
+                </div>
+            </div>
+            
             <h2 class="text-lg font-semibold mb-4">Create Student Health Examination</h2>
             
             <form @submit.prevent="submit" class="space-y-6">

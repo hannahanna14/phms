@@ -82,7 +82,16 @@ class ErrorLogsController extends Controller
             $query->where('created_at', '<=', $request->get('date_to') . ' 23:59:59');
         }
 
-        return $query->paginate($perPage);
+        $result = $query->paginate($perPage);
+        
+        // Ensure the data structure is correct for the frontend
+        return [
+            'data' => $result->items(),
+            'total' => $result->total(),
+            'per_page' => $result->perPage(),
+            'current_page' => $result->currentPage(),
+            'last_page' => $result->lastPage()
+        ];
     }
 
     /**

@@ -1,5 +1,5 @@
 <template>
-    <Head title="Health Data Export" />
+    <Head title="| Health Data Export" />
     <div class="min-h-screen bg-gray-50 p-6">
         <div class="max-w-6xl mx-auto">
             <!-- Header -->
