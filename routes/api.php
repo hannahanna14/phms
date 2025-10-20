@@ -17,10 +17,9 @@ Route::post('/students', [StudentController::class, 'store']);
 
 // Health Examination API Routes
 Route::middleware(['web', 'auth'])->group(function () {
-    Route::get('/health-examination/{id}', [PupilHealthController::class, 'getHealthExamination']);
     Route::get('/health-examination/student/{studentId}', [PupilHealthController::class, 'getHealthExaminationByGradeYear']);
     
-    // Debug route
+    // Debug route please huhu pasagdi ni don't mind:)
     Route::get('/debug/health-examination/{studentId}', function($studentId, Request $request) {
         try {
             $gradeLevel = $request->query('grade_level');

@@ -14,6 +14,7 @@ import Tooltip from 'primevue/tooltip';
 
 import MainLayout from './Layouts/MainLayout.vue'
 
+
 createInertiaApp({
   title: (title) => `MedPort ${title}`,
   resolve: (name) => {

@@ -215,11 +215,6 @@ class PupilHealthController extends Controller
         }
     }
 
-    public function getHealthExamination($id)
-    {
-        $healthExamination = HealthExamination::findOrFail($id);
-        return response()->json($healthExamination);
-    }
 
     public function getHealthExaminationByGradeYear($studentId, Request $request)
     {
