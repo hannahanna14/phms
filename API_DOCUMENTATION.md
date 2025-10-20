@@ -1,45 +1,8 @@
 # PHMS API Documentation
 
-## Base URL
-```
-https://your-domain.com/api
-```
 
-## Authentication
-Most endpoints require authentication. Include the session cookie or use Laravel Sanctum tokens.
-
-## Endpoints
-
-### Authentication & Users
-```http
-GET /api/user
-Authorization: Bearer {token}
-```
-Returns the authenticated user information.
-
-```http
-GET /api/users
-Authorization: Required
-```
-Returns list of all users with id, full_name, and role.
-
-### Students
-```http
-POST /api/students
-Content-Type: application/json
-
-{
-  "name": "Student Name",
-  "grade": "Grade 1",
-  // other student fields
-}
-```
 
 ### Health Examinations
-```http
-GET /api/health-examination/{id}
-Authorization: Required
-```
 
 ```http
 GET /api/health-examination/student/{studentId}?grade_level={grade}
@@ -47,15 +10,20 @@ Authorization: Required
 ```
 
 ```http
+GET /api/oral-health-examination/student/{studentId}?grade_level={grade}
+Authorization: Required
+```
+
+### wala na ni.
+```http
 GET /api/debug/health-examination/{studentId}?grade_level={grade}
 Authorization: Required
 Description: Debug endpoint for health examinations
 ```
 
-```http
-GET /api/oral-health-examination/student/{studentId}?grade_level={grade}
-Authorization: Required
-```
+
+
+
 
 ### Health Reports
 ```http
