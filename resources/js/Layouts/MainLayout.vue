@@ -262,7 +262,17 @@ const toggleUserMenu = (event) => {
 };
 
 const logout = () => {
-    router.post('/logout');
+    router.post('/logout', {}, {
+        onError: (errors) => {
+            // If logout fails due to CSRF or other issues, force redirect to login
+            console.log('Logout error, forcing redirect to login...');
+            window.location.href = '/login';
+        },
+        onFinish: () => {
+            // Ensure we redirect to login after logout
+            window.location.href = '/login';
+        }
+    });
 };
 
 const sideBarItems = computed(() => {

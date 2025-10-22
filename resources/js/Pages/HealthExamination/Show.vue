@@ -5,8 +5,15 @@ import Button from 'primevue/button';
 import Card from 'primevue/card';
 import Tag from 'primevue/tag';
 import Select from 'primevue/select';
+import HealthTreatmentViewModal from '@/Components/Modals/HealthTreatmentViewModal.vue';
 
 const { student, healthExamination, selectedGrade: propSelectedGrade, userRole } = usePage().props;
+
+// Modal state
+const showTreatmentModal = ref(false);
+const selectedTreatment = ref(null);
+const treatmentTimerStatus = ref(null);
+const treatmentRemainingMinutes = ref(0);
 
 console.log('Props received:', { student, healthExamination, propSelectedGrade });
 console.log('Current URL:', window.location.href);
@@ -165,9 +172,88 @@ const editTreatment = (treatment) => {
     window.location.href = `/health-treatment/${treatment.id}/edit`;
 };
 
-const viewTreatment = (treatment) => {
-    window.location.href = `/health-treatment/${treatment.id}`;
+const viewTreatment = async (treatment) => {
+    try {
+        // Fetch full treatment details with timer status
+        const response = await fetch(`/api/health-treatment/timer-status/${treatment.id}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            selectedTreatment.value = treatment;
+            treatmentTimerStatus.value = data.timer_status;
+            treatmentRemainingMinutes.value = data.remaining_minutes || 0;
+            showTreatmentModal.value = true;
+        } else {
+            console.error('Failed to fetch treatment details');
+            // Fallback to basic modal without timer info
+            selectedTreatment.value = treatment;
+            treatmentTimerStatus.value = null;
+            treatmentRemainingMinutes.value = 0;
+            showTreatmentModal.value = true;
+        }
+    } catch (error) {
+        console.error('Error fetching treatment details:', error);
+        // Fallback to basic modal
+        selectedTreatment.value = treatment;
+        treatmentTimerStatus.value = null;
+        treatmentRemainingMinutes.value = 0;
+        showTreatmentModal.value = true;
+    }
 };
+
+const closeTreatmentModal = () => {
+    showTreatmentModal.value = false;
+    selectedTreatment.value = null;
+    treatmentTimerStatus.value = null;
+    treatmentRemainingMinutes.value = 0;
+};
+
+const refreshExaminationData = async () => {
+    try {
+        const response = await fetch(`/api/health-examination/${student.id}/data?grade=${selectedGrade.value}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Update the examinations data
+            examinations.value = data.examinations || [];
+            console.log('Examination data refreshed');
+        }
+    } catch (error) {
+        console.error('Error refreshing examination data:', error);
+    }
+};
+
+const editTreatmentFromModal = (treatment) => {
+    closeTreatmentModal();
+    window.location.href = `/health-treatment/${treatment.id}/edit`;
+};
+
+
+// Check if we should refresh data on page load
+onMounted(() => {
+    const returnData = sessionStorage.getItem('returnToHealthExam');
+    if (returnData) {
+        const data = JSON.parse(returnData);
+        if (data.shouldRefresh && data.studentId === student.id) {
+            // Clear the flag
+            sessionStorage.removeItem('returnToHealthExam');
+            // Refresh the data after a short delay
+            setTimeout(() => {
+                refreshExaminationData();
+            }, 500);
+        }
+    }
+});
 
 // Remove watch to prevent page reloads - only use @change handler
 
@@ -555,6 +641,17 @@ const viewTreatment = (treatment) => {
                 </div>
             </div>
         </div>
+
+        <!-- Health Treatment View Modal -->
+        <HealthTreatmentViewModal
+            :visible="showTreatmentModal"
+            :treatment="selectedTreatment"
+            :student="student"
+            :timer-status="treatmentTimerStatus"
+            :remaining-minutes="treatmentRemainingMinutes"
+            @close="closeTreatmentModal"
+            @edit="editTreatmentFromModal"
+        />
     </div>
 </template>
 

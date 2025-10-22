@@ -42,6 +42,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -72,22 +73,28 @@ const getAlertClass = () => {
     return 'bg-gray-100 text-gray-800';
 };
 
-const updateTreatment = async () => {
+const updateTreatment = () => {
     if (!canEdit.value) return;
     
     loading.value = true;
-    try {
-        await axios.put(`/api/oral-health-treatment/${props.treatment.id}`, form.value);
-        alert('Oral health treatment updated successfully!');
-        goBack();
-    } catch (error) {
-        alert('Failed to update treatment.');
-    } finally {
-        loading.value = false;
-    }
+    
+    // Use Inertia router for proper form submission
+    router.put(route('oral-health-treatment.update', props.treatment.id), form.value, {
+        onSuccess: () => {
+            loading.value = false;
+        },
+        onError: (errors) => {
+            console.error('Update failed:', errors);
+            loading.value = false;
+        },
+        onFinish: () => {
+            loading.value = false;
+        }
+    });
 };
 
 const goBack = () => {
-    window.history.back();
+    // Go back to the oral health examination page with proper parameters
+    router.visit(`/pupil-health/oral-health-examination/${props.student.id}?grade=${props.treatment.grade_level}`);
 };
 </script>

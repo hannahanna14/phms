@@ -18,6 +18,7 @@ Route::post('/students', [StudentController::class, 'store']);
 // Health Examination API Routes
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/health-examination/student/{studentId}', [PupilHealthController::class, 'getHealthExaminationByGradeYear']);
+    Route::get('/health-examination/{studentId}/data', [PupilHealthController::class, 'getHealthExaminationData']);
     
     // Debug route please huhu pasagdi ni don't mind:)
     Route::get('/debug/health-examination/{studentId}', function($studentId, Request $request) {
@@ -39,6 +40,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         }
     });
     Route::get('/oral-health-examination/student/{studentId}', [PupilHealthController::class, 'getOralHealthByGrade']);
+    Route::get('/oral-health-examination/{studentId}/data', [PupilHealthController::class, 'getOralHealthData']);
     
     // Health Report API Routes
     Route::get('/students/search', [HealthReportController::class, 'searchStudents']);
@@ -58,6 +60,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/notifications/check-unrecorded', [NotificationController::class, 'checkUnrecordedStudents']);
     Route::get('/notifications/check-schedules', [NotificationController::class, 'checkScheduleNotifications']);
     
+    // Health Treatment Update Route
+    Route::put('/health-treatment/{id}', [HealthTreatmentController::class, 'update']);
+    
     // Timer Status API Routes for notifications
     Route::get('/health-treatment/timer-status/{id}', [HealthTreatmentController::class, 'getTimerStatus']);
     Route::get('/oral-health-treatment/timer-status/{id}', [OralHealthTreatmentController::class, 'getTimerStatus']);
@@ -68,6 +73,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/health-treatment/{healthTreatment}/pause-timer', [HealthTreatmentController::class, 'pauseTimer']);
     Route::post('/health-treatment/{healthTreatment}/resume-timer', [HealthTreatmentController::class, 'resumeTimer']);
     Route::post('/health-treatment/{healthTreatment}/complete-timer', [HealthTreatmentController::class, 'completeTimer']);
+    Route::put('/health-treatment/{healthTreatment}/update', [HealthTreatmentController::class, 'update']);
     
     Route::post('/oral-health-treatment/{oralHealthTreatment}/start-timer', [OralHealthTreatmentController::class, 'startTimer']);
     Route::post('/oral-health-treatment/{oralHealthTreatment}/pause-timer', [OralHealthTreatmentController::class, 'pauseTimer']);

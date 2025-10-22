@@ -141,7 +141,10 @@ class OralHealthTreatmentController extends Controller
     {
         // Check if treatment can be edited
         if (!$oralHealthTreatment->canEdit()) {
-            return response()->json(['error' => 'This treatment can no longer be edited (timer expired).'], 403);
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'This treatment can no longer be edited (timer expired).'], 403);
+            }
+            return redirect()->back()->with('error', 'This treatment can no longer be edited (timer expired).');
         }
 
         $validated = $request->validate([
@@ -153,11 +156,20 @@ class OralHealthTreatmentController extends Controller
 
         $oralHealthTreatment->update($validated);
 
-        return response()->json([
-            'treatment' => $oralHealthTreatment,
-            'timer_status' => $oralHealthTreatment->getTimerStatus(),
-            'can_edit' => $oralHealthTreatment->canEdit()
-        ]);
+        // Handle both JSON and Inertia requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'treatment' => $oralHealthTreatment,
+                'timer_status' => $oralHealthTreatment->getTimerStatus(),
+                'can_edit' => $oralHealthTreatment->canEdit()
+            ]);
+        }
+
+        // For Inertia requests, redirect back with success message
+        return redirect()->route('pupil-health.oral-health-exam.show', [
+            'student' => $oralHealthTreatment->student_id,
+            'grade' => $oralHealthTreatment->grade_level
+        ])->with('success', 'Oral health treatment updated successfully.');
     }
 
     public function edit(OralHealthTreatment $oralHealthTreatment)

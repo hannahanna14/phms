@@ -267,6 +267,17 @@
                 </div>
             </div>
         </div>
+
+        <!-- Oral Health Treatment View Modal -->
+        <OralHealthTreatmentViewModal
+            :visible="showOralTreatmentModal"
+            :treatment="selectedOralTreatment"
+            :student="student"
+            :timer-status="oralTreatmentTimerStatus"
+            :remaining-minutes="oralTreatmentRemainingMinutes"
+            @close="closeOralTreatmentModal"
+            @edit="editOralTreatmentFromModal"
+        />
     </div>
 </template>
 
@@ -278,6 +289,7 @@ import Button from 'primevue/button';
 import Card from 'primevue/card';
 import Tag from 'primevue/tag';
 import Select from 'primevue/select';
+import OralHealthTreatmentViewModal from '@/Components/Modals/OralHealthTreatmentViewModal.vue';
 
 const props = defineProps({
     student: {
@@ -294,6 +306,12 @@ const props = defineProps({
     }
 })
 
+// Modal state
+const showOralTreatmentModal = ref(false);
+const selectedOralTreatment = ref(null);
+const oralTreatmentTimerStatus = ref(null);
+const oralTreatmentRemainingMinutes = ref(0);
+
 const printPDF = () => {
     const url = `/oral-health-examination/${props.student.id}/pdf`;
     window.open(url, '_blank');
@@ -303,8 +321,70 @@ const editOralTreatment = (treatment) => {
     window.location.href = `/oral-health-treatment/${treatment.id}/edit`;
 };
 
-const viewOralTreatment = (treatment) => {
-    window.location.href = `/oral-health-treatment/${treatment.id}`;
+const viewOralTreatment = async (treatment) => {
+    try {
+        // Fetch full treatment details with timer status
+        const response = await fetch(`/api/oral-health-treatment/timer-status/${treatment.id}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            selectedOralTreatment.value = treatment;
+            oralTreatmentTimerStatus.value = data.timer_status;
+            oralTreatmentRemainingMinutes.value = data.remaining_minutes || 0;
+            showOralTreatmentModal.value = true;
+        } else {
+            console.error('Failed to fetch oral treatment details');
+            // Fallback to basic modal without timer info
+            selectedOralTreatment.value = treatment;
+            oralTreatmentTimerStatus.value = null;
+            oralTreatmentRemainingMinutes.value = 0;
+            showOralTreatmentModal.value = true;
+        }
+    } catch (error) {
+        console.error('Error fetching oral treatment details:', error);
+        // Fallback to basic modal
+        selectedOralTreatment.value = treatment;
+        oralTreatmentTimerStatus.value = null;
+        oralTreatmentRemainingMinutes.value = 0;
+        showOralTreatmentModal.value = true;
+    }
+};
+
+const closeOralTreatmentModal = () => {
+    showOralTreatmentModal.value = false;
+    selectedOralTreatment.value = null;
+    oralTreatmentTimerStatus.value = null;
+    oralTreatmentRemainingMinutes.value = 0;
+};
+
+const refreshOralHealthData = async () => {
+    try {
+        const response = await fetch(`/api/oral-health-examination/${student.id}/data?grade=${selectedGrade.value}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Update the examinations data
+            examinations.value = data.examinations || [];
+            console.log('Oral health data refreshed');
+        }
+    } catch (error) {
+        console.error('Error refreshing oral health data:', error);
+    }
+};
+
+const editOralTreatmentFromModal = (treatment) => {
+    closeOralTreatmentModal();
+    window.location.href = `/oral-health-treatment/${treatment.id}/edit`;
 };
 
 import axios from 'axios'
@@ -312,6 +392,22 @@ import axios from 'axios'
 const page = usePage()
 
 const gradeLevels = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+
+// Check if we should refresh data on page load
+onMounted(() => {
+    const returnData = sessionStorage.getItem('returnToOralHealth');
+    if (returnData) {
+        const data = JSON.parse(returnData);
+        if (data.shouldRefresh && data.studentId === student.id) {
+            // Clear the flag
+            sessionStorage.removeItem('returnToOralHealth');
+            // Refresh the data after a short delay
+            setTimeout(() => {
+                refreshOralHealthData();
+            }, 500);
+        }
+    }
+});
 
 // Initialize grade from URL parameter, session storage, or flash data
 const initializeGrade = () => {

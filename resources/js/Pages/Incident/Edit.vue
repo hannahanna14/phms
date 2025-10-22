@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm, usePage, router } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
@@ -107,8 +107,8 @@ const form = useForm({
 const updateIncident = () => {
     form.put(route('incident.update', incident.id), {
         onSuccess: () => {
-            // Redirect back to incident list
-            window.location.href = `/pupil-health/incident/${student.id}?grade=${encodeURIComponent(incident.grade_level)}`
+            // Redirect back to incident list using router
+            router.visit(`/pupil-health/incident/${student.id}?grade=${encodeURIComponent(incident.grade_level)}`)
         },
         onError: (errors) => {
             console.log('Form submission failed:', errors)
@@ -117,7 +117,8 @@ const updateIncident = () => {
 }
 
 const goBack = () => {
-    window.history.back()
+    // Go back to the incident page with proper parameters
+    router.visit(`/pupil-health/incident/${student.id}?grade=${encodeURIComponent(incident.grade_level)}`)
 }
 </script>
 

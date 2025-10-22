@@ -107,6 +107,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- Incident View Modal -->
+        <IncidentViewModal
+            :visible="showIncidentModal"
+            :incident="selectedIncident"
+            :student="student"
+            :timer-status="incidentTimerStatus"
+            :remaining-minutes="incidentRemainingMinutes"
+            :user-role="userRole"
+            @close="closeIncidentModal"
+            @edit="editIncidentFromModal"
+        />
     </div>
 </template>
 
@@ -119,6 +131,7 @@ import Select from 'primevue/select'
 import axios from 'axios'
 import { useTimerNotifications } from '@/Utils/timerMixin.js'
 import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
+import IncidentViewModal from '@/Components/Modals/IncidentViewModal.vue'
 
 const { student, userRole, currentGrade } = usePage().props
 
@@ -139,12 +152,34 @@ const props = defineProps({
 
 const incidents = ref([])
 
+// Modal state
+const showIncidentModal = ref(false)
+const selectedIncident = ref(null)
+const incidentTimerStatus = ref(null)
+const incidentRemainingMinutes = ref(0)
+
 // Grade level management
 const gradeLevels = computed(() => {
     const standardGrades = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
     // Convert student grade to match format (e.g., "6" becomes "Grade 6")
     const studentGradeFormatted = isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
     return standardGrades.includes(studentGradeFormatted) ? standardGrades : [...standardGrades, studentGradeFormatted];
+});
+
+// Check if we should refresh data on page load
+onMounted(() => {
+    const returnData = sessionStorage.getItem('returnToIncident');
+    if (returnData) {
+        const data = JSON.parse(returnData);
+        if (data.shouldRefresh && data.studentId === student.id) {
+            // Clear the flag
+            sessionStorage.removeItem('returnToIncident');
+            // Refresh the data after a short delay
+            setTimeout(() => {
+                refreshIncidentData();
+            }, 500);
+        }
+    }
 });
 
 // Initialize selected grade
@@ -355,9 +390,70 @@ onUnmounted(() => {
 });
 
 // View incident details
-const viewIncident = (incident) => {
-    // Navigate to incident view page (you can create this route)
-    window.location.href = `/pupil-health/incident/${incident.id}/view`;
+const viewIncident = async (incident) => {
+    try {
+        // Fetch full incident details with timer status
+        const response = await fetch(`/api/incidents/timer-status/${incident.id}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            selectedIncident.value = incident;
+            incidentTimerStatus.value = data.timer_status;
+            incidentRemainingMinutes.value = data.remaining_minutes || 0;
+            showIncidentModal.value = true;
+        } else {
+            console.error('Failed to fetch incident details');
+            // Fallback to basic modal without timer info
+            selectedIncident.value = incident;
+            incidentTimerStatus.value = null;
+            incidentRemainingMinutes.value = 0;
+            showIncidentModal.value = true;
+        }
+    } catch (error) {
+        console.error('Error fetching incident details:', error);
+        // Fallback to basic modal
+        selectedIncident.value = incident;
+        incidentTimerStatus.value = null;
+        incidentRemainingMinutes.value = 0;
+        showIncidentModal.value = true;
+    }
+};
+
+const closeIncidentModal = () => {
+    showIncidentModal.value = false;
+    selectedIncident.value = null;
+    incidentTimerStatus.value = null;
+    incidentRemainingMinutes.value = 0;
+};
+
+const refreshIncidentData = async () => {
+    try {
+        const response = await fetch(`/api/incidents/student/${student.id}?grade=${selectedGrade.value}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Update the incidents data
+            incidents.value = data.incidents || [];
+            console.log('Incident data refreshed');
+        }
+    } catch (error) {
+        console.error('Error refreshing incident data:', error);
+    }
+};
+
+const editIncidentFromModal = (incident) => {
+    closeIncidentModal();
+    window.location.href = `/pupil-health/incident/${incident.id}/edit`;
 };
 
 // Edit incident

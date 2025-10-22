@@ -1,7 +1,7 @@
 import './bootstrap';
 
 import { createApp, h } from 'vue'
-import { createInertiaApp, Head, Link } from '@inertiajs/vue3'
+import { createInertiaApp, Head, Link, router } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 
@@ -57,3 +57,40 @@ createInertiaApp({
     showSpinner: false,
   },
 })
+
+// Handle CSRF token expiration and other errors
+router.on('error', (errors) => {
+  // Handle 419 CSRF token mismatch errors
+  if (errors.response && errors.response.status === 419) {
+    console.log('CSRF token expired, redirecting to login...');
+    window.location.href = '/login';
+    return;
+  }
+  
+  // Handle 401 Unauthorized errors
+  if (errors.response && errors.response.status === 401) {
+    console.log('Unauthorized, redirecting to login...');
+    window.location.href = '/login';
+    return;
+  }
+  
+  // Handle session expired errors
+  if (errors.response && errors.response.status === 403) {
+    console.log('Session expired, redirecting to login...');
+    window.location.href = '/login';
+    return;
+  }
+});
+
+// Handle global axios errors for CSRF token issues
+window.axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 419) {
+      console.log('CSRF token expired in axios request, redirecting to login...');
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+    return Promise.reject(error);
+  }
+);

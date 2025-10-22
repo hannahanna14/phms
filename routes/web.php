@@ -22,6 +22,11 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest')
     ->name('login');
 
+// CSRF Token refresh route
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+})->name('csrf-token');
+
 // Authenticated Routes Group
 Route::middleware(['auth'])->group(function () {
     //Dashboard
@@ -83,7 +88,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-treatment.edit');
     Route::get('/health-treatment/{healthTreatment}', [HealthTreatmentController::class, 'show'])
         ->name('health-treatment.show');
-    Route::put('/api/health-treatment/{healthTreatment}', [HealthTreatmentController::class, 'update'])
+    Route::put('/health-treatment/{healthTreatment}', [HealthTreatmentController::class, 'update'])
         ->name('health-treatment.update');
     Route::get('/api/health-treatment/{healthTreatment}/timer-status', [HealthTreatmentController::class, 'getTimerStatus'])
         ->name('health-treatment.timer-status');
@@ -99,7 +104,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('oral-health-treatment.edit');
     Route::get('/oral-health-treatment/{oralHealthTreatment}', [OralHealthTreatmentController::class, 'show'])
         ->name('oral-health-treatment.show');
-    Route::put('/api/oral-health-treatment/{oralHealthTreatment}', [OralHealthTreatmentController::class, 'update'])
+    Route::put('/oral-health-treatment/{oralHealthTreatment}', [OralHealthTreatmentController::class, 'update'])
         ->name('oral-health-treatment.update');
 
     // Health Report Routes
