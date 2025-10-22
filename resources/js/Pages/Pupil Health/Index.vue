@@ -26,6 +26,9 @@ const gradeLevel = ref('All');
 const gradeLevels = ref(['All', 'K-2', 1, 2, 3, 4, 5, 6]);
 const searchQuery = ref('');
 
+// Store record type selections separately (not in the data object)
+const recordTypeSelections = ref({});
+
 // Computed property for pupil records with flexible filtering
 const pupilRecords = computed(() => {
     let records = page.props.students || [];
@@ -67,7 +70,12 @@ const pupilRecords = computed(() => {
 
 // Method to view health record for a student
 const viewHealthExam = (student) => {
-    const recordType = student.health_record;
+    const recordType = recordTypeSelections.value[student.id];
+    
+    if (!recordType) {
+        alert('Please select a record type first');
+        return;
+    }
 
     switch(recordType) {
         case 'Health Examination':
@@ -150,7 +158,7 @@ const viewHealthExam = (student) => {
             <Column field="health_record" header="Health Record">
                 <template #body="slotProps">
                     <Select
-                        v-model="slotProps.data.health_record"
+                        v-model="recordTypeSelections[slotProps.data.id]"
                         :options="['Health Examination', 'Oral Health Examination', 'Incident']"
                         class="w-60" placeholder="Select Record Type"
                     />

@@ -811,7 +811,7 @@
                     <td style="padding: 3px; font-size: 6px;">{{ $treatment->chief_complaint ?? '' }}</td>
                     <td style="padding: 3px; font-size: 6px;">{{ $treatment->treatment ?? '' }}</td>
                     <td style="padding: 3px; font-size: 6px;">{{ $treatment->remarks ?? '' }}</td>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->attended_by ?? 'School Nurse' }}</td>
+                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->attended_by ?? '' }}</td>
                 </tr>
                 @endforeach
                 

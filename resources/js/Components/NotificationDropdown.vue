@@ -62,9 +62,12 @@
                 <div 
                     v-for="notification in notifications" 
                     :key="notification.id"
-                    class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                    :class="{ 'bg-blue-50': !notification.read }"
-                    @click="markAsRead(notification.id)"
+                    class="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    :class="[
+                        { 'bg-blue-50': !notification.read },
+                        { 'cursor-pointer': isNotificationClickable(notification) }
+                    ]"
+                    @click="handleNotificationClick(notification)"
                 >
                     <div class="flex items-start space-x-3">
                         <!-- Icon based on type -->
@@ -167,6 +170,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { router } from '@inertiajs/vue3'
 
 // Props
 const props = defineProps({
@@ -198,6 +202,40 @@ const closeDropdown = () => {
 
 const markAsRead = (notificationId) => {
     emit('mark-as-read', notificationId)
+}
+
+const isNotificationClickable = (notification) => {
+    // Determine if notification should be clickable based on type
+    const clickableTypes = [
+        'schedule', 
+        'schedule_reminder', 
+        'schedule_today',
+        'timer_expired',
+        'timer_warning',
+        'treatment'
+    ]
+    return clickableTypes.includes(notification.type)
+}
+
+const handleNotificationClick = (notification) => {
+    // Mark as read first
+    markAsRead(notification.id)
+    
+    // Navigate based on notification type
+    if (notification.type === 'schedule' || 
+        notification.type === 'schedule_reminder' || 
+        notification.type === 'schedule_today') {
+        // Navigate to schedule calendar
+        router.visit('/schedule-calendar')
+        closeDropdown()
+    } else if (notification.type === 'timer_expired' || 
+               notification.type === 'timer_warning' || 
+               notification.type === 'treatment') {
+        // Navigate to pupil health page where users can see all treatments
+        router.visit('/pupil-health')
+        closeDropdown()
+    }
+    // For non-clickable notifications, just mark as read (already done above)
 }
 
 const markAllAsRead = () => {

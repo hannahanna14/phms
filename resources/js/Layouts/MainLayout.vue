@@ -70,6 +70,9 @@
                             >
                                 <i class="pi pi-bars text-gray-700"></i>
                             </button>
+                            <Link href="/" class="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors no-underline">
+                                MedPort
+                            </Link>
                         </template>
                         <template #end>
                             <div class="flex items-center space-x-3">
@@ -262,15 +265,24 @@ const toggleUserMenu = (event) => {
 };
 
 const logout = () => {
+    // Clear all client-side storage first
+    try {
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch (e) {
+        console.error('Error clearing storage:', e);
+    }
+    
     router.post('/logout', {}, {
         onError: (errors) => {
             // If logout fails due to CSRF or other issues, force redirect to login
             console.log('Logout error, forcing redirect to login...');
-            window.location.href = '/login';
+            // Force a full page reload to clear any cached state
+            window.location.replace('/login');
         },
         onFinish: () => {
-            // Ensure we redirect to login after logout
-            window.location.href = '/login';
+            // Ensure we redirect to login after logout with full page reload
+            window.location.replace('/login');
         }
     });
 };

@@ -11,15 +11,15 @@ import { usePage, router } from '@inertiajs/vue3'
 
 const page = usePage()
 
-// Year filter
+// Year filter - Generate years dynamically
 const selectedYear = ref('All')
+const currentYear = new Date().getFullYear()
 const availableYears = ref([
     { label: 'All', value: 'All' },
-    { label: '2024', value: '2024' },
-    { label: '2023', value: '2023' },
-    { label: '2022', value: '2022' },
-    { label: '2021', value: '2021' },
-    { label: '2020', value: '2020' }
+    ...Array.from({ length: 7 }, (_, i) => {
+        const year = currentYear - i
+        return { label: year.toString(), value: year.toString() }
+    })
 ])
 
 // Reactive variables for student statistics
@@ -157,15 +157,15 @@ const updateChart = (graphType) => {
             dynamicChartData.value = {
                 labels: ['Dewormed', 'Not Dewormed'],
                 datasets: [{
-                    data: [dashboardData.value.deworming?.dewormed || 15, dashboardData.value.deworming?.notDewormed || 8],
+                    data: [dashboardData.value.deworming?.dewormed || 0, dashboardData.value.deworming?.notDewormed || 0],
                     backgroundColor: ['#10B981', '#EF4444']
                 }]
             }
             dynamicChartOptions.value.plugins.title.text = 'Deworming Status'
             currentChartType.value = 'doughnut'
             summaryStats.value = [
-                { label: 'Dewormed', value: dashboardData.value.deworming?.dewormed || 15, color: 'green' },
-                { label: 'Not Dewormed', value: dashboardData.value.deworming?.notDewormed || 8, color: 'red' }
+                { label: 'Dewormed', value: dashboardData.value.deworming?.dewormed || 0, color: 'green' },
+                { label: 'Not Dewormed', value: dashboardData.value.deworming?.notDewormed || 0, color: 'red' }
             ]
             break
             
@@ -173,36 +173,37 @@ const updateChart = (graphType) => {
             const bmiData = dashboardData.value.nutritionalStatusBMI || []
             
             // Always show all 5 BMI categories for better visualization
+            const totalBMI = (dashboardData.value.nutritionalStatusBMI?.reduce((sum, item) => sum + item.count, 0)) || 0
+            const normalBMI = dashboardData.value.nutritionalStatusBMI?.find(item => 
+                item.nutritional_status_bmi === 'Normal' || 
+                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Normal'))
+            )?.count || 0
+            const underweightBMI = (dashboardData.value.nutritionalStatusBMI?.find(item => 
+                item.nutritional_status_bmi === 'Underweight' || 
+                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Underweight'))
+            )?.count || 0) + 
+            (dashboardData.value.nutritionalStatusBMI?.find(item => 
+                item.nutritional_status_bmi === 'Severely Underweight' || 
+                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Severely'))
+            )?.count || 0)
+            const overweightBMI = (dashboardData.value.nutritionalStatusBMI?.find(item => 
+                item.nutritional_status_bmi === 'Overweight' || 
+                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Overweight'))
+            )?.count || 0) + 
+            (dashboardData.value.nutritionalStatusBMI?.find(item => 
+                item.nutritional_status_bmi === 'Obese' || 
+                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Obese'))
+            )?.count || 0)
+            
             dynamicChartData.value = {
                 labels: ['Normal (18.5-24.9)', 'Underweight (16.0-18.4)', 'Severely Underweight (<16.0)', 'Overweight (25.0-29.9)', 'Obese (≥30.0)'],
                 datasets: [{
-                    data: [15, 3, 1, 3, 1], // Demo data for visualization
+                    data: [normalBMI, underweightBMI, 0, overweightBMI, 0],
                     backgroundColor: generateColors(5)
                 }]
             }
             dynamicChartOptions.value.plugins.title.text = 'BMI Distribution (WHO Standards)'
             currentChartType.value = 'doughnut'
-            const totalBMI = (dashboardData.value.nutritionalStatusBMI?.reduce((sum, item) => sum + item.count, 0)) || 23
-            const normalBMI = dashboardData.value.nutritionalStatusBMI?.find(item => 
-                item.nutritional_status_bmi === 'Normal' || 
-                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Normal'))
-            )?.count || 15
-            const underweightBMI = (dashboardData.value.nutritionalStatusBMI?.find(item => 
-                item.nutritional_status_bmi === 'Underweight' || 
-                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Underweight'))
-            )?.count || 3) + 
-            (dashboardData.value.nutritionalStatusBMI?.find(item => 
-                item.nutritional_status_bmi === 'Severely Underweight' || 
-                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Severely'))
-            )?.count || 1)
-            const overweightBMI = (dashboardData.value.nutritionalStatusBMI?.find(item => 
-                item.nutritional_status_bmi === 'Overweight' || 
-                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Overweight'))
-            )?.count || 3) + 
-            (dashboardData.value.nutritionalStatusBMI?.find(item => 
-                item.nutritional_status_bmi === 'Obese' || 
-                (item.nutritional_status_bmi && item.nutritional_status_bmi.includes('Obese'))
-            )?.count || 1)
             summaryStats.value = [
                 { label: 'Normal BMI', value: normalBMI, color: 'green' },
                 { label: 'Underweight', value: underweightBMI, color: 'orange' },
@@ -217,15 +218,15 @@ const updateChart = (graphType) => {
             const normalHeight = dashboardData.value.nutritionalStatusHeight?.find(item => 
                 item.nutritional_status_height === 'Normal' || 
                 (item.nutritional_status_height && item.nutritional_status_height.includes('Normal'))
-            )?.count || 5
+            )?.count || 0
             const mildStunting = dashboardData.value.nutritionalStatusHeight?.find(item => 
                 item.nutritional_status_height === 'Mild Stunting' || 
                 (item.nutritional_status_height && item.nutritional_status_height.includes('Mild'))
-            )?.count || 4
+            )?.count || 0
             const severeStunting = dashboardData.value.nutritionalStatusHeight?.find(item => 
                 item.nutritional_status_height === 'Severe Stunting' || 
                 (item.nutritional_status_height && item.nutritional_status_height.includes('Severe'))
-            )?.count || 1
+            )?.count || 0
             
             dynamicChartData.value = {
                 labels: ['Normal (≥-2 SD)', 'Mild Stunting (-2 to -3 SD)', 'Severe Stunting (<-3 SD)'],
@@ -247,15 +248,15 @@ const updateChart = (graphType) => {
             dynamicChartData.value = {
                 labels: ['Positive', 'Negative'],
                 datasets: [{
-                    data: [dashboardData.value.ironSupplement?.positive || 15, dashboardData.value.ironSupplement?.negative || 8],
+                    data: [dashboardData.value.ironSupplement?.positive || 0, dashboardData.value.ironSupplement?.negative || 0],
                     backgroundColor: ['#10B981', '#EF4444']
                 }]
             }
             dynamicChartOptions.value.plugins.title.text = 'Iron Supplementation Status'
             currentChartType.value = 'doughnut'
             summaryStats.value = [
-                { label: 'Positive', value: dashboardData.value.ironSupplement?.positive || 15, color: 'green' },
-                { label: 'Negative', value: dashboardData.value.ironSupplement?.negative || 8, color: 'red' }
+                { label: 'Positive', value: dashboardData.value.ironSupplement?.positive || 0, color: 'green' },
+                { label: 'Negative', value: dashboardData.value.ironSupplement?.negative || 0, color: 'red' }
             ]
             break
             

@@ -112,9 +112,9 @@ class OralHealthTreatment extends Model
      */
     public function canEdit()
     {
-        // Teachers have view-only access
+        // Only nurses can edit treatments (not teachers or admins)
         $user = auth()->user();
-        if ($user && $user->role === 'teacher') {
+        if ($user && $user->role !== 'nurse') {
             return false;
         }
         

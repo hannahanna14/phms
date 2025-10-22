@@ -33,6 +33,42 @@
                             </div>
 
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">School ID</label>
+                                <InputText 
+                                    v-model="form.school_id" 
+                                    placeholder="Enter school ID"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
+                                <InputText 
+                                    v-model="form.region" 
+                                    placeholder="Enter region"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Division</label>
+                                <InputText 
+                                    v-model="form.division" 
+                                    placeholder="Enter division"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Telephone No</label>
+                                <InputText 
+                                    v-model="form.telephone_no" 
+                                    placeholder="Enter telephone number"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">School Address</label>
                                 <Textarea 
                                     v-model="form.school_address" 
@@ -137,6 +173,10 @@ const currentLogo = ref(props.settings?.school_logo_url || null)
 // Initialize form with current settings or defaults
 const form = useForm({
     school_name: props.settings?.school_name || '',
+    school_id: props.settings?.school_id || '',
+    region: props.settings?.region || '',
+    division: props.settings?.division || '',
+    telephone_no: props.settings?.telephone_no || '',
     school_address: props.settings?.school_address || '',
     school_phone: props.settings?.school_phone || '',
     school_email: props.settings?.school_email || '',

@@ -651,7 +651,7 @@ class StudentController extends Controller
 
     public function editIncident(Incident $incident)
     {
-        // Only nurses can edit incidents
+        // Only nurses can edit incidents (not admins)
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can edit incidents.');
         }
@@ -666,7 +666,7 @@ class StudentController extends Controller
 
     public function updateIncident(Request $request, Incident $incident)
     {
-        // Only nurses can update incidents
+        // Only nurses can update incidents (not admins)
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can update incidents.');
         }

@@ -61,11 +61,24 @@ class AuthenticatedSessionController extends Controller
                 ->log('User logged out');
         }
 
-        Auth::logout();
+        // Clear authentication
+        Auth::guard('web')->logout();
 
+        // Invalidate the session
         $request->session()->invalidate();
+        
+        // Regenerate CSRF token
         $request->session()->regenerateToken();
+        
+        // Flush all session data
+        $request->session()->flush();
 
-        return redirect('/login');
+        // Redirect with cache control headers to prevent back button issues
+        return redirect('/login')
+            ->withHeaders([
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
     }
 }

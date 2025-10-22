@@ -41,7 +41,7 @@ class HealthTreatmentController extends Controller
         ]);
 
         // Add the current user's name as attended_by
-        $validated['attended_by'] = auth()->user()->name ?? 'School Nurse';
+        $validated['attended_by'] = auth()->user()->full_name ?? 'School Nurse';
 
         // Debug log the validated data
         \Log::info('Health Treatment Store - Validated Data:', $validated);
@@ -140,6 +140,11 @@ class HealthTreatmentController extends Controller
 
     public function edit(HealthTreatment $healthTreatment)
     {
+        // Only nurses can edit health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can edit health treatments.');
+        }
+        
         // Check if treatment can be edited
         if (!$healthTreatment->canEdit()) {
             return redirect()->back()->with('error', 'This treatment can no longer be edited (timer expired).');
@@ -165,6 +170,14 @@ class HealthTreatmentController extends Controller
 
     public function update(Request $request, HealthTreatment $healthTreatment)
     {
+        // Only nurses can update health treatments
+        if (auth()->user()->role !== 'nurse') {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Access denied. Only nurses can update health treatments.'], 403);
+            }
+            abort(403, 'Access denied. Only nurses can update health treatments.');
+        }
+        
         // Check if treatment can be edited
         if (!$healthTreatment->canEdit()) {
             if ($request->expectsJson()) {

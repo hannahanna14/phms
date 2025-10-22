@@ -41,7 +41,7 @@ class OralHealthTreatmentController extends Controller
         ]);
 
         // Add the current user's name as attended_by
-        $validated['attended_by'] = auth()->user()->name ?? 'School Nurse';
+        $validated['attended_by'] = auth()->user()->full_name ?? 'School Nurse';
 
         // Debug log the validated data
         Log::info('Oral Health Treatment Store - Validated Data:', $validated);
@@ -139,6 +139,14 @@ class OralHealthTreatmentController extends Controller
 
     public function update(Request $request, OralHealthTreatment $oralHealthTreatment)
     {
+        // Only nurses can update oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Access denied. Only nurses can update oral health treatments.'], 403);
+            }
+            abort(403, 'Access denied. Only nurses can update oral health treatments.');
+        }
+        
         // Check if treatment can be edited
         if (!$oralHealthTreatment->canEdit()) {
             if ($request->expectsJson()) {
@@ -174,6 +182,11 @@ class OralHealthTreatmentController extends Controller
 
     public function edit(OralHealthTreatment $oralHealthTreatment)
     {
+        // Only nurses can edit oral health treatments
+        if (auth()->user()->role !== 'nurse') {
+            abort(403, 'Access denied. Only nurses can edit oral health treatments.');
+        }
+        
         // Check if treatment can be edited
         if (!$oralHealthTreatment->canEdit()) {
             return redirect()->back()->with('error', 'This treatment can no longer be edited (timer expired).');

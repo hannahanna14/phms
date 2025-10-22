@@ -37,7 +37,13 @@
         }
 
         $value = $gradeData->$field ?? null;
-        return $value !== null ? $value : '';
+        
+        // Return 0 if value is 0, empty string if null or empty
+        if ($value === 0 || $value === '0') {
+            return 0;
+        }
+        
+        return $value !== null && $value !== '' ? $value : '';
     }
 @endphp
 
@@ -2733,7 +2739,7 @@
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->chief_complaint ?? '' }}</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->treatment ?? '' }}</td>
                     <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->remarks ?? '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">nurse</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->attended_by ?? '' }}</td>
                 </tr>
                 @empty
                 @endforelse

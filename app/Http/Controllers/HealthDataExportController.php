@@ -46,6 +46,7 @@ class HealthDataExportController extends Controller
 
         // Get health examinations data
         $query = \App\Models\HealthExamination::with('student')
+            ->whereHas('student') // Only include records with existing students
             ->orderBy('examination_date', 'desc');
 
         // Apply filters
@@ -190,6 +191,7 @@ class HealthDataExportController extends Controller
 
         // Get oral health examinations data
         $query = \App\Models\OralHealthExamination::with('student')
+            ->whereHas('student') // Only include records with existing students
             ->orderBy('examination_date', 'desc');
 
         // Apply filters
@@ -347,6 +349,7 @@ class HealthDataExportController extends Controller
 
         // Get health treatments data
         $query = \App\Models\HealthTreatment::with('student')
+            ->whereHas('student') // Only include records with existing students
             ->orderBy('date', 'desc');
 
         // Apply filters
@@ -443,6 +446,7 @@ class HealthDataExportController extends Controller
 
         // Get oral health treatments data
         $query = \App\Models\OralHealthTreatment::with('student')
+            ->whereHas('student') // Only include records with existing students
             ->orderBy('date', 'desc');
 
         // Apply filters
@@ -539,6 +543,7 @@ class HealthDataExportController extends Controller
 
         // Get incidents data
         $query = \App\Models\Incident::with('student')
+            ->whereHas('student') // Only include records with existing students
             ->orderBy('date', 'desc');
 
         // Apply filters

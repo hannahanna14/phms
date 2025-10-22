@@ -28,6 +28,7 @@ class NotificationController extends Controller
 
         // Check Health Treatment timers (admins and nurses only)
         $healthTreatments = HealthTreatment::with('student')
+            ->whereHas('student') // Only include treatments with existing students
             ->where('timer_status', 'active')
             ->get();
 
@@ -59,6 +60,7 @@ class NotificationController extends Controller
 
         // Check Oral Health Treatment timers (admins and nurses only)
         $oralHealthTreatments = OralHealthTreatment::with('student')
+            ->whereHas('student') // Only include treatments with existing students
             ->where('timer_status', 'active')
             ->get();
 
@@ -89,6 +91,7 @@ class NotificationController extends Controller
 
         // Check Incident timers (admins and nurses only)
         $incidents = Incident::with('student')
+            ->whereHas('student') // Only include incidents with existing students
             ->where('timer_status', 'active')
             ->get();
 

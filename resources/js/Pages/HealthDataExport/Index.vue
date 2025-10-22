@@ -25,28 +25,6 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            <!-- Date Range -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                                    <DatePicker 
-                                        v-model="healthExamFilters.date_from" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select start date"
-                                        class="w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                                    <DatePicker 
-                                        v-model="healthExamFilters.date_to" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select end date"
-                                        class="w-full"
-                                    />
-                                </div>
-                            </div>
-
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -95,28 +73,6 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            <!-- Date Range -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                                    <DatePicker 
-                                        v-model="oralHealthExamFilters.date_from" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select start date"
-                                        class="w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                                    <DatePicker 
-                                        v-model="oralHealthExamFilters.date_to" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select end date"
-                                        class="w-full"
-                                    />
-                                </div>
-                            </div>
-
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -165,28 +121,6 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            <!-- Date Range -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                                    <DatePicker 
-                                        v-model="healthTreatmentFilters.date_from" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select start date"
-                                        class="w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                                    <DatePicker 
-                                        v-model="healthTreatmentFilters.date_to" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select end date"
-                                        class="w-full"
-                                    />
-                                </div>
-                            </div>
-
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -223,28 +157,6 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            <!-- Date Range -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                                    <DatePicker 
-                                        v-model="oralHealthTreatmentFilters.date_from" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select start date"
-                                        class="w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                                    <DatePicker 
-                                        v-model="oralHealthTreatmentFilters.date_to" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select end date"
-                                        class="w-full"
-                                    />
-                                </div>
-                            </div>
-
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -281,28 +193,6 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
-                            <!-- Date Range -->
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                                    <DatePicker 
-                                        v-model="incidentFilters.date_from" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select start date"
-                                        class="w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                                    <DatePicker 
-                                        v-model="incidentFilters.date_to" 
-                                        dateFormat="yy-mm-dd"
-                                        placeholder="Select end date"
-                                        class="w-full"
-                                    />
-                                </div>
-                            </div>
-
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -322,35 +212,6 @@
                                     @click="exportIncidents('csv')"
                                     :loading="loading.incident"
                                     class="!bg-red-600 !border-red-600 hover:!bg-red-700 w-full"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Export All Data -->
-                <div class="bg-white rounded-lg shadow-md">
-                    <div class="bg-gray-800 text-white p-4 rounded-t-lg">
-                        <h2 class="text-lg font-medium flex items-center">
-                            <i class="pi pi-database mr-2"></i>
-                            Export All Data
-                        </h2>
-                        <p class="text-gray-300 text-sm">Export all health data in one comprehensive file</p>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="text-center text-gray-600 text-sm">
-                                This will export all health examinations, treatments, and incidents in separate CSV files.
-                            </div>
-
-                            <!-- Export All Button -->
-                            <div class="pt-2">
-                                <Button 
-                                    label="Export All Data (CSV)" 
-                                    icon="pi pi-download"
-                                    @click="exportAllData()"
-                                    :loading="loading.all"
-                                    class="!bg-gray-800 !border-gray-800 hover:!bg-gray-900 w-full"
                                 />
                             </div>
                         </div>
