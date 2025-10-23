@@ -133,22 +133,38 @@
                                 <div v-if="availableUsers.length === 0" class="text-center py-4 text-gray-500">
                                     No users available
                                 </div>
-                                <div v-else class="space-y-2">
-                                    <div v-for="user in availableUsers" :key="user.id" class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                <div v-else>
+                                    <!-- Select All Checkbox -->
+                                    <div class="flex items-center space-x-3 p-2 bg-gray-100 rounded mb-2 border-b-2 border-gray-300">
                                         <input 
                                             type="checkbox" 
-                                            :id="`user-${user.id}`"
-                                            :value="user.id"
-                                            v-model="selectedUsers"
+                                            id="select-all-users"
+                                            :checked="isAllSelected"
+                                            @change="toggleSelectAll"
                                             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                         >
-                                        <div class="flex items-center space-x-2 flex-1">
-                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                                {{ user.full_name ? user.full_name.charAt(0).toUpperCase() : '?' }}
-                                            </div>
-                                            <div>
-                                                <div class="font-medium text-sm">{{ user.full_name || 'Unknown User' }}</div>
-                                                <div class="text-xs text-gray-500 capitalize">{{ user.role || 'No role' }}</div>
+                                        <label for="select-all-users" class="font-semibold text-sm text-gray-700 cursor-pointer">
+                                            Select All ({{ availableUsers.length }} users)
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="space-y-2">
+                                        <div v-for="user in availableUsers" :key="user.id" class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                                            <input 
+                                                type="checkbox" 
+                                                :id="`user-${user.id}`"
+                                                :value="user.id"
+                                                v-model="selectedUsers"
+                                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            >
+                                            <div class="flex items-center space-x-2 flex-1">
+                                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                                    {{ user.full_name ? user.full_name.charAt(0).toUpperCase() : '?' }}
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium text-sm">{{ user.full_name || 'Unknown User' }}</div>
+                                                    <div class="text-xs text-gray-500 capitalize">{{ user.role || 'No role' }}</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -231,7 +247,7 @@
 
 <script setup>
 import { Head, useForm, router } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -269,6 +285,7 @@ const form = useForm({
     status: 'scheduled',
     location: '',
     attendees: [''],
+    selected_users: [],
     notes: ''
 })
 
@@ -305,6 +322,22 @@ const removeUser = (userId) => {
     const index = selectedUsers.value.indexOf(userId)
     if (index > -1) {
         selectedUsers.value.splice(index, 1)
+    }
+}
+
+// Select All functionality
+const isAllSelected = computed(() => {
+    return availableUsers.value.length > 0 && 
+           selectedUsers.value.length === availableUsers.value.length
+})
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        // Deselect all
+        selectedUsers.value = []
+    } else {
+        // Select all
+        selectedUsers.value = availableUsers.value.map(user => user.id)
     }
 }
 
@@ -416,6 +449,9 @@ const submit = () => {
     
     // Filter out empty attendees
     form.attendees = form.attendees.filter(attendee => attendee.trim() !== '')
+    
+    // Add selected users to form data
+    form.selected_users = selectedUsers.value
     
     form.put(route('schedule-calendar.update', props.schedule.id), {
         onSuccess: () => {

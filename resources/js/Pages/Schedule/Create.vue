@@ -133,6 +133,20 @@
                                 No users available
                             </div>
                             <div v-else class="border rounded-lg p-4 max-h-60 overflow-y-auto">
+                                <!-- Select All Checkbox -->
+                                <div class="flex items-center space-x-3 p-2 bg-gray-100 rounded mb-2 border-b-2 border-gray-300">
+                                    <input 
+                                        type="checkbox" 
+                                        id="select-all-users"
+                                        :checked="isAllSelected"
+                                        @change="toggleSelectAll"
+                                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    >
+                                    <label for="select-all-users" class="font-semibold text-sm text-gray-700 cursor-pointer">
+                                        Select All ({{ availableUsers.length }} users)
+                                    </label>
+                                </div>
+                                
                                 <div class="space-y-2">
                                     <div v-for="user in availableUsers" :key="user.id" class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
                                         <input 
@@ -231,7 +245,7 @@
 
 <script setup>
 import { Head, useForm, router } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -347,6 +361,22 @@ const removeUser = (userId) => {
     const index = selectedUsers.value.indexOf(userId)
     if (index > -1) {
         selectedUsers.value.splice(index, 1)
+    }
+}
+
+// Select All functionality
+const isAllSelected = computed(() => {
+    return availableUsers.value.length > 0 && 
+           selectedUsers.value.length === availableUsers.value.length
+})
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        // Deselect all
+        selectedUsers.value = []
+    } else {
+        // Select all
+        selectedUsers.value = availableUsers.value.map(user => user.id)
     }
 }
 

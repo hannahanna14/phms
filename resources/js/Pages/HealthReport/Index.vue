@@ -404,7 +404,7 @@ const searchLoading = ref(false);
 const searchQuery = ref('');
 
 // Options
-const sectionOptions = ['A', 'B', 'C', 'D', 'E', 'F'];
+const sectionOptions = ['All', 'A', 'B', 'C', 'D', 'E', 'F'];
 const genderOptions = ['All', 'Male', 'Female'];
 const sortOptions = [
     'Name (A-Z)',

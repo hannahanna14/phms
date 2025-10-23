@@ -169,7 +169,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($reportData as $student)
+            @forelse($reportData as $student)
                 <tr>
                     @if(in_array('name', $fields)) <td class="col-name">{{ $student['name'] ?? 'N/A' }}</td> @endif
                     @if(in_array('lrn', $fields)) <td class="col-lrn">{{ $student['lrn'] ?? 'N/A' }}</td> @endif
@@ -189,7 +189,13 @@
                         <td class="{{ $columnClass }}">{{ $student['health_exam'][$field] ?? 'N/A' }}</td>
                     @endforeach
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="100" style="text-align: center; padding: 20px; color: #666;">
+                        No students found matching the selected criteria.
+                    </td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 

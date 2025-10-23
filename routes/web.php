@@ -17,7 +17,7 @@ Route::inertia('/', 'Home')->name('home');
 Route::inertia('/register', 'Auth/Register')->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 
-Route::inertia('/login', 'Auth/Login')->name('login');
+Route::inertia('/login', 'Auth/Login')->middleware('guest')->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest')
     ->name('login');

@@ -153,6 +153,7 @@ const viewHealthExam = (student) => {
                 </template>
             </Column>
             <Column field="grade_level" header="Grade Level"></Column>
+            <Column field="section" header="Section"></Column>
             <Column field="lrn" header="LRN"></Column>
             <Column field="school_year" header="School Year"></Column>
             <Column field="health_record" header="Health Record">

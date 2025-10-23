@@ -118,7 +118,8 @@ class HealthReportController extends Controller
                 $studentsQuery->where('grade_level', $gradeLevel);
             }
             
-            if ($request->section) {
+            // Apply section filter (skip if "All" is selected)
+            if ($request->section && $request->section !== 'All') {
                 $studentsQuery->where('section', $request->section);
             }
 
@@ -301,7 +302,8 @@ class HealthReportController extends Controller
                     $studentsQuery->where('grade_level', $gradeLevel);
                 }
                 
-                if ($request->section) {
+                // Apply section filter (skip if "All" is selected)
+                if ($request->section && $request->section !== 'All') {
                     $studentsQuery->where('section', $request->section);
                 }
 
@@ -337,7 +339,20 @@ class HealthReportController extends Controller
                     $studentsQuery->orderBy('full_name', 'asc');
             }
             
+            // Debug logging
+            Log::info('PDF Export Query Debug', [
+                'grade_level' => $gradeLevel,
+                'section' => $request->section,
+                'query_sql' => $studentsQuery->toSql(),
+                'query_bindings' => $studentsQuery->getBindings()
+            ]);
+            
             $students = $studentsQuery->get();
+            
+            Log::info('PDF Export Students Found', [
+                'count' => $students->count(),
+                'student_ids' => $students->pluck('id')->toArray()
+            ]);
 
             $reportData = [];
 

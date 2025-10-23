@@ -4,6 +4,7 @@ import { createApp, h } from 'vue'
 import { createInertiaApp, Head, Link, router } from '@inertiajs/vue3'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
+import axios from 'axios'
 
 // PrimeVue
 import PrimeVue from 'primevue/config';
@@ -14,6 +15,14 @@ import Tooltip from 'primevue/tooltip';
 
 import MainLayout from './Layouts/MainLayout.vue'
 
+// Configure Axios to use CSRF token from meta tag
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+const token = document.head.querySelector('meta[name="csrf-token"]');
+if (token) {
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+} else {
+    console.error('CSRF token not found');
+}
 
 createInertiaApp({
   title: (title) => `MedPort ${title}`,

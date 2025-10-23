@@ -48,50 +48,60 @@ class StudentSeeder extends Seeder
         ];
         
         $grades = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+        $sections = ['A', 'B', 'C'];
         $studentId = 1;
         
         foreach ($grades as $grade) {
-            $studentsPerGrade = ($grade === 'Kinder 2') ? 14 : 15;
+            $studentsPerGrade = ($grade === 'Kinder 2') ? 90 : 90;
+            $studentsPerSection = ceil($studentsPerGrade / count($sections));
             
-            for ($i = 0; $i < $studentsPerGrade; $i++) {
-                $gender = rand(0, 1) ? 'Male' : 'Female';
-                $firstName = $gender === 'Male' 
-                    ? $maleFirstNames[array_rand($maleFirstNames)]
-                    : $femaleFirstNames[array_rand($femaleFirstNames)];
-                $lastName = $lastNames[array_rand($lastNames)];
+            foreach ($sections as $sectionIndex => $section) {
+                $studentsInThisSection = ($sectionIndex === count($sections) - 1) 
+                    ? ($studentsPerGrade - ($studentsPerSection * $sectionIndex))
+                    : $studentsPerSection;
                 
-                // Calculate age based on grade level
-                $baseAge = match($grade) {
-                    'Kinder 2' => 5,
-                    'Grade 1' => 6,
-                    'Grade 2' => 7,
-                    'Grade 3' => 8,
-                    'Grade 4' => 9,
-                    'Grade 5' => 10,
-                    'Grade 6' => 11,
-                };
-                
-                $age = $baseAge + rand(0, 1);
-                $birthDate = Carbon::now()->subYears($age)->subMonths(rand(0, 11))->subDays(rand(0, 30));
-                
-                Student::create([
-                    'full_name' => $firstName . ' ' . $lastName,
-                    'sex' => $gender,
-                    'age' => $age,
-                    'date_of_birth' => $birthDate,
-                    'birthplace' => $birthplaces[array_rand($birthplaces)],
-                    'parent_guardian' => $this->generateParentName($lastName),
-                    'address' => $addresses[array_rand($addresses)],
-                    'grade_level' => $grade,
-                    'lrn' => '1' . str_pad($studentId, 11, '0', STR_PAD_LEFT),
-                    'school_year' => $schoolYear
-                ]);
-                
-                $studentId++;
+                for ($i = 0; $i < $studentsInThisSection; $i++) {
+                    $gender = rand(0, 1) ? 'Male' : 'Female';
+                    $firstName = $gender === 'Male' 
+                        ? $maleFirstNames[array_rand($maleFirstNames)]
+                        : $femaleFirstNames[array_rand($femaleFirstNames)];
+                    $lastName = $lastNames[array_rand($lastNames)];
+                    
+                    // Calculate age based on grade level
+                    $baseAge = match($grade) {
+                        'Kinder 2' => 5,
+                        'Grade 1' => 6,
+                        'Grade 2' => 7,
+                        'Grade 3' => 8,
+                        'Grade 4' => 9,
+                        'Grade 5' => 10,
+                        'Grade 6' => 11,
+                    };
+                    
+                    $age = $baseAge + rand(0, 1);
+                    $birthDate = Carbon::now()->subYears($age)->subMonths(rand(0, 11))->subDays(rand(0, 30));
+                    
+                    Student::create([
+                        'full_name' => $firstName . ' ' . $lastName,
+                        'sex' => $gender,
+                        'age' => $age,
+                        'date_of_birth' => $birthDate,
+                        'birthplace' => $birthplaces[array_rand($birthplaces)],
+                        'parent_guardian' => $this->generateParentName($lastName),
+                        'address' => $addresses[array_rand($addresses)],
+                        'grade_level' => $grade,
+                        'section' => $section,
+                        'lrn' => '1' . str_pad($studentId, 11, '0', STR_PAD_LEFT),
+                        'school_year' => $schoolYear,
+                        'is_active' => true
+                    ]);
+                    
+                    $studentId++;
+                }
             }
         }
         
-        $this->command->info('Created 100 students with realistic Filipino names across all grade levels');
+        $this->command->info('Created 630 students (90 per grade level) with realistic Filipino names across all grade levels and sections');
     }
     
     private function generateParentName($lastName)

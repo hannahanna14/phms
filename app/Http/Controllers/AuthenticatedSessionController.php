@@ -16,6 +16,11 @@ class AuthenticatedSessionController extends Controller
             'password' => 'required|string'
         ]);
 
+        // Logout any existing session first
+        if (Auth::check()) {
+            Auth::logout();
+        }
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
@@ -49,36 +54,35 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request)
     {
-        // Log logout before actually logging out
-        if (Auth::check()) {
-            activity()
-                ->causedBy(Auth::user())
-                ->withProperties([
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'logout_time' => now()
-                ])
-                ->log('User logged out');
-        }
-
-        // Clear authentication
-        Auth::guard('web')->logout();
-
-        // Invalidate the session
-        $request->session()->invalidate();
+        // Store user ID for async logging (before logout)
+        $userId = Auth::id();
+        $ipAddress = $request->ip();
         
-        // Regenerate CSRF token
+        // Clear authentication immediately
+        Auth::guard('web')->logout();
+        
+        // Flush session data immediately without full invalidation
+        $request->session()->flush();
         $request->session()->regenerateToken();
         
-        // Flush all session data
-        $request->session()->flush();
+        // Log logout asynchronously (after response is sent) - only if needed
+        if ($userId && config('app.log_user_activity', false)) {
+            dispatch(function () use ($userId, $ipAddress) {
+                try {
+                    activity()
+                        ->causedBy($userId)
+                        ->withProperties([
+                            'ip_address' => $ipAddress,
+                            'logout_time' => now()
+                        ])
+                        ->log('User logged out');
+                } catch (\Exception $e) {
+                    // Silently fail - don't block logout
+                }
+            })->afterResponse();
+        }
 
-        // Redirect with cache control headers to prevent back button issues
-        return redirect('/login')
-            ->withHeaders([
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
+        // Return simple redirect without Inertia
+        return redirect('/login');
     }
 }

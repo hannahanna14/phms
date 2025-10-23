@@ -26,49 +26,56 @@ class StudentTeacherAssignmentSeeder extends Seeder
             return;
         }
 
-        // Define grade level mapping for teachers
+        // Define grade level and section mapping for teachers
+        // Each teacher handles ONE grade level and ONE section
         $gradeTeacherMapping = [
-            'Kinder 2' => 'mariasantos',
-            'Grade 1' => 'josemiguel', 
-            'Grade 2' => 'analuz',
-            'Grade 3' => 'robertocarlos',
-            'Grade 4' => 'carmenrosa',
-            'Grade 5' => 'eduardoramos',
-            'Grade 6' => 'luzmarina'
+            ['grade' => 'Kinder 2', 'section' => 'A', 'username' => 'mariasantos'],
+            ['grade' => 'Grade 1', 'section' => 'A', 'username' => 'josemiguel'],
+            ['grade' => 'Grade 2', 'section' => 'B', 'username' => 'analuz'],
+            ['grade' => 'Grade 3', 'section' => 'A', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 4', 'section' => 'B', 'username' => 'carmenrosa'],
+            ['grade' => 'Grade 5', 'section' => 'C', 'username' => 'eduardoramos'],
+            ['grade' => 'Grade 6', 'section' => 'A', 'username' => 'luzmarina']
         ];
 
         $totalAssignments = 0;
 
-        foreach ($gradeTeacherMapping as $gradeLevel => $teacherUsername) {
+        foreach ($gradeTeacherMapping as $mapping) {
+            $gradeLevel = $mapping['grade'];
+            $section = $mapping['section'];
+            $teacherUsername = $mapping['username'];
+            
             // Find the teacher
             $teacher = User::where('username', $teacherUsername)->where('role', 'teacher')->first();
             
             if (!$teacher) {
-                $this->command->info("Teacher {$teacherUsername} not found, skipping {$gradeLevel}");
+                $this->command->info("Teacher {$teacherUsername} not found, skipping {$gradeLevel} - Section {$section}");
                 continue;
             }
 
-            // Get all students for this grade level
-            $students = Student::where('grade_level', $gradeLevel)->get();
+            // Get students for this specific grade level AND section
+            $students = Student::where('grade_level', $gradeLevel)
+                              ->where('section', $section)
+                              ->get();
             
             if ($students->isEmpty()) {
-                $this->command->info("No students found for {$gradeLevel}");
+                $this->command->info("No students found for {$gradeLevel} - Section {$section}");
                 continue;
             }
 
-            // Assign all students of this grade to their teacher
+            // Assign students of this grade and section to their teacher
             foreach ($students as $student) {
                 StudentTeacherAssignment::create([
                     'student_id' => $student->id,
                     'teacher_id' => $teacher->id,
                     'grade_level' => $student->grade_level,
-                    'section' => $student->section ?? 'A',
+                    'section' => $student->section,
                     'school_year' => $student->school_year ?? '2024-2025'
                 ]);
                 $totalAssignments++;
             }
             
-            $this->command->info("Assigned {$students->count()} {$gradeLevel} students to {$teacher->full_name}");
+            $this->command->info("Assigned {$students->count()} {$gradeLevel} - Section {$section} students to {$teacher->full_name}");
         }
         
         $this->command->info("Total assignments created: {$totalAssignments}");

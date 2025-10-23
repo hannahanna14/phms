@@ -146,7 +146,7 @@ class OralHealthExaminationSeeder extends Seeder
                 'index_dft' => (int)(rand(0, 3) * $permanentTeethFactor),
                 'decayed' => rand(0, (int)(3 * $permanentTeethFactor)),
                 'filled' => rand(0, (int)(2 * $permanentTeethFactor)),
-                'missing' => $this->generateMissingPermanentTeeth($baseAge, $permanentTeethFactor), // Age-appropriate missing teeth
+                'missing' => $this->generateMissingPermanentTeeth($age, $permanentTeethFactor), // Age-appropriate missing teeth
                 'total_dft' => (int)(rand(0, 28) * $permanentTeethFactor),
                 'for_extraction' => rand(0, 1) * ($permanentTeethFactor > 0.5 ? 1 : 0),
                 'for_filling' => rand(0, (int)(2 * $permanentTeethFactor)),

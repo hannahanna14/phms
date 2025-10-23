@@ -29,11 +29,13 @@ class Student extends Model
         'grade_level',
         'section',
         'lrn',
-        'school_year'
+        'school_year',
+        'is_active'
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'is_active' => 'boolean',
     ];
 
     public function healthExaminations(): HasMany

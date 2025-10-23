@@ -265,34 +265,26 @@ const toggleUserMenu = (event) => {
 };
 
 const logout = () => {
-    // Clear all client-side storage first
-    try {
-        localStorage.clear();
-        sessionStorage.clear();
-
-        // Clear service worker / HTTP caches if available
-        if (typeof caches !== 'undefined') {
-            caches.keys()
-                .then(keys => Promise.all(keys.map(key => caches.delete(key))))
-                .catch(e => console.error('Error clearing caches:', e));
-        }
-    } catch (e) {
-        console.error('Error clearing storage:', e);
-    }
-
+    // Use Inertia router with optimized settings for fast logout
     router.post('/logout', {}, {
-        onError: (errors) => {
-            // If logout fails due to CSRF or other issues, force redirect to login
-            console.log('Logout error, forcing redirect to login...');
-            // Force a full page reload to clear any cached state
-            window.location.replace('/login');
+        preserveState: false,
+        preserveScroll: false,
+        replace: true,
+        onStart: () => {
+            // Clear storage immediately when logout starts
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+            } catch (e) {
+                // Ignore errors
+            }
         },
-        onFinish: () => {
-            // Ensure we redirect to login after logout with full page reload
-            window.location.replace('/login');
+        onError: () => {
+            // If there's any error, force redirect to login
+            window.location.href = '/login';
         }
     });
-};
+}
 
 const sideBarItems = computed(() => {
     const userRole = page.props.auth?.user?.role || 'teacher'

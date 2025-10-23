@@ -11,16 +11,14 @@ import { usePage, router } from '@inertiajs/vue3'
 
 const page = usePage()
 
-// Year filter - Generate years dynamically
-const selectedYear = ref('All')
-const currentYear = new Date().getFullYear()
-const availableYears = ref([
-    { label: 'All', value: 'All' },
-    ...Array.from({ length: 7 }, (_, i) => {
-        const year = currentYear - i
-        return { label: year.toString(), value: year.toString() }
-    })
-])
+// User role
+const userRole = ref(page.props.userRole || 'teacher')
+
+// Grade Level and Section filters
+const selectedGradeLevel = ref(page.props.selectedGradeLevel || 'All')
+const selectedSection = ref(page.props.selectedSection || 'All')
+const availableGradeLevels = ref(page.props.gradeLevels || ['All', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'])
+const availableSections = ref(page.props.sections || ['All', 'A', 'B', 'C'])
 
 // Reactive variables for student statistics
 const totalStudents = ref(0)
@@ -604,10 +602,10 @@ const safeUpdateChart = (graphType) => {
     }
 }
 
-// Handle year filter change
-const onYearChange = () => {
-    console.log('Year changed to:', selectedYear.value)
-    // Refresh dashboard data with new year filter
+// Handle filter changes
+const onFilterChange = () => {
+    console.log('Filters changed - Grade:', selectedGradeLevel.value, 'Section:', selectedSection.value)
+    // Refresh dashboard data with new filters
     refreshDashboardData()
 }
 
@@ -617,7 +615,7 @@ const refreshDashboardData = async () => {
         isLoading.value = true
         
         // Make API call to get filtered data
-        const response = await fetch(`/api/dashboard-data?year=${selectedYear.value}`, {
+        const response = await fetch(`/api/dashboard-data?grade_level=${selectedGradeLevel.value}&section=${selectedSection.value}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -947,18 +945,28 @@ const handleAlertClick = (alert) => {
                             <i class="pi pi-chart-pie mr-2 text-green-500"></i>
                             {{ availableGraphs.find(g => g.value === selectedGraphType)?.label || 'Health Metric' }}
                         </div>
-                        <!-- Year Filter -->
-                        <div class="flex items-center space-x-2">
-                            <label class="text-sm text-gray-600">Year:</label>
-                            <Dropdown 
-                                v-model="selectedYear" 
-                                :options="availableYears" 
-                                optionLabel="label" 
-                                optionValue="value"
-                                @change="onYearChange"
-                                class="w-24 text-sm"
-                                placeholder="Select Year"
-                            />
+                        <!-- Grade Level and Section Filters (Hidden for Teachers) -->
+                        <div v-if="userRole !== 'teacher'" class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm text-gray-600">Grade:</label>
+                                <Dropdown 
+                                    v-model="selectedGradeLevel" 
+                                    :options="availableGradeLevels" 
+                                    @change="onFilterChange"
+                                    class="w-32 text-sm"
+                                    placeholder="Select Grade"
+                                />
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm text-gray-600">Section:</label>
+                                <Dropdown 
+                                    v-model="selectedSection" 
+                                    :options="availableSections" 
+                                    @change="onFilterChange"
+                                    class="w-24 text-sm"
+                                    placeholder="Select Section"
+                                />
+                            </div>
                         </div>
                     </div>
                 </template>

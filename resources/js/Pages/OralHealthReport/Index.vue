@@ -478,7 +478,7 @@ const temporaryTeethFields = [
     { key: 'temporary_for_filling', label: 'For Filling' }
 ];
 
-const sectionOptions = ['A', 'B', 'C', 'D', 'E'];
+const sectionOptions = ['All', 'A', 'B', 'C', 'D', 'E', 'F'];
 
 const genderOptions = ['All', 'Male', 'Female'];
 const sortOptions = ['Name (A-Z)', 'Name (Z-A)', 'Age (Youngest First)', 'Age (Oldest First)'];

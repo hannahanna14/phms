@@ -148,7 +148,8 @@ class OralHealthReportController extends Controller
                 });
             }
             
-            if ($request->section) {
+            // Apply section filter (skip if "All" is selected)
+            if ($request->section && $request->section !== 'All') {
                 $studentsQuery->where('section', $request->section);
             }
 
@@ -443,7 +444,8 @@ class OralHealthReportController extends Controller
                 });
             }
             
-            if ($request->section) {
+            // Apply section filter (skip if "All" is selected)
+            if ($request->section && $request->section !== 'All') {
                 $studentsQuery->where('section', $request->section);
             }
 
