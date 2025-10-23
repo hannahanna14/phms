@@ -29,8 +29,8 @@
                                 :href="item.route"
                                 :class="[
                                     'no-underline w-full text-left p-3 flex items-center transition-all duration-200',
-                                    isActiveRoute(item.route) 
-                                        ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500 font-semibold' 
+                                    isActiveRoute(item.route)
+                                        ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500 font-semibold'
                                         : 'hover:bg-gray-100 text-gray-700'
                                 ]"
                                 v-bind="props.action"
@@ -144,17 +144,17 @@ const page = usePage()
 // Function to check if a route is currently active
 const isActiveRoute = (route) => {
     const currentUrl = page.url
-    
+
     // Handle exact matches
     if (route === '/' && currentUrl === '/') {
         return true
     }
-    
+
     // Handle other routes - check if current URL starts with the route
     if (route !== '/' && currentUrl.startsWith(route)) {
         return true
     }
-    
+
     return false
 }
 
@@ -269,10 +269,17 @@ const logout = () => {
     try {
         localStorage.clear();
         sessionStorage.clear();
+
+        // Clear service worker / HTTP caches if available
+        if (typeof caches !== 'undefined') {
+            caches.keys()
+                .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+                .catch(e => console.error('Error clearing caches:', e));
+        }
     } catch (e) {
         console.error('Error clearing storage:', e);
     }
-    
+
     router.post('/logout', {}, {
         onError: (errors) => {
             // If logout fails due to CSRF or other issues, force redirect to login
@@ -526,7 +533,7 @@ const stopGlobalTimerMonitoring = () => {
 // Initialize notifications when component mounts
 onMounted(() => {
     initializeNotifications()
-    
+
     // Clear cached notifications based on current user role
     const userRole = page.props.auth?.user?.role
     if (userRole) {
