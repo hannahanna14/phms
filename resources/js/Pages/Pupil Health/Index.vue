@@ -14,7 +14,14 @@ const currentYear = new Date().getFullYear();
 
 // Get user role from props
 const userRole = computed(() => page.props.userRole);
+// Filters that apply immediately
 const schoolYear = ref('All');
+const gradeLevel = ref('All');
+
+// Search filter (needs Apply button)
+const searchQuery = ref('');
+const tempSearchQuery = ref('');
+
 const schoolYears = ref([
     'All',
     `${currentYear}-${currentYear + 1}`,
@@ -22,16 +29,55 @@ const schoolYears = ref([
     `${currentYear - 2}-${currentYear - 1}`,
     `${currentYear - 3}-${currentYear - 2}`
 ]);
-const gradeLevel = ref('All');
 const gradeLevels = ref(['All', 'K-2', 1, 2, 3, 4, 5, 6]);
-const searchQuery = ref('');
 
 // Store record type selections separately (not in the data object)
 const recordTypeSelections = ref({});
 
+// Apply search filter
+const applySearch = () => {
+    searchQuery.value = tempSearchQuery.value;
+};
+
+// Clear search filter
+const clearSearch = () => {
+    tempSearchQuery.value = '';
+    searchQuery.value = '';
+};
+
+// Helper function to format name as "Lastname, Firstname"
+const formatName = (fullName) => {
+    if (!fullName) return 'N/A';
+    const parts = fullName.trim().split(' ');
+    if (parts.length < 2) return fullName;
+    
+    const lastName = parts[parts.length - 1];
+    const firstName = parts.slice(0, -1).join(' ');
+    return `${lastName}, ${firstName}`;
+};
+
+// Helper function to convert grade level to sortable number
+const getGradeSortValue = (gradeLevel) => {
+    if (!gradeLevel) return 0;
+    const grade = gradeLevel.toString();
+    
+    if (grade.includes('Kinder') || grade.includes('K-')) return 0;
+    
+    // Extract numeric value from "Grade 1", "Grade 2", etc.
+    const match = grade.match(/\d+/);
+    return match ? parseInt(match[0]) : 0;
+};
+
 // Computed property for pupil records with flexible filtering
 const pupilRecords = computed(() => {
     let records = page.props.students || [];
+
+    // Add computed fields for sorting
+    records = records.map(student => ({
+        ...student,
+        formatted_name: formatName(student.full_name || student.name),
+        grade_sort_value: getGradeSortValue(student.grade_level)
+    }));
 
     // Filter by grade level if not 'All'
     if (gradeLevel.value !== 'All') {
@@ -117,14 +163,32 @@ const viewHealthExam = (student) => {
             </div>
             <div class="col-span-6">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
-                <IconField iconPosition="left">
-                    <InputIcon class="pi pi-search text-gray-400" />
-                    <InputText
-                        v-model="searchQuery"
-                        placeholder="Search by name or LRN"
-                        class="w-full pl-8 py-2 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm"
+                <div class="flex gap-2 p-2 border-2 border-gray-300 rounded-lg bg-white">
+                    <IconField iconPosition="left" class="flex-1">
+                        <InputIcon class="pi pi-search text-gray-400" />
+                        <InputText
+                            v-model="tempSearchQuery"
+                            placeholder="Search by name or LRN"
+                            class="w-full pl-8 py-2 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm"
+                            @keyup.enter="applySearch"
+                        />
+                    </IconField>
+                    <Button 
+                        label="Apply" 
+                        icon="pi pi-check" 
+                        @click="applySearch"
+                        severity="primary"
+                        size="small"
                     />
-                </IconField>
+                    <Button 
+                        label="Clear" 
+                        icon="pi pi-times" 
+                        @click="clearSearch"
+                        severity="secondary"
+                        outlined
+                        size="small"
+                    />
+                </div>
             </div>
         </div>
 
@@ -143,19 +207,27 @@ const viewHealthExam = (student) => {
         <DataTable
             :value="pupilRecords"
             paginator
-            :rows="10"
+            :rows="25"
+            :rowsPerPageOptions="[10, 25, 50, 100, 200, 500]"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pupils"
             tableStyle="min-width: 50rem"
             class="shadow-md rounded-lg"
+            paginatorPosition="both"
         >
-            <Column header="Name" class="font-semibold">
+            <Column field="formatted_name" header="Name" sortable class="font-semibold">
                 <template #body="slotProps">
-                    {{ slotProps.data.full_name || slotProps.data.name || 'N/A' }}
+                    {{ slotProps.data.formatted_name }}
                 </template>
             </Column>
-            <Column field="grade_level" header="Grade Level"></Column>
-            <Column field="section" header="Section"></Column>
-            <Column field="lrn" header="LRN"></Column>
-            <Column field="school_year" header="School Year"></Column>
+            <Column field="grade_sort_value" header="Grade Level" sortable>
+                <template #body="slotProps">
+                    {{ slotProps.data.grade_level }}
+                </template>
+            </Column>
+            <Column field="section" header="Section" sortable></Column>
+            <Column field="lrn" header="LRN" sortable></Column>
+            <Column field="school_year" header="School Year" sortable></Column>
             <Column field="health_record" header="Health Record">
                 <template #body="slotProps">
                     <Select
@@ -167,7 +239,14 @@ const viewHealthExam = (student) => {
             </Column>
             <Column header="Actions">
                 <template #body="slotProps">
-                    <Button icon="pi pi-eye" class="p-button-text p-button-rounded" @click="viewHealthExam(slotProps.data)" />
+                    <Button 
+                        label="View" 
+                        icon="pi pi-eye" 
+                        @click="viewHealthExam(slotProps.data)" 
+                        size="small"
+                        severity="info"
+                        outlined
+                    />
                 </template>
             </Column>
         </DataTable>

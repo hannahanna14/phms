@@ -214,79 +214,79 @@
 
                         <Column v-if="health_exam_fields.includes('vision_screening')" header="Vision Screening">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.vision_screening || 'N/A' }}</span>
+                                <span :title="data.health_exam?.vision_screening || 'N/A'">{{ (data.health_exam?.vision_screening || 'N/A').substring(0, 15) }}{{ (data.health_exam?.vision_screening || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('auditory_screening')" header="Auditory Screening">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.auditory_screening || 'N/A' }}</span>
+                                <span :title="data.health_exam?.auditory_screening || 'N/A'">{{ (data.health_exam?.auditory_screening || 'N/A').substring(0, 15) }}{{ (data.health_exam?.auditory_screening || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('skin')" header="Skin">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.skin || 'N/A' }}</span>
+                                <span :title="data.health_exam?.skin || 'N/A'">{{ (data.health_exam?.skin || 'N/A').substring(0, 15) }}{{ (data.health_exam?.skin || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('scalp')" header="Scalp">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.scalp || 'N/A' }}</span>
+                                <span :title="data.health_exam?.scalp || 'N/A'">{{ (data.health_exam?.scalp || 'N/A').substring(0, 15) }}{{ (data.health_exam?.scalp || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('eye')" header="Eyes">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.eye || 'N/A' }}</span>
+                                <span :title="data.health_exam?.eye || 'N/A'">{{ (data.health_exam?.eye || 'N/A').substring(0, 15) }}{{ (data.health_exam?.eye || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('ear')" header="Ears">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.ear || 'N/A' }}</span>
+                                <span :title="data.health_exam?.ear || 'N/A'">{{ (data.health_exam?.ear || 'N/A').substring(0, 15) }}{{ (data.health_exam?.ear || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('nose')" header="Nose">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.nose || 'N/A' }}</span>
+                                <span :title="data.health_exam?.nose || 'N/A'">{{ (data.health_exam?.nose || 'N/A').substring(0, 15) }}{{ (data.health_exam?.nose || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('mouth')" header="Mouth">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.mouth || 'N/A' }}</span>
+                                <span :title="data.health_exam?.mouth || 'N/A'">{{ (data.health_exam?.mouth || 'N/A').substring(0, 15) }}{{ (data.health_exam?.mouth || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('throat')" header="Throat">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.throat || 'N/A' }}</span>
+                                <span :title="data.health_exam?.throat || 'N/A'">{{ (data.health_exam?.throat || 'N/A').substring(0, 15) }}{{ (data.health_exam?.throat || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('neck')" header="Neck">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.neck || 'N/A' }}</span>
+                                <span :title="data.health_exam?.neck || 'N/A'">{{ (data.health_exam?.neck || 'N/A').substring(0, 15) }}{{ (data.health_exam?.neck || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('lungs_heart')" header="Lungs/Heart">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.lungs_heart || 'N/A' }}</span>
+                                <span :title="data.health_exam?.lungs_heart || 'N/A'">{{ (data.health_exam?.lungs_heart || 'N/A').substring(0, 15) }}{{ (data.health_exam?.lungs_heart || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('abdomen')" header="Abdomen">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.abdomen || 'N/A' }}</span>
+                                <span :title="data.health_exam?.abdomen || 'N/A'">{{ (data.health_exam?.abdomen || 'N/A').substring(0, 15) }}{{ (data.health_exam?.abdomen || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('deformities')" header="Deformities">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.deformities || 'N/A' }}</span>
+                                <span :title="data.health_exam?.deformities || 'N/A'">{{ (data.health_exam?.deformities || 'N/A').substring(0, 15) }}{{ (data.health_exam?.deformities || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
@@ -322,13 +322,13 @@
 
                         <Column v-if="health_exam_fields.includes('other_specify')" header="Other Specify">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.other_specify || 'N/A' }}</span>
+                                <span :title="data.health_exam?.other_specify || 'N/A'">{{ (data.health_exam?.other_specify || 'N/A').substring(0, 15) }}{{ (data.health_exam?.other_specify || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
 
                         <Column v-if="health_exam_fields.includes('remarks')" header="Remarks">
                             <template #body="{ data }">
-                                <span>{{ data.health_exam?.remarks || 'N/A' }}</span>
+                                <span :title="data.health_exam?.remarks || 'N/A'">{{ (data.health_exam?.remarks || 'N/A').substring(0, 15) }}{{ (data.health_exam?.remarks || 'N/A').length > 15 ? '...' : '' }}</span>
                             </template>
                         </Column>
                 </DataTable>

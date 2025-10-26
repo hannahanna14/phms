@@ -25,7 +25,7 @@
                         <div>
                             <label class="block text-sm font-medium mb-2">
                                 <i class="pi pi-calendar mr-1"></i>
-                                Date of Incident
+                                Date of Incident <span class="text-red-500">*</span>
                             </label>
                             <DatePicker 
                                 v-model="form.date" 
@@ -41,7 +41,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium mb-2">
-                                    Complaint
+                                    Complaint <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea 
                                     v-model="form.complaint" 
@@ -54,7 +54,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">
-                                    Actions Taken
+                                    Actions Taken <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea 
                                     v-model="form.actions_taken" 
@@ -105,6 +105,14 @@ const form = useForm({
 })
 
 const updateIncident = () => {
+    // Format date to YYYY-MM-DD to avoid timezone issues
+    if (form.date instanceof Date) {
+        const year = form.date.getFullYear();
+        const month = String(form.date.getMonth() + 1).padStart(2, '0');
+        const day = String(form.date.getDate()).padStart(2, '0');
+        form.date = `${year}-${month}-${day}`;
+    }
+    
     form.put(route('incident.update', incident.id), {
         onSuccess: () => {
             // Redirect back to incident list using router

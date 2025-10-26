@@ -95,7 +95,7 @@ class OralHealthTreatmentController extends Controller
                 });
             }
 
-            $treatments = $query->orderBy('date', 'desc')->get();
+            $treatments = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
             
             // Add timer information to each treatment
             $treatments = $treatments->map(function ($treatment) {

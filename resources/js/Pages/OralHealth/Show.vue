@@ -88,10 +88,22 @@
                                         <td colspan="5" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in oralTreatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
-                                        <td class="py-2">{{ treatment.title }}</td>
-                                        <td class="py-2">{{ treatment.chief_complaint }}</td>
-                                        <td class="py-2">{{ treatment.treatment }}</td>
-                                        <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
+                                        <td class="py-2" style="max-width: 150px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.title">
+                                                {{ treatment.title }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.chief_complaint">
+                                                {{ treatment.chief_complaint }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.treatment">
+                                                {{ treatment.treatment }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2 whitespace-nowrap">{{ new Date(treatment.date).toLocaleDateString() }}</td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
                                                 <Button 
@@ -104,9 +116,10 @@
                                                     title="Edit Treatment"
                                                 />
                                                 <Button 
+                                                    label="View"
                                                     icon="pi pi-eye" 
                                                     size="small"
-                                                    severity="secondary"
+                                                    severity="info"
                                                     outlined
                                                     @click="viewOralTreatment(treatment)"
                                                     class="!p-1 !text-xs"

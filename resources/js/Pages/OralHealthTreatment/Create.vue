@@ -32,7 +32,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     <i class="pi pi-calendar mr-1"></i>
-                                    Date
+                                    Date <span class="text-red-500">*</span>
                                 </label>
                                 <Calendar
                                     v-model="form.date"
@@ -48,44 +48,65 @@
                         <!-- Title -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Title
+                                Title <span class="text-red-500">*</span>
                             </label>
                             <InputText
                                 v-model="form.title"
                                 placeholder="Title"
                                 class="w-full"
-                                :class="{ 'p-invalid': form.errors.title }"
+                                :class="{ 'p-invalid': form.errors.title, 'border-red-500': titleExceeded }"
+                                @input="handleInput('title', limits.title)"
+                                :maxlength="limits.title"
                             />
-                            <small v-if="form.errors.title" class="text-red-500">{{ form.errors.title }}</small>
+                            <div class="flex justify-between items-center mt-1">
+                                <small v-if="form.errors.title" class="text-red-500">{{ form.errors.title }}</small>
+                                <small :class="titleExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                    {{ titleCount }}/{{ limits.title }}
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Chief Complaint and Treatment -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Chief Complaint
+                                    Chief Complaint <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea
                                     v-model="form.chief_complaint"
                                     placeholder="Enter text"
                                     rows="4"
                                     class="w-full"
-                                    :class="{ 'p-invalid': form.errors.chief_complaint }"
+                                    :class="{ 'p-invalid': form.errors.chief_complaint, 'border-red-500': chiefComplaintExceeded }"
+                                    @input="handleInput('chief_complaint', limits.chief_complaint)"
+                                    :maxlength="limits.chief_complaint"
                                 />
-                                <small v-if="form.errors.chief_complaint" class="text-red-500">{{ form.errors.chief_complaint }}</small>
+                                <div class="flex justify-between items-center mt-1">
+                                    <small v-if="form.errors.chief_complaint" class="text-red-500">{{ form.errors.chief_complaint }}</small>
+                                    <small :class="chiefComplaintExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                        {{ chiefComplaintCount }}/{{ limits.chief_complaint }}
+                                    </small>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Treatment
+                                    Treatment <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea
                                     v-model="form.treatment"
                                     placeholder="Enter text"
                                     rows="4"
                                     class="w-full"
-                                    :class="{ 'p-invalid': form.errors.treatment }"
+                                    :class="{ 'p-invalid': form.errors.treatment, 'border-red-500': treatmentExceeded }"
+                                    @input="handleInput('treatment', limits.treatment)"
+                                    :maxlength="limits.treatment"
                                 />
-                                <small v-if="form.errors.treatment" class="text-red-500">{{ form.errors.treatment }}</small>
+                                <div class="flex justify-between items-center mt-1">
+                                    <small v-if="form.errors.treatment" class="text-red-500">{{ form.errors.treatment }}</small>
+                                    <small :class="treatmentExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                        {{ treatmentCount }}/{{ limits.treatment }}
+                                    </small>
+                                </div>
                             </div>
                         </div>
 
@@ -99,9 +120,16 @@
                                 placeholder="Enter text"
                                 rows="3"
                                 class="w-full"
-                                :class="{ 'p-invalid': form.errors.remarks }"
+                                :class="{ 'p-invalid': form.errors.remarks, 'border-red-500': remarksExceeded }"
+                                @input="handleInput('remarks', limits.remarks)"
+                                :maxlength="limits.remarks"
                             />
-                            <small v-if="form.errors.remarks" class="text-red-500">{{ form.errors.remarks }}</small>
+                            <div class="flex justify-between items-center mt-1">
+                                <small v-if="form.errors.remarks" class="text-red-500">{{ form.errors.remarks }}</small>
+                                <small :class="remarksExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                    {{ remarksCount }}/{{ limits.remarks }}
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
@@ -127,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
@@ -177,6 +205,32 @@ const form = useForm({
     school_year: schoolYear
 });
 
+// Character limits
+const limits = {
+    title: 100,
+    chief_complaint: 100,
+    treatment: 100,
+    remarks: 100
+};
+
+// Computed properties for character counts and validation
+const titleCount = computed(() => form.title.length);
+const chiefComplaintCount = computed(() => form.chief_complaint.length);
+const treatmentCount = computed(() => form.treatment.length);
+const remarksCount = computed(() => form.remarks.length);
+
+const titleExceeded = computed(() => titleCount.value > limits.title);
+const chiefComplaintExceeded = computed(() => chiefComplaintCount.value > limits.chief_complaint);
+const treatmentExceeded = computed(() => treatmentCount.value > limits.treatment);
+const remarksExceeded = computed(() => remarksCount.value > limits.remarks);
+
+// Prevent input when limit is exceeded
+const handleInput = (field, maxLength) => {
+    if (form[field].length > maxLength) {
+        form[field] = form[field].substring(0, maxLength);
+    }
+};
+
 const submit = () => {
     // Get the current grade from sessionStorage to ensure we have the latest value
     const currentGrade = sessionStorage.getItem(`currentGrade_${student.id}`) || selectedGrade.value;
@@ -193,11 +247,20 @@ const submit = () => {
     
     form.grade_level = gradeLevel;
     
+    // Format date to YYYY-MM-DD to avoid timezone issues
+    if (form.date instanceof Date) {
+        const year = form.date.getFullYear();
+        const month = String(form.date.getMonth() + 1).padStart(2, '0');
+        const day = String(form.date.getDate()).padStart(2, '0');
+        form.date = `${year}-${month}-${day}`;
+    }
+    
     console.log('=== ORAL HEALTH TREATMENT FORM SUBMISSION DEBUG ===');
     console.log('Current Grade from session:', currentGrade);
     console.log('Selected Grade ref:', selectedGrade.value);
     console.log('Final Grade Level being saved:', form.grade_level);
     console.log('Grade Level type:', typeof form.grade_level);
+    console.log('Formatted Date:', form.date);
     console.log('Complete Form Data:', form.data());
     console.log('==========================================');
 

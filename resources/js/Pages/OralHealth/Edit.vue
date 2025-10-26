@@ -185,7 +185,7 @@
                         
                         <div class="grid grid-cols-3 gap-6">
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t.</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Index d.f.t. <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_index_dft" 
                                     type="number"
@@ -196,7 +196,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth decayed <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_teeth_decayed" 
                                     type="number"
@@ -207,7 +207,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Teeth filled <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_teeth_filled" 
                                     type="number"
@@ -218,7 +218,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total d.f.t <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_total_dft" 
                                     type="number"
@@ -229,7 +229,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Extraction <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_for_extraction" 
                                     type="number"
@@ -240,7 +240,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">For Filling</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">For Filling <span class="text-red-500">*</span></label>
                                 <InputText 
                                     v-model="form.temporary_for_filling" 
                                     type="number"

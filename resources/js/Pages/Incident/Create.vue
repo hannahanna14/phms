@@ -45,7 +45,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     <i class="pi pi-calendar mr-1"></i>
-                                    Date
+                                    Date <span class="text-red-500">*</span>
                                 </label>
                                 <DatePicker 
                                     v-model="form.date" 
@@ -62,7 +62,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Complaint
+                                    Complaint <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea 
                                     v-model="form.complaint" 
@@ -75,7 +75,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Actions Taken
+                                    Actions Taken <span class="text-red-500">*</span>
                                 </label>
                                 <Textarea 
                                     v-model="form.actions_taken" 
@@ -152,6 +152,14 @@ onMounted(() => {
 });
 
 const submit = () => {
+    // Format date to YYYY-MM-DD to avoid timezone issues
+    if (form.date instanceof Date) {
+        const year = form.date.getFullYear();
+        const month = String(form.date.getMonth() + 1).padStart(2, '0');
+        const day = String(form.date.getDate()).padStart(2, '0');
+        form.date = `${year}-${month}-${day}`;
+    }
+    
     form.post(route('incident.store'), {
         onSuccess: (response) => {
             // Clear saved form data on successful submission

@@ -347,10 +347,22 @@ onMounted(() => {
                                         <td colspan="5" class="text-center py-2 text-gray-500">No records available</td>
                                     </tr>
                                     <tr v-for="treatment in treatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
-                                        <td class="py-2">{{ treatment.title }}</td>
-                                        <td class="py-2">{{ treatment.chief_complaint }}</td>
-                                        <td class="py-2">{{ treatment.treatment }}</td>
-                                        <td class="py-2">{{ new Date(treatment.date).toLocaleDateString() }}</td>
+                                        <td class="py-2" style="max-width: 150px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.title">
+                                                {{ treatment.title }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.chief_complaint">
+                                                {{ treatment.chief_complaint }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.treatment">
+                                                {{ treatment.treatment }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2 whitespace-nowrap">{{ new Date(treatment.date).toLocaleDateString() }}</td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
                                                 <Button 
@@ -363,9 +375,10 @@ onMounted(() => {
                                                     title="Edit Treatment"
                                                 />
                                                 <Button 
+                                                    label="View"
                                                     icon="pi pi-eye" 
                                                     size="small"
-                                                    severity="secondary"
+                                                    severity="info"
                                                     outlined
                                                     @click="viewTreatment(treatment)"
                                                     class="!p-1 !text-xs"
@@ -435,125 +448,165 @@ onMounted(() => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Skin:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify ? currentRecord.skin_specify : (currentRecord.skin || 'Not examined')">
                                             {{ 
-                                                currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify 
+                                                (currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify 
                                                     ? currentRecord.skin_specify 
-                                                    : (currentRecord.skin || 'Not examined')
+                                                    : (currentRecord.skin || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify 
+                                                    ? currentRecord.skin_specify 
+                                                    : (currentRecord.skin || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Scalp:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify ? currentRecord.scalp_specify : (currentRecord.scalp || 'Not examined')">
                                             {{ 
-                                                currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify 
+                                                (currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify 
                                                     ? currentRecord.scalp_specify 
-                                                    : (currentRecord.scalp || 'Not examined')
+                                                    : (currentRecord.scalp || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify 
+                                                    ? currentRecord.scalp_specify 
+                                                    : (currentRecord.scalp || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Eyes:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify ? currentRecord.eye_specify : (currentRecord.eye || 'Not examined')">
                                             {{ 
-                                                currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify 
+                                                (currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify 
                                                     ? currentRecord.eye_specify 
-                                                    : (currentRecord.eye || 'Not examined')
+                                                    : (currentRecord.eye || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify 
+                                                    ? currentRecord.eye_specify 
+                                                    : (currentRecord.eye || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Ears:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify ? currentRecord.ear_specify : (currentRecord.ear || 'Not examined')">
                                             {{ 
-                                                currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify 
+                                                (currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify 
                                                     ? currentRecord.ear_specify 
-                                                    : (currentRecord.ear || 'Not examined')
+                                                    : (currentRecord.ear || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify 
+                                                    ? currentRecord.ear_specify 
+                                                    : (currentRecord.ear || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Nose:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify ? currentRecord.nose_specify : (currentRecord.nose || 'Not examined')">
                                             {{ 
-                                                currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify 
+                                                (currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify 
                                                     ? currentRecord.nose_specify 
-                                                    : (currentRecord.nose || 'Not examined')
+                                                    : (currentRecord.nose || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify 
+                                                    ? currentRecord.nose_specify 
+                                                    : (currentRecord.nose || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Mouth:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify ? currentRecord.mouth_specify : (currentRecord.mouth || 'Not examined')">
                                             {{ 
-                                                currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify 
+                                                (currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify 
                                                     ? currentRecord.mouth_specify 
-                                                    : (currentRecord.mouth || 'Not examined')
+                                                    : (currentRecord.mouth || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify 
+                                                    ? currentRecord.mouth_specify 
+                                                    : (currentRecord.mouth || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Throat:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify ? currentRecord.throat_specify : (currentRecord.throat || 'Not examined')">
                                             {{ 
-                                                currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify 
+                                                (currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify 
                                                     ? currentRecord.throat_specify 
-                                                    : (currentRecord.throat || 'Not examined')
+                                                    : (currentRecord.throat || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify 
+                                                    ? currentRecord.throat_specify 
+                                                    : (currentRecord.throat || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Neck:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify ? currentRecord.neck_specify : (currentRecord.neck || 'Not examined')">
                                             {{ 
-                                                currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify 
+                                                (currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify 
                                                     ? currentRecord.neck_specify 
-                                                    : (currentRecord.neck || 'Not examined')
+                                                    : (currentRecord.neck || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify 
+                                                    ? currentRecord.neck_specify 
+                                                    : (currentRecord.neck || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Lungs:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify ? currentRecord.lungs_specify : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify ? currentRecord.lungs_other_specify : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')">
                                             {{ 
-                                                currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify 
+                                                (currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify 
                                                     ? currentRecord.lungs_specify 
                                                     : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify 
                                                     ? currentRecord.lungs_other_specify 
-                                                    : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')
+                                                    : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify 
+                                                    ? currentRecord.lungs_specify 
+                                                    : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify 
+                                                    ? currentRecord.lungs_other_specify 
+                                                    : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Heart:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify ? currentRecord.heart_specify : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify ? currentRecord.heart_other_specify : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')">
                                             {{ 
-                                                currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify 
+                                                (currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify 
                                                     ? currentRecord.heart_specify 
                                                     : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify 
                                                     ? currentRecord.heart_other_specify 
-                                                    : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')
+                                                    : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify 
+                                                    ? currentRecord.heart_specify 
+                                                    : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify 
+                                                    ? currentRecord.heart_other_specify 
+                                                    : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Abdomen:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify ? currentRecord.abdomen_specify : (currentRecord.abdomen || 'Not examined')">
                                             {{ 
-                                                currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify 
+                                                (currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify 
                                                     ? currentRecord.abdomen_specify 
-                                                    : (currentRecord.abdomen || 'Not examined')
+                                                    : (currentRecord.abdomen || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify 
+                                                    ? currentRecord.abdomen_specify 
+                                                    : (currentRecord.abdomen || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Deformities:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify ? currentRecord.deformities_specify : (currentRecord.deformities || 'Not examined')">
                                             {{ 
-                                                currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify 
+                                                (currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify 
                                                     ? currentRecord.deformities_specify 
-                                                    : (currentRecord.deformities || 'Not examined')
+                                                    : (currentRecord.deformities || 'Not examined')).substring(0, 15) + 
+                                                ((currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify 
+                                                    ? currentRecord.deformities_specify 
+                                                    : (currentRecord.deformities || 'Not examined')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
@@ -584,21 +637,27 @@ onMounted(() => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Vision Screening:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify ? currentRecord.vision_screening_specify : (currentRecord.vision_screening || 'Not tested')">
                                             {{ 
-                                                currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify 
+                                                (currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify 
                                                     ? currentRecord.vision_screening_specify 
-                                                    : (currentRecord.vision_screening || 'Not tested')
+                                                    : (currentRecord.vision_screening || 'Not tested')).substring(0, 15) + 
+                                                ((currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify 
+                                                    ? currentRecord.vision_screening_specify 
+                                                    : (currentRecord.vision_screening || 'Not tested')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Auditory Screening:</span>
-                                        <span class="font-medium">
+                                        <span class="font-medium" :title="currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify ? currentRecord.auditory_screening_specify : (currentRecord.auditory_screening || 'Not tested')">
                                             {{ 
-                                                currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify 
+                                                (currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify 
                                                     ? currentRecord.auditory_screening_specify 
-                                                    : (currentRecord.auditory_screening || 'Not tested')
+                                                    : (currentRecord.auditory_screening || 'Not tested')).substring(0, 15) + 
+                                                ((currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify 
+                                                    ? currentRecord.auditory_screening_specify 
+                                                    : (currentRecord.auditory_screening || 'Not tested')).length > 15 ? '...' : '')
                                             }}
                                         </span>
                                     </div>
@@ -609,6 +668,10 @@ onMounted(() => {
                             <div class="border rounded-lg p-4">
                                 <h3 class="text-lg font-semibold text-center mb-4">Immunization & Benefits</h3>
                                 <div class="space-y-2 text-sm">
+                                    <div class="flex items-center">
+                                        <i :class="currentRecord.immunization ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'" class="mr-2"></i>
+                                        <span :title="currentRecord.immunization || 'Not recorded'">Immunization: {{ (currentRecord.immunization || 'Not recorded').substring(0, 15) }}{{ (currentRecord.immunization || 'Not recorded').length > 15 ? '...' : '' }}</span>
+                                    </div>
                                     <div class="flex items-center">
                                         <i :class="currentRecord.iron_supplementation === 'Yes' ? 'pi pi-check-circle text-green-500' : 'pi pi-times-circle text-red-500'" class="mr-2"></i>
                                         <span>Iron Supplementation: {{ currentRecord.iron_supplementation || 'No' }}</span>

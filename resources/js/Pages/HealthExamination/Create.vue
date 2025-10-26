@@ -112,6 +112,7 @@
                                 v-model="form.vision_screening_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                required
                             />
                         </div>
                     </div>
@@ -125,6 +126,7 @@
                                 v-model="form.auditory_screening_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                required
                             />
                         </div>
                     </div>
@@ -142,6 +144,8 @@
                                 v-model="form.skin_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -155,6 +159,8 @@
                                 v-model="form.scalp_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -168,6 +174,8 @@
                                 v-model="form.eye_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -184,6 +192,8 @@
                                 v-model="form.ear_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -197,6 +207,8 @@
                                 v-model="form.nose_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -210,6 +222,8 @@
                                 v-model="form.mouth_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -226,6 +240,8 @@
                                 v-model="form.throat_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -239,6 +255,8 @@
                                 v-model="form.neck_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -255,6 +273,8 @@
                                 v-model="form.lungs_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -268,6 +288,8 @@
                                 v-model="form.heart_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -281,6 +303,8 @@
                                 v-model="form.abdomen_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -294,6 +318,8 @@
                                 v-model="form.deformities_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
+                                maxlength="15"
+                                required
                             />
                         </div>
                     </div>
@@ -321,7 +347,7 @@
                         </div>
                         <div class="form-group">
                             <label>Immunization (Specify what kind)</label>
-                            <InputText v-model="form.immunization" class="w-full" placeholder="e.g., Measles, Polio, etc." />
+                            <InputText v-model="form.immunization" class="w-full" placeholder="e.g., Measles, Polio, etc." maxlength="15" />
                             <small class="text-red-500" v-if="errors.immunization">{{ errors.immunization }}</small>
                         </div>
                         <div class="form-group">

@@ -83,9 +83,11 @@
                                         <td class="py-2">
                                             <div class="flex gap-1">
                                                 <Button 
+                                                    label="View"
                                                     icon="pi pi-eye" 
                                                     size="small"
                                                     severity="info"
+                                                    outlined
                                                     @click="viewIncident(incident)"
                                                     class="!p-1 !text-xs"
                                                 />
