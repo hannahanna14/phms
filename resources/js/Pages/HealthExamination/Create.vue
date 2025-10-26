@@ -33,12 +33,11 @@
                         <label>Temperature (°C) <span class="text-red-500">*</span></label>
                         <InputText 
                             v-model="form.temperature" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.temperature }]" 
                             type="number" 
                             step="0.1" 
                             min="35" 
                             max="42" 
-                            required 
                         />
                         <small class="text-gray-500">Normal range: 35°C - 42°C</small>
                         <small class="text-red-500" v-if="errors.temperature">{{ errors.temperature }}</small>
@@ -47,11 +46,10 @@
                         <label>Heart Rate (bpm) <span class="text-red-500">*</span></label>
                         <InputText 
                             v-model="form.heart_rate" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.heart_rate }]" 
                             type="number" 
                             min="40" 
                             max="200" 
-                            required 
                         />
                         <small class="text-gray-500">Normal range: 40-200 bpm</small>
                         <small class="text-red-500" v-if="errors.heart_rate">{{ errors.heart_rate }}</small>
@@ -60,12 +58,11 @@
                         <label>Height (cm) <span class="text-red-500">*</span></label>
                         <InputText 
                             v-model="form.height" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.height }]" 
                             type="number" 
                             step="0.1" 
                             min="50" 
                             max="200" 
-                            required 
                         />
                         <small class="text-gray-500">Range: 50-200 cm</small>
                         <small class="text-red-500" v-if="errors.height">{{ errors.height }}</small>
@@ -74,12 +71,11 @@
                         <label>Weight (kg) <span class="text-red-500">*</span></label>
                         <InputText 
                             v-model="form.weight" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.weight }]" 
                             type="number" 
                             step="0.1" 
                             min="10" 
                             max="150" 
-                            required 
                         />
                         <small class="text-gray-500">Range: 10-150 kg</small>
                         <small class="text-red-500" v-if="errors.weight">{{ errors.weight }}</small>
@@ -90,12 +86,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Nutritional Status(BMI) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" required />
+                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nutritional_status_bmi">{{ errors.nutritional_status_bmi }}</small>
                     </div>
                     <div class="form-group">
                         <label>Nutritional Status(Height for Age) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" required />
+                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nutritional_status_height">{{ errors.nutritional_status_height }}</small>
                     </div>
                 </div>
@@ -104,7 +100,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Vision Screening <span class="text-red-500">*</span></label>
-                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" required />
+                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.vision_screening">{{ errors.vision_screening }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.vision_screening === 'Others (specify)'" class="mt-2">
@@ -112,13 +108,12 @@
                                 v-model="form.vision_screening_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Auditory Screening <span class="text-red-500">*</span></label>
-                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" required />
+                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.auditory_screening">{{ errors.auditory_screening }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.auditory_screening === 'Others (specify)'" class="mt-2">
@@ -126,8 +121,7 @@
                                 v-model="form.auditory_screening_specify" 
                                 placeholder="Please specify..." 
                                 class="w-full" 
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                 </div>
@@ -136,7 +130,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Skin <span class="text-red-500">*</span></label>
-                        <Select v-model="form.skin" :options="skinOptions" class="w-full" required />
+                        <Select v-model="form.skin" :options="skinOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.skin">{{ errors.skin }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.skin === 'Others (specify)'" class="mt-2">
@@ -145,13 +139,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Scalp <span class="text-red-500">*</span></label>
-                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" required />
+                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.scalp">{{ errors.scalp }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.scalp === 'Others (specify)'" class="mt-2">
@@ -160,13 +153,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Eye <span class="text-red-500">*</span></label>
-                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" required />
+                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.eye">{{ errors.eye }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.eye === 'Others (specify)'" class="mt-2">
@@ -175,8 +167,7 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                 </div>
@@ -184,7 +175,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Ear <span class="text-red-500">*</span></label>
-                        <Select v-model="form.ear" :options="earOptions" class="w-full" required />
+                        <Select v-model="form.ear" :options="earOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.ear">{{ errors.ear }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.ear === 'Others (specify)'" class="mt-2">
@@ -193,13 +184,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Nose <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nose" :options="noseOptions" class="w-full" required />
+                        <Select v-model="form.nose" :options="noseOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.nose">{{ errors.nose }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.nose === 'Others (specify)'" class="mt-2">
@@ -208,13 +198,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Mouth <span class="text-red-500">*</span></label>
-                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" required />
+                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.mouth">{{ errors.mouth }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.mouth === 'Others (specify)'" class="mt-2">
@@ -223,8 +212,7 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                 </div>
@@ -241,8 +229,7 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
@@ -256,8 +243,7 @@
                                 placeholder="Please specify..." 
                                 class="w-full" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                 </div>
@@ -265,7 +251,7 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Lungs <span class="text-red-500">*</span></label>
-                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" required />
+                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.lungs === 'Others (specify)'" class="mt-2">
@@ -274,13 +260,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Heart <span class="text-red-500">*</span></label>
-                        <Select v-model="form.heart" :options="heartOptions" class="w-full" required />
+                        <Select v-model="form.heart" :options="heartOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.heart === 'Others (specify)'" class="mt-2">
@@ -289,13 +274,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Abdomen <span class="text-red-500">*</span></label>
-                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" required />
+                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.abdomen">{{ errors.abdomen }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.abdomen === 'Others (specify)'" class="mt-2">
@@ -304,13 +288,12 @@
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Deformities <span class="text-red-500">*</span></label>
-                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" required />
+                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
                         <small class="text-red-500" v-if="errors.deformities">{{ errors.deformities }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.deformities === 'Others (specify)'" class="mt-2">
@@ -319,8 +302,7 @@
                                 placeholder="Please specify..." 
                                 class="w-full text-sm" 
                                 maxlength="15"
-                                required
-                            />
+                                                           />
                         </div>
                     </div>
                 </div>
@@ -571,6 +553,14 @@ const submit = () => {
     
     if (Object.keys(validationErrors).length > 0) {
         console.log('Form validation failed:', validationErrors)
+        // Scroll to the first error field
+        const firstErrorField = Object.keys(validationErrors)[0]
+        const errorElement = document.querySelector(`[name="${firstErrorField}"]`) || 
+                            document.querySelector(`input[type="number"]`) ||
+                            document.querySelector('.text-red-500')
+        if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
         return
     }
     
@@ -634,5 +624,18 @@ const submit = () => {
 
 :deep(.p-button) {
     min-width: 100px;
+}
+
+/* PrimeVue invalid styling */
+:deep(.p-invalid .p-inputtext),
+:deep(.p-invalid.p-inputtext) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+:deep(.p-invalid .p-inputtext:focus),
+:deep(.p-invalid.p-inputtext:focus) {
+    outline: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25) !important;
 }
 </style>

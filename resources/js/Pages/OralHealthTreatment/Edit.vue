@@ -11,19 +11,19 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium mb-2">Title <span class="text-red-500">*</span></label>
-                            <InputText v-model="form.title" class="w-full" :class="{ 'border-red-500': titleExceeded }" :disabled="!canEdit" @input="handleInput('title', limits.title)" :maxlength="limits.title" />
+                            <InputText v-model="form.title" class="w-full" :class="{ 'border-red-500': titleExceeded }" :disabled="!canEdit" @input="handleInput('title', limits.title)" :maxlength="limits.title" required />
                             <div class="flex justify-end mt-1"><small :class="titleExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">{{ titleCount }}/{{ limits.title }}</small></div>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium mb-2">Chief Complaint <span class="text-red-500">*</span></label>
-                            <Textarea v-model="form.chief_complaint" rows="3" class="w-full" :class="{ 'border-red-500': chiefComplaintExceeded }" :disabled="!canEdit" @input="handleInput('chief_complaint', limits.chief_complaint)" :maxlength="limits.chief_complaint" />
+                            <Textarea v-model="form.chief_complaint" rows="3" class="w-full" :class="{ 'border-red-500': chiefComplaintExceeded }" :disabled="!canEdit" @input="handleInput('chief_complaint', limits.chief_complaint)" :maxlength="limits.chief_complaint" required />
                             <div class="flex justify-end mt-1"><small :class="chiefComplaintExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">{{ chiefComplaintCount }}/{{ limits.chief_complaint }}</small></div>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium mb-2">Treatment <span class="text-red-500">*</span></label>
-                            <Textarea v-model="form.treatment" rows="4" class="w-full" :class="{ 'border-red-500': treatmentExceeded }" :disabled="!canEdit" @input="handleInput('treatment', limits.treatment)" :maxlength="limits.treatment" />
+                            <Textarea v-model="form.treatment" rows="4" class="w-full" :class="{ 'border-red-500': treatmentExceeded }" :disabled="!canEdit" @input="handleInput('treatment', limits.treatment)" :maxlength="limits.treatment" required />
                             <div class="flex justify-end mt-1"><small :class="treatmentExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">{{ treatmentCount }}/{{ limits.treatment }}</small></div>
                         </div>
                         
@@ -136,3 +136,24 @@ const goBack = () => {
     router.visit(`/pupil-health/oral-health-examination/${props.student.id}?grade=${props.treatment.grade_level}`);
 };
 </script>
+
+<style scoped>
+/* Invalid field styling */
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+input:invalid:focus:not(:placeholder-shown),
+textarea:invalid:focus:not(:placeholder-shown) {
+    outline: 2px solid #ef4444 !important;
+    outline-offset: 0px;
+}
+
+:deep(.p-inputtext:invalid:not(:placeholder-shown)),
+:deep(.p-inputtextarea:invalid:not(:placeholder-shown)) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+</style>

@@ -95,6 +95,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_index_dft" class="text-red-500">{{ errors.permanent_index_dft }}</small>
@@ -107,6 +109,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_teeth_decayed" class="text-red-500">{{ errors.permanent_teeth_decayed }}</small>
@@ -119,6 +123,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_teeth_filled" class="text-red-500">{{ errors.permanent_teeth_filled }}</small>
@@ -131,6 +137,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_teeth_missing" class="text-red-500">{{ errors.permanent_teeth_missing }}</small>
@@ -143,6 +151,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="96"
                                     required
                                 />
                                 <small v-if="errors.permanent_total_dft" class="text-red-500">{{ errors.permanent_total_dft }}</small>
@@ -155,6 +165,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_for_extraction" class="text-red-500">{{ errors.permanent_for_extraction }}</small>
@@ -167,6 +179,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="32"
                                     required
                                 />
                                 <small v-if="errors.permanent_for_filling" class="text-red-500">{{ errors.permanent_for_filling }}</small>
@@ -186,6 +200,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="20"
                                     required
                                 />
                                 <small v-if="errors.temporary_index_dft" class="text-red-500">{{ errors.temporary_index_dft }}</small>
@@ -198,6 +214,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="20"
                                     required
                                 />
                                 <small v-if="errors.temporary_teeth_decayed" class="text-red-500">{{ errors.temporary_teeth_decayed }}</small>
@@ -210,6 +228,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="20"
                                     required
                                 />
                                 <small v-if="errors.temporary_teeth_filled" class="text-red-500">{{ errors.temporary_teeth_filled }}</small>
@@ -222,6 +242,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="60"
                                     required
                                 />
                                 <small v-if="errors.temporary_total_dft" class="text-red-500">{{ errors.temporary_total_dft }}</small>
@@ -234,6 +256,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="20"
                                     required
                                 />
                                 <small v-if="errors.temporary_for_extraction" class="text-red-500">{{ errors.temporary_for_extraction }}</small>
@@ -246,6 +270,8 @@
                                     type="number"
                                     class="w-full"
                                     placeholder="Enter value"
+                                    min="0"
+                                    max="20"
                                     required
                                 />
                                 <small v-if="errors.temporary_for_filling" class="text-red-500">{{ errors.temporary_for_filling }}</small>
@@ -971,19 +997,20 @@ const cancel = () => {
 
 .tooth-symbol {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -8px;
+    right: -8px;
     background: #ff4757;
     color: white;
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8px;
+    font-size: 9px;
     font-weight: bold;
-    z-index: 5;
+    z-index: 10;
+    pointer-events: none;
 }
 
 /* Chart Selector */
@@ -1179,4 +1206,5 @@ const cancel = () => {
     font-weight: 500;
     color: #374151;
 }
+
 </style>

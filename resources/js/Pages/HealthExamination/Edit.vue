@@ -37,7 +37,7 @@
                             :maxFractionDigits="1" 
                             :min="35" 
                             :max="42" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.temperature }]" 
                             required 
                         />
                         <small class="text-gray-500">Normal range: 35°C - 42°C</small>
@@ -49,7 +49,7 @@
                             v-model="form.heart_rate" 
                             :min="40" 
                             :max="200" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.heart_rate }]" 
                             required 
                         />
                         <small class="text-gray-500">Normal range: 40-200 bpm</small>
@@ -63,7 +63,7 @@
                             :maxFractionDigits="1" 
                             :min="50" 
                             :max="200" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.height }]" 
                             required 
                         />
                         <small class="text-gray-500">Range: 50-200 cm</small>
@@ -77,7 +77,7 @@
                             :maxFractionDigits="1" 
                             :min="10" 
                             :max="150" 
-                            class="w-full" 
+                            :class="['w-full', { 'p-invalid': errors.weight }]" 
                             required 
                         />
                         <small class="text-gray-500">Range: 10-150 kg</small>
@@ -624,5 +624,30 @@ const submit = () => {
 
 :deep(.p-button) {
     min-width: 100px;
+}
+
+/* Invalid field styling */
+input:invalid:not(:placeholder-shown),
+input[type="number"]:invalid:not(:placeholder-shown) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+input:invalid:focus:not(:placeholder-shown) {
+    outline: 2px solid #ef4444 !important;
+    outline-offset: 0px;
+}
+
+/* PrimeVue invalid styling */
+:deep(.p-invalid .p-inputtext),
+:deep(.p-invalid.p-inputnumber .p-inputtext) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+:deep(.p-invalid .p-inputtext:focus),
+:deep(.p-invalid.p-inputnumber .p-inputtext:focus) {
+    outline: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25) !important;
 }
 </style>

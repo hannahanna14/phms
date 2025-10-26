@@ -19,6 +19,7 @@
                                 :disabled="!canEdit"
                                 @input="handleInput('title', limits.title)"
                                 :maxlength="limits.title"
+                                required
                             />
                             <div class="flex justify-end mt-1">
                                 <small :class="titleExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">
@@ -37,6 +38,7 @@
                                 :disabled="!canEdit"
                                 @input="handleInput('chief_complaint', limits.chief_complaint)"
                                 :maxlength="limits.chief_complaint"
+                                required
                             />
                             <div class="flex justify-end mt-1">
                                 <small :class="chiefComplaintExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">
@@ -55,6 +57,7 @@
                                 :disabled="!canEdit"
                                 @input="handleInput('treatment', limits.treatment)"
                                 :maxlength="limits.treatment"
+                                required
                             />
                             <div class="flex justify-end mt-1">
                                 <small :class="treatmentExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'">
@@ -186,3 +189,24 @@ const goBack = () => {
     router.visit(`/pupil-health/health-examination/${props.student.id}?grade=${props.treatment.grade_level}`);
 };
 </script>
+
+<style scoped>
+/* Invalid field styling */
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+input:invalid:focus:not(:placeholder-shown),
+textarea:invalid:focus:not(:placeholder-shown) {
+    outline: 2px solid #ef4444 !important;
+    outline-offset: 0px;
+}
+
+:deep(.p-inputtext:invalid:not(:placeholder-shown)),
+:deep(.p-inputtextarea:invalid:not(:placeholder-shown)) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+</style>
