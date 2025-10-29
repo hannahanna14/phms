@@ -11,6 +11,19 @@
                     </h1>
                     <p class="text-gray-600">Generate comprehensive health reports for students</p>
                 </div>
+                
+                <!-- Step-by-step Guide -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                    <h3 class="font-semibold text-blue-900 mb-2 flex items-center">
+                        <i class="pi pi-info-circle mr-2"></i>
+                        How to Generate a Report
+                    </h3>
+                    <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                        <li><strong>Step 1:</strong> Search and select specific pupils OR choose a grade level filter</li>
+                        <li><strong>Step 2:</strong> Select which health fields you want to include in the report</li>
+                        <li><strong>Step 3:</strong> Click "Generate Report" to create your PDF</li>
+                    </ol>
+                </div>
             </div>
 
             <!-- Draft Restored Notification -->
@@ -26,232 +39,208 @@
                 </div>
             </div>
 
-            <!-- Student Selection Card -->
+            <!-- STEP 1: Student Selection Card -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                    <i class="pi pi-users mr-2 text-blue-600"></i>
-                    Pupil Selection
-                </h2>
-
-                <!-- Student Search Section -->
-                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="pi pi-search mr-1"></i>
-                        Search Pupils
-                    </label>
-                    <InputText
-                        v-model="searchQuery"
-                        placeholder="Type to search pupils by name or LRN..."
-                        class="w-full mb-3"
-                        @input="onStudentSearch"
-                    />
-
-                    <!-- Search Results -->
-                    <div v-if="studentOptions.length > 0 && searchQuery" class="bg-white border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
-                        <div
-                            v-for="student in studentOptions"
-                            :key="student.id"
-                            @click="addStudent(student)"
-                            class="p-3 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
-                        >
-                            <div class="font-medium text-gray-900">{{ student.name }}</div>
-                            <div class="text-sm text-gray-500">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</div>
-                        </div>
-                    </div>
-
-                    <small class="text-blue-600 mt-1 block">
-                        <i class="pi pi-info-circle mr-1"></i>
-                        Click on a student from search results to add them to your selection.
-                    </small>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">1</span>
+                        Choose Pupils
+                    </h2>
+                    <span class="text-sm text-gray-500">Option A or Option B</span>
                 </div>
 
-                <!-- Selected Students List -->
-                <div v-if="selectedStudents && selectedStudents.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-green-800 mb-3">
-                        <i class="pi pi-list mr-2"></i>
-                        Selected Pupils ({{ selectedStudents.length }})
-                    </h3>
-                    <div class="space-y-2 max-h-60 overflow-y-auto">
-                        <div
-                            v-for="student in selectedStudents"
-                            :key="student.id"
-                            class="bg-white border border-green-200 rounded-lg p-3 shadow-sm"
-                        >
-                            <div class="flex items-center">
-                                <Checkbox
-                                    v-model="student.checked"
-                                    :binary="true"
-                                    @change="toggleStudent(student)"
-                                    class="mr-3"
-                                />
-                                <div class="flex-1">
-                                    <h4 class="font-medium text-gray-900">{{ student.name }}</h4>
-                                    <p class="text-sm text-gray-600">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</p>
-                                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Option A: Search Specific Students -->
+                    <div class="border-2 rounded-lg p-4" :class="selectedStudents.length > 0 ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="pi pi-search mr-2 text-blue-600"></i>
+                            Option A: Search Specific Pupils
+                        </h3>
+                        
+                        <InputText
+                            v-model="searchQuery"
+                            placeholder="Type name or LRN to search..."
+                            class="w-full mb-2"
+                            @input="onStudentSearch"
+                        />
+
+                        <!-- Search Results -->
+                        <div v-if="studentOptions.length > 0 && searchQuery" class="bg-white border border-gray-200 rounded-lg max-h-48 overflow-y-auto mb-2">
+                            <div
+                                v-for="student in studentOptions"
+                                :key="student.id"
+                                @click="addStudent(student)"
+                                class="p-2 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors"
+                            >
+                                <div class="font-medium text-sm text-gray-900">{{ student.name }}</div>
+                                <div class="text-xs text-gray-500">LRN: {{ student.lrn }} | Grade {{ student.grade_level }} - {{ student.section }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Students -->
+                        <div v-if="selectedStudents && selectedStudents.length > 0" class="mt-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-green-700">
+                                    <i class="pi pi-check-circle mr-1"></i>
+                                    {{ selectedStudents.length }} pupils selected
+                                </span>
                                 <Button
-                                    icon="pi pi-times"
+                                    label="Clear"
                                     size="small"
                                     text
                                     severity="danger"
-                                    @click="removeStudent(student)"
-                                    class="ml-2"
+                                    @click="clearAllStudents"
+                                    class="text-xs"
+                                />
+                            </div>
+                            <div class="space-y-1 max-h-32 overflow-y-auto">
+                                <div
+                                    v-for="student in selectedStudents"
+                                    :key="student.id"
+                                    class="bg-white border border-green-200 rounded p-2 flex items-center text-sm"
+                                >
+                                    <Checkbox
+                                        v-model="student.checked"
+                                        :binary="true"
+                                        class="mr-2"
+                                    />
+                                    <span class="flex-1 text-xs">{{ student.name }}</span>
+                                    <Button
+                                        icon="pi pi-times"
+                                        size="small"
+                                        text
+                                        severity="danger"
+                                        @click="removeStudent(student)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <small class="text-blue-600 mt-2 block text-xs">
+                            <i class="pi pi-info-circle mr-1"></i>
+                            Search and click to add pupils individually
+                        </small>
+                    </div>
+
+                    <!-- Option B: Filter by Grade/Section -->
+                    <div class="border-2 border-gray-200 rounded-lg p-4" :class="selectedGrade && selectedGrade !== 'All' ? 'bg-gray-50' : 'bg-white'">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="pi pi-filter mr-2 text-gray-600"></i>
+                            Option B: Filter by Grade/Section
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                                <Select
+                                    v-model="selectedGrade"
+                                    :options="gradeLevels"
+                                    placeholder="Select grade level"
+                                    class="w-full"
+                                    :disabled="selectedStudents.length > 0"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Section (Optional)</label>
+                                <Select
+                                    v-model="section"
+                                    :options="sectionOptions"
+                                    placeholder="All sections"
+                                    class="w-full"
+                                    :disabled="selectedStudents.length > 0"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender (Optional)</label>
+                                <Select
+                                    v-model="genderFilter"
+                                    :options="genderOptions"
+                                    placeholder="All genders"
+                                    class="w-full"
+                                    :disabled="selectedStudents.length > 0"
                                 />
                             </div>
                         </div>
-                    </div>
-                    <div class="mt-3 flex justify-between items-center">
-                        <div class="text-sm text-green-700">
+                        
+                        <small class="text-gray-600 mt-2 block text-xs">
                             <i class="pi pi-info-circle mr-1"></i>
-                            Report will be generated only for checked students.
-                        </div>
-                        <div class="space-x-2">
-                            <Button
-                                label="Select All"
-                                size="small"
-                                outlined
-                                @click="selectAllStudents"
-                                class="text-xs"
+                            Report will include all pupils matching these filters
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Sort By (applies to both options) -->
+                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div class="flex items-center gap-4">
+                        <i class="pi pi-sort-alt text-gray-600"></i>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sort Report By</label>
+                            <Select
+                                v-model="sortBy"
+                                :options="sortOptions"
+                                placeholder="Name (A-Z)"
+                                class="w-full"
                             />
-                            <Button
-                                label="Clear All"
-                                size="small"
-                                outlined
-                                severity="danger"
-                                @click="clearAllStudents"
-                                class="text-xs !text-red-600 !border-red-600 hover:!bg-red-50"
-                            />
                         </div>
+                        <small class="text-xs text-gray-600 self-end mb-1">
+                            Applies to selected or filtered pupils
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Teacher Quick Select -->
+                <div v-if="userRole === 'teacher'" class="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-purple-800">
+                            <i class="pi pi-users mr-1"></i>
+                            <strong>Teacher:</strong> Generate report for all your assigned pupils
+                        </span>
+                        <Button 
+                            label="Select All My Pupils" 
+                            icon="pi pi-check"
+                            size="small"
+                            @click="selectAllAssignedStudents"
+                            class="!bg-purple-600 !border-purple-600 hover:!bg-purple-700"
+                        />
                     </div>
                 </div>
             </div>
 
-            <!-- Report Configuration Card -->
+            <!-- STEP 2: Health Fields Selection Card -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                    <i class="pi pi-cog mr-2 text-gray-600"></i>
-                    Report Configuration
-                </h2>
-
-                <!-- Student Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Teacher Notice -->
-                    <div v-if="userRole === 'teacher'" class="md:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <i class="pi pi-info-circle text-blue-600 mr-2"></i>
-                                <span class="text-blue-800 font-medium">Teacher View:</span>
-                                <span class="text-blue-700 ml-1">You can only generate reports for your assigned pupils.</span>
-                            </div>
-                            <Button 
-                                label="Select All My Pupils" 
-                                icon="pi pi-users"
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <span class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">2</span>
+                        Select Health Fields
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold" :class="selectedHealthFields.length === 6 ? 'text-green-600' : selectedHealthFields.length >= 4 ? 'text-blue-600' : 'text-gray-600'">
+                            {{ selectedHealthFields.length }}/6 fields selected
+                        </span>
+                        <div class="flex gap-2">
+                            <Button
+                                label="Clear All"
                                 size="small"
-                                @click="selectAllAssignedStudents"
-                                class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                                outlined
+                                severity="secondary"
+                                @click="clearAllHealthFields"
+                                class="text-xs"
                             />
-                        </div>
-                    </div>
-                    
-                    <!-- Grade and Section Selection (Hidden for Teachers) -->
-                    <div v-if="userRole !== 'teacher'" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Grade Level</label>
-                            <Select
-                                v-model="selectedGrade"
-                                :options="gradeLevels"
-                                placeholder="Select a grade level"
-                                class="w-full"
-                                :disabled="selectedStudents.length > 0"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Section (Optional)</label>
-                            <Select
-                                v-model="section"
-                                :options="sectionOptions"
-                                placeholder="Select Section"
-                                class="w-full"
-                                :disabled="selectedStudents.length > 0"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Student Filters -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Gender Filter</label>
-                            <Select
-                                v-model="genderFilter"
-                                :options="genderOptions"
-                                placeholder="Select Gender"
-                                class="w-full"
-                                :disabled="selectedStudents.length > 0"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <InputNumber
-                                    v-model="minAge"
-                                    placeholder="Min Age"
-                                    :min="5"
-                                    :max="18"
-                                    class="w-full"
-                                    :disabled="selectedStudents.length > 0"
-                                />
-                                <InputNumber
-                                    v-model="maxAge"
-                                    placeholder="Max Age"
-                                    :min="5"
-                                    :max="18"
-                                    class="w-full"
-                                    :disabled="selectedStudents.length > 0"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                            <Select
-                                v-model="sortBy"
-                                :options="sortOptions"
-                                placeholder="Select Sort Order"
-                                class="w-full"
+                            <Button
+                                label="Essential Fields"
+                                size="small"
+                                severity="info"
+                                @click="selectEssentialFields"
+                                class="text-xs"
                             />
                         </div>
                     </div>
                 </div>
 
                 <!-- Health Examination Fields -->
-                <div class="mt-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="block text-sm font-medium text-gray-700">Health Examination Fields</label>
-                        <div class="flex items-center gap-3">
-                            <div class="text-sm text-gray-600">
-                                Selected: {{ totalFieldCount }} fields
-                            </div>
-                            <div class="flex gap-2">
-                                <Button
-                                    label="Clear All"
-                                    size="small"
-                                    outlined
-                                    severity="secondary"
-                                    @click="clearAllHealthFields"
-                                    class="text-xs"
-                                />
-                                <Button
-                                    label="Essential"
-                                    size="small"
-                                    outlined
-                                    severity="info"
-                                    @click="selectEssentialFields"
-                                    class="text-xs"
-                                />
-                            </div>
-                        </div>
-                    </div>
+                <div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <Button
                             v-for="field in healthExamFields"
@@ -270,71 +259,96 @@
                         />
                     </div>
                     
-                    <!-- Field Count Recommendations and Warnings -->
-                    <div class="mt-4 space-y-2">
-                        <!-- Optimal Range -->
-                        <div v-if="totalFieldCount >= 8 && totalFieldCount <= 12" class="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-md">
+                    <!-- Field Count Recommendations -->
+                    <div class="mt-4">
+                        <!-- At Limit -->
+                        <div v-if="selectedHealthFields.length === 6" class="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-md">
                             <i class="pi pi-check-circle"></i>
-                            <span><strong>Optimal:</strong> {{ totalFieldCount }} fields - Perfect for PDF printing with excellent readability</span>
+                            <span><strong>Maximum Reached!</strong> 6 fields selected - Perfect for PDF layout</span>
                         </div>
                         
                         <!-- Good Range -->
-                        <div v-else-if="totalFieldCount >= 13 && totalFieldCount <= 16" class="flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md">
-                            <i class="pi pi-exclamation-triangle"></i>
-                            <span><strong>Caution:</strong> {{ totalFieldCount }} fields - Text will be smaller but still readable</span>
-                        </div>
-                        
-                        <!-- Too Many Fields -->
-                        <div v-else-if="totalFieldCount > 16" class="flex items-center gap-2 text-sm text-red-700 bg-red-50 px-3 py-2 rounded-md">
-                            <i class="pi pi-times-circle"></i>
-                            <span><strong>Warning:</strong> {{ totalFieldCount }} fields - May cause layout issues and poor readability in PDF</span>
-                        </div>
-                        
-                        <!-- Too Few Fields -->
-                        <div v-else-if="totalFieldCount > 0 && totalFieldCount < 8" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
+                        <div v-else-if="selectedHealthFields.length >= 4 && selectedHealthFields.length < 6" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
                             <i class="pi pi-info-circle"></i>
-                            <span><strong>Tip:</strong> {{ totalFieldCount }} fields selected - You can add more fields for a comprehensive report</span>
+                            <span>{{ selectedHealthFields.length }} fields selected - You can add {{ 6 - selectedHealthFields.length }} more</span>
                         </div>
                         
-                        <!-- Recommendations -->
-                        <div v-if="totalFieldCount === 0" class="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
-                            <strong>Recommendations:</strong>
-                            <ul class="mt-1 ml-4 list-disc text-xs">
-                                <li><strong>Essential (8-12 fields):</strong> Height, Weight, BMI, Vision, Temperature, Heart Rate</li>
-                                <li><strong>Physical (9-11 fields):</strong> Add Auditory Screening, Deformities</li>
-                                <li><strong>Medical (8-10 fields):</strong> Iron Supplementation, Deworming, SBFP, 4Ps</li>
-                            </ul>
+                        <!-- Few Fields -->
+                        <div v-else-if="selectedHealthFields.length > 0 && selectedHealthFields.length < 4" class="flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-exclamation-triangle"></i>
+                            <span>{{ selectedHealthFields.length }} fields selected - Consider adding more for a comprehensive report</span>
+                        </div>
+                        
+                        <!-- No Fields -->
+                        <div v-else-if="selectedHealthFields.length === 0" class="text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
+                            <i class="pi pi-info-circle mr-1"></i>
+                            <strong>Tip:</strong> Click "Essential Fields" to quickly select 6 optimal health metrics (Maximum: 6 fields)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Generate Report -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm">3</span>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">Generate Report</h2>
+                            <p class="text-sm text-gray-600">Review your selections and generate the PDF</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <Button
+                            v-if="showDraftNotification"
+                            label="Clear Draft"
+                            icon="pi pi-trash"
+                            @click="clearDraft"
+                            outlined
+                            severity="danger"
+                            size="small"
+                        />
+                        <Button
+                            label="Generate PDF Report"
+                            icon="pi pi-file-pdf"
+                            @click="generateReport"
+                            :loading="loading"
+                            :disabled="isGenerateDisabled"
+                            size="large"
+                            class="!bg-green-600 !border-green-600 hover:!bg-green-700 !px-8 !py-3"
+                        />
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-4 grid grid-cols-3 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="text-xs text-blue-600 font-medium mb-1">Pupils</div>
+                        <div class="text-lg font-bold text-blue-900">
+                            {{ selectedStudents.length > 0 ? selectedStudents.filter(s => s.checked).length + ' selected' : (selectedGrade ? 'Grade ' + selectedGrade : 'Not selected') }}
+                        </div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div class="text-xs text-green-600 font-medium mb-1">Health Fields</div>
+                        <div class="text-lg font-bold text-green-900">{{ selectedHealthFields.length }} fields</div>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div class="text-xs text-purple-600 font-medium mb-1">Status</div>
+                        <div class="text-sm font-bold" :class="isGenerateDisabled ? 'text-red-600' : 'text-green-600'">
+                            {{ isGenerateDisabled ? 'Incomplete' : 'Ready to Generate' }}
                         </div>
                     </div>
                 </div>
 
-                <!-- Generate Button -->
-                <div class="mt-6 flex gap-3">
-                    <Button
-                        label="Generate Report"
-                        icon="pi pi-file-pdf"
-                        @click="generateReport"
-                        :loading="loading"
-                        :disabled="isGenerateDisabled"
-                        class="!bg-green-600 !border-green-600 hover:!bg-green-700"
-                    />
-                    <Button
-                        v-if="showDraftNotification"
-                        label="Clear Draft"
-                        icon="pi pi-trash"
-                        @click="clearDraft"
-                        outlined
-                        severity="danger"
-                        size="small"
-                    />
-                    <Button
-                        v-if="reportData.length > 0"
-                        label="Print Report"
-                        icon="pi pi-print"
-                        @click="printReport"
-                        outlined
-                        severity="info"
-                    />
+                <!-- Error Messages -->
+                <div v-if="isGenerateDisabled" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-center text-sm text-yellow-800">
+                        <i class="pi pi-exclamation-triangle mr-2"></i>
+                        <span>
+                            <strong>Action Required:</strong> 
+                            {{ selectedStudents.length === 0 && !selectedGrade ? 'Please select pupils or choose a grade level' : 'Please check at least one pupil from your selection' }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -409,6 +423,8 @@ const genderOptions = ['All', 'Male', 'Female'];
 const sortOptions = [
     'Name (A-Z)',
     'Name (Z-A)',
+    'Grade Level (Lowest First)',
+    'Grade Level (Highest First)',
     'Age (Youngest First)',
     'Age (Oldest First)'
 ];
@@ -565,8 +581,14 @@ const toggleHealthField = (fieldValue) => {
     console.log('Toggling field:', fieldValue);
     const index = selectedHealthFields.value.indexOf(fieldValue);
     if (index > -1) {
+        // Remove field
         selectedHealthFields.value.splice(index, 1);
     } else {
+        // Check if limit reached
+        if (selectedHealthFields.value.length >= 6) {
+            alert('Maximum 6 health fields allowed for optimal PDF layout');
+            return;
+        }
         selectedHealthFields.value.push(fieldValue);
     }
     console.log('Selected fields:', selectedHealthFields.value);

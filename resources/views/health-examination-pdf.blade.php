@@ -240,6 +240,7 @@
             border-collapse: collapse;
             margin-top: 15px;
             font-size: 10px;
+            table-layout: fixed;
         }
         
         .intervention-table th,
@@ -807,31 +808,31 @@
             @if(isset($healthTreatments) && $healthTreatments->count() > 0)
                 @foreach($healthTreatments as $treatment)
                 <tr>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->date ? \Carbon\Carbon::parse($treatment->date)->format('m/d/Y') : '' }}</td>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->chief_complaint ?? '' }}</td>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->treatment ?? '' }}</td>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->remarks ?? '' }}</td>
-                    <td style="padding: 3px; font-size: 6px;">{{ $treatment->attended_by ?? '' }}</td>
+                    <td style="padding: 3px; font-size: 6px; width: 15%; word-wrap: break-word; overflow-wrap: break-word;">{{ $treatment->date ? \Carbon\Carbon::parse($treatment->date)->format('m/d/Y') : '' }}</td>
+                    <td style="padding: 3px; font-size: 6px; width: 25%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->chief_complaint ?? '' }}</td>
+                    <td style="padding: 3px; font-size: 6px; width: 30%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->treatment ?? '' }}</td>
+                    <td style="padding: 3px; font-size: 6px; width: 15%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->remarks ?? '' }}</td>
+                    <td style="padding: 3px; font-size: 6px; width: 15%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->attended_by ?? '' }}</td>
                 </tr>
                 @endforeach
                 
                 @for($i = $healthTreatments->count(); $i < 5; $i++)
                 <tr>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
+                    <td style="height: 25px; width: 25%;"></td>
+                    <td style="height: 25px; width: 30%;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
                 </tr>
                 @endfor
             @else
                 @for($i = 0; $i < 5; $i++)
                 <tr>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
-                    <td style="height: 25px;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
+                    <td style="height: 25px; width: 25%;"></td>
+                    <td style="height: 25px; width: 30%;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
+                    <td style="height: 25px; width: 15%;"></td>
                 </tr>
                 @endfor
             @endif

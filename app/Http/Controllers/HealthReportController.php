@@ -137,27 +137,37 @@ class HealthReportController extends Controller
             }
         }
         
-        // Apply sorting based on user selection
+        // Get students first, then sort by last name if needed
         $sortBy = $request->sort_by ?? 'Name (A-Z)';
         
-        switch ($sortBy) {
-            case 'Name (A-Z)':
-                $studentsQuery->orderBy('full_name', 'asc');
-                break;
-            case 'Name (Z-A)':
-                $studentsQuery->orderBy('full_name', 'desc');
-                break;
-            case 'Age (Youngest First)':
-                $studentsQuery->orderBy('age', 'asc');
-                break;
-            case 'Age (Oldest First)':
-                $studentsQuery->orderBy('age', 'desc');
-                break;
-            default:
-                $studentsQuery->orderBy('full_name', 'asc');
+        // For grade level sorting, we need to handle it differently
+        if (in_array($sortBy, ['Grade Level (Lowest First)', 'Grade Level (Highest First)'])) {
+            // Apply grade level sorting
+            $students = $studentsQuery->get();
+            $students = $this->sortByGradeLevel($students, $sortBy === 'Grade Level (Highest First)');
+        } elseif (in_array($sortBy, ['Name (A-Z)', 'Name (Z-A)'])) {
+            // Get all students and sort by last name
+            $students = $studentsQuery->get();
+            $students = $this->sortByLastName($students, $sortBy === 'Name (Z-A)');
+        } else {
+            // Apply age sorting in database
+            switch ($sortBy) {
+                case 'Age (Youngest First)':
+                    $studentsQuery->orderBy('age', 'asc');
+                    break;
+                case 'Age (Oldest First)':
+                    $studentsQuery->orderBy('age', 'desc');
+                    break;
+                default:
+                    // Default to last name sorting
+                    $students = $studentsQuery->get();
+                    $students = $this->sortByLastName($students, false);
+            }
+            
+            if (!isset($students)) {
+                $students = $studentsQuery->get();
+            }
         }
-        
-        $students = $studentsQuery->get();
 
         $reportData = [];
 
@@ -166,7 +176,8 @@ class HealthReportController extends Controller
             
             // Basic student info
             if (in_array('name', $selectedFields)) {
-                $studentData['name'] = $student->full_name;
+                // Format name as "Last Name, First Name Middle Initial"
+                $studentData['name'] = $this->formatNameForReport($student->full_name);
             }
             if (in_array('lrn', $selectedFields)) {
                 $studentData['lrn'] = $student->lrn;
@@ -321,33 +332,40 @@ class HealthReportController extends Controller
                 }
             }
             
-            // Apply sorting
-            switch ($request->sort_by) {
-                case 'Name (A-Z)':
-                    $studentsQuery->orderBy('full_name', 'asc');
-                    break;
-                case 'Name (Z-A)':
-                    $studentsQuery->orderBy('full_name', 'desc');
-                    break;
-                case 'Age (Youngest First)':
-                    $studentsQuery->orderBy('age', 'asc');
-                    break;
-                case 'Age (Oldest First)':
-                    $studentsQuery->orderBy('age', 'desc');
-                    break;
-                default:
-                    $studentsQuery->orderBy('full_name', 'asc');
+            // Apply sorting (same logic as generate method)
+            $sortBy = $request->sort_by ?? 'Name (A-Z)';
+            
+            if (in_array($sortBy, ['Grade Level (Lowest First)', 'Grade Level (Highest First)'])) {
+                $students = $studentsQuery->get();
+                $students = $this->sortByGradeLevel($students, $sortBy === 'Grade Level (Highest First)');
+            } elseif (in_array($sortBy, ['Name (A-Z)', 'Name (Z-A)'])) {
+                $students = $studentsQuery->get();
+                $students = $this->sortByLastName($students, $sortBy === 'Name (Z-A)');
+            } else {
+                switch ($sortBy) {
+                    case 'Age (Youngest First)':
+                        $studentsQuery->orderBy('age', 'asc');
+                        break;
+                    case 'Age (Oldest First)':
+                        $studentsQuery->orderBy('age', 'desc');
+                        break;
+                    default:
+                        $students = $studentsQuery->get();
+                        $students = $this->sortByLastName($students, false);
+                }
+                
+                if (!isset($students)) {
+                    $students = $studentsQuery->get();
+                }
             }
             
             // Debug logging
             Log::info('PDF Export Query Debug', [
                 'grade_level' => $gradeLevel,
                 'section' => $request->section,
-                'query_sql' => $studentsQuery->toSql(),
-                'query_bindings' => $studentsQuery->getBindings()
+                'sort_by' => $sortBy,
+                'student_count' => $students->count()
             ]);
-            
-            $students = $studentsQuery->get();
             
             Log::info('PDF Export Students Found', [
                 'count' => $students->count(),
@@ -361,7 +379,8 @@ class HealthReportController extends Controller
                 
                 // Basic student info
                 if (in_array('name', $selectedFields)) {
-                    $studentData['name'] = $student->full_name;
+                    // Format name as "Last Name, First Name Middle Initial"
+                    $studentData['name'] = $this->formatNameForReport($student->full_name);
                 }
                 if (in_array('lrn', $selectedFields)) {
                     $studentData['lrn'] = $student->lrn;
@@ -491,8 +510,21 @@ class HealthReportController extends Controller
             
             // Build base query with search criteria
             $studentsQuery = Student::where(function($q) use ($query) {
-                $q->whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
-                  ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%']);
+                // Always search by LRN (anywhere in LRN)
+                $q->whereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%']);
+                
+                // For single character: only match first letter of first name or last name
+                if (strlen($query) === 1) {
+                    $q->orWhere(function($subQ) use ($query) {
+                        // Match first letter of first name (name starts with this letter)
+                        $subQ->whereRaw('LOWER(full_name) LIKE ?', [strtolower($query) . '%'])
+                             // Match first letter after a space (last name starts with this letter)
+                             ->orWhereRaw('LOWER(full_name) LIKE ?', ['% ' . strtolower($query) . '%']);
+                    });
+                } else {
+                    // For multi-character: search anywhere in name
+                    $q->orWhereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%']);
+                }
             });
             
             // Filter by teacher assignments if user is a teacher
@@ -765,5 +797,84 @@ class HealthReportController extends Controller
         ];
         
         return $gradeToYear[$grade] ?? '2024-2025';
+    }
+
+    /**
+     * Format student name as "Last Name, First Name Middle Initial"
+     * Assumes full_name is stored as "First Middle Last"
+     */
+    private function formatNameForReport($fullName)
+    {
+        if (empty($fullName)) {
+            return 'N/A';
+        }
+
+        $nameParts = explode(' ', trim($fullName));
+        $count = count($nameParts);
+
+        if ($count === 1) {
+            // Only one name part
+            return $nameParts[0];
+        } elseif ($count === 2) {
+            // First Last -> Last, First
+            return $nameParts[1] . ', ' . $nameParts[0];
+        } else {
+            // First Middle Last -> Last, First M.
+            $lastName = array_pop($nameParts);
+            $firstName = array_shift($nameParts);
+            $middleInitial = !empty($nameParts) ? strtoupper(substr($nameParts[0], 0, 1)) . '.' : '';
+            
+            return $lastName . ', ' . $firstName . ($middleInitial ? ' ' . $middleInitial : '');
+        }
+    }
+
+    /**
+     * Extract last name from full name
+     */
+    private function getLastName($fullName)
+    {
+        if (empty($fullName)) {
+            return '';
+        }
+        $nameParts = explode(' ', trim($fullName));
+        return end($nameParts);
+    }
+
+    /**
+     * Sort students by last name
+     */
+    private function sortByLastName($students, $descending = false)
+    {
+        return $students->sort(function($a, $b) use ($descending) {
+            $lastNameA = strtolower($this->getLastName($a->full_name));
+            $lastNameB = strtolower($this->getLastName($b->full_name));
+            
+            $comparison = strcmp($lastNameA, $lastNameB);
+            return $descending ? -$comparison : $comparison;
+        })->values();
+    }
+
+    /**
+     * Sort students by grade level
+     */
+    private function sortByGradeLevel($students, $descending = false)
+    {
+        $gradeOrder = [
+            'Kinder 2' => 0, 'K-2' => 0,
+            'Grade 1' => 1, '1' => 1,
+            'Grade 2' => 2, '2' => 2,
+            'Grade 3' => 3, '3' => 3,
+            'Grade 4' => 4, '4' => 4,
+            'Grade 5' => 5, '5' => 5,
+            'Grade 6' => 6, '6' => 6,
+        ];
+
+        return $students->sort(function($a, $b) use ($gradeOrder, $descending) {
+            $gradeA = $gradeOrder[$a->grade_level] ?? 999;
+            $gradeB = $gradeOrder[$b->grade_level] ?? 999;
+            
+            $comparison = $gradeA - $gradeB;
+            return $descending ? -$comparison : $comparison;
+        })->values();
     }
 }

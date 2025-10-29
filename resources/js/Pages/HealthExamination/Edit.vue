@@ -31,12 +31,12 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Temperature (°C) <span class="text-red-500">*</span></label>
-                        <InputNumber 
+                        <InputText 
                             v-model="form.temperature" 
-                            :minFractionDigits="1" 
-                            :maxFractionDigits="1" 
-                            :min="35" 
-                            :max="42" 
+                            type="number" 
+                            step="0.1" 
+                            min="35" 
+                            max="42" 
                             :class="['w-full', { 'p-invalid': errors.temperature }]" 
                             required 
                         />
@@ -45,10 +45,11 @@
                     </div>
                     <div class="form-group">
                         <label>Heart Rate (bpm) <span class="text-red-500">*</span></label>
-                        <InputNumber 
+                        <InputText 
                             v-model="form.heart_rate" 
-                            :min="40" 
-                            :max="200" 
+                            type="number" 
+                            min="40" 
+                            max="200" 
                             :class="['w-full', { 'p-invalid': errors.heart_rate }]" 
                             required 
                         />
@@ -57,12 +58,12 @@
                     </div>
                     <div class="form-group">
                         <label>Height (cm) <span class="text-red-500">*</span></label>
-                        <InputNumber 
+                        <InputText 
                             v-model="form.height" 
-                            :minFractionDigits="1" 
-                            :maxFractionDigits="1" 
-                            :min="50" 
-                            :max="200" 
+                            type="number" 
+                            step="0.1" 
+                            min="50" 
+                            max="200" 
                             :class="['w-full', { 'p-invalid': errors.height }]" 
                             required 
                         />
@@ -71,12 +72,12 @@
                     </div>
                     <div class="form-group">
                         <label>Weight (kg) <span class="text-red-500">*</span></label>
-                        <InputNumber 
+                        <InputText 
                             v-model="form.weight" 
-                            :minFractionDigits="1" 
-                            :maxFractionDigits="1" 
-                            :min="10" 
-                            :max="150" 
+                            type="number" 
+                            step="0.1" 
+                            min="10" 
+                            max="150" 
                             :class="['w-full', { 'p-invalid': errors.weight }]" 
                             required 
                         />
@@ -382,7 +383,6 @@
 import { Head, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import Button from 'primevue/button'
-import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
@@ -438,10 +438,10 @@ const dewormingOptions = ['dewormed', 'not_dewormed']
 
 
 const form = useForm({
-    temperature: parseFloat(props.healthExamination.temperature) || null,
-    heart_rate: props.healthExamination.heart_rate ? parseInt(props.healthExamination.heart_rate.toString().replace(/[^\d]/g, '')) || null : null,
-    height: parseFloat(props.healthExamination.height) || null,
-    weight: parseFloat(props.healthExamination.weight) || null,
+    temperature: props.healthExamination.temperature || '',
+    heart_rate: props.healthExamination.heart_rate || '',
+    height: props.healthExamination.height || '',
+    weight: props.healthExamination.weight || '',
     nutritional_status_bmi: props.healthExamination.nutritional_status_bmi || '',
     nutritional_status_height: props.healthExamination.nutritional_status_height || '',
     vision_screening: props.healthExamination.vision_screening || '',
@@ -460,8 +460,10 @@ const form = useForm({
     nose_specify: props.healthExamination.nose_specify || '',
     mouth: props.healthExamination.mouth || '',
     mouth_specify: props.healthExamination.mouth_specify || '',
-    neck: props.healthExamination.neck || '',
     throat: props.healthExamination.throat || '',
+    throat_specify: props.healthExamination.throat_specify || '',
+    neck: props.healthExamination.neck || '',
+    neck_specify: props.healthExamination.neck_specify || '',
     lungs: props.healthExamination.lungs || props.healthExamination.lungs_heart || '',
     lungs_specify: props.healthExamination.lungs_specify || props.healthExamination.lungs_other_specify || '',
     heart: props.healthExamination.heart || props.healthExamination.lungs_heart || '',

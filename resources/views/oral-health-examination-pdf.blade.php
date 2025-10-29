@@ -2712,7 +2712,7 @@
         <!-- Intervention/Treatment Record Table -->
         <div style="margin-top: 30px; clear: both;">
             <h3 style="font-size: 10px; font-weight: bold; margin-bottom: 15px; text-align: center;">INTERVENTION/TREATMENT RECORD</h3>
-            <table style="width: 100%; border-collapse: collapse; font-size: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 8px; table-layout: fixed;">
                 <tr>
                     <th style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold; width: 10%;">Date</th>
                     <th style="border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold; width: 25%;">Chief Complaint</th>
@@ -2735,22 +2735,22 @@
 
                 @forelse($allTreatments->take($maxRows) as $treatment)
                 <tr>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->date ? $treatment->date->format('m/d/Y') : '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->chief_complaint ?? '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->treatment ?? '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->remarks ?? '' }}</td>
-                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px;">{{ $treatment->attended_by ?? '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px; width: 10%; word-wrap: break-word; overflow-wrap: break-word;">{{ $treatment->date ? $treatment->date->format('m/d/Y') : '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px; width: 25%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->chief_complaint ?? '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px; width: 25%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->treatment ?? '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px; width: 20%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->remarks ?? '' }}</td>
+                    <td style="border: 1px solid #000; padding: 5px; font-size: 7px; width: 20%; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">{{ $treatment->attended_by ?? '' }}</td>
                 </tr>
                 @empty
                 @endforelse
 
                 @for($i = $allTreatments->count(); $i < $maxRows; $i++)
                 <tr>
-                    <td style="border: 1px solid #000; padding: 5px; height: 20px;"></td>
-                    <td style="border: 1px solid #000; padding: 5px;"></td>
-                    <td style="border: 1px solid #000; padding: 5px;"></td>
-                    <td style="border: 1px solid #000; padding: 5px;"></td>
-                    <td style="border: 1px solid #000; padding: 5px;"></td>
+                    <td style="border: 1px solid #000; padding: 5px; height: 20px; width: 10%;"></td>
+                    <td style="border: 1px solid #000; padding: 5px; width: 25%;"></td>
+                    <td style="border: 1px solid #000; padding: 5px; width: 25%;"></td>
+                    <td style="border: 1px solid #000; padding: 5px; width: 20%;"></td>
+                    <td style="border: 1px solid #000; padding: 5px; width: 20%;"></td>
                 </tr>
                 @endfor
             </table>

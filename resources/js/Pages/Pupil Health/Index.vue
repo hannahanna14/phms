@@ -14,12 +14,15 @@ const currentYear = new Date().getFullYear();
 
 // Get user role from props
 const userRole = computed(() => page.props.userRole);
-// Filters that apply immediately
+
+// Applied filters (after clicking Apply)
 const schoolYear = ref('All');
 const gradeLevel = ref('All');
-
-// Search filter (needs Apply button)
 const searchQuery = ref('');
+
+// Temporary filters (before clicking Apply)
+const tempSchoolYear = ref('All');
+const tempGradeLevel = ref('All');
 const tempSearchQuery = ref('');
 
 const schoolYears = ref([
@@ -34,14 +37,20 @@ const gradeLevels = ref(['All', 'K-2', 1, 2, 3, 4, 5, 6]);
 // Store record type selections separately (not in the data object)
 const recordTypeSelections = ref({});
 
-// Apply search filter
-const applySearch = () => {
+// Apply all filters
+const applyFilters = () => {
+    gradeLevel.value = tempGradeLevel.value;
+    schoolYear.value = tempSchoolYear.value;
     searchQuery.value = tempSearchQuery.value;
 };
 
-// Clear search filter
-const clearSearch = () => {
+// Clear all filters
+const clearFilters = () => {
+    tempGradeLevel.value = 'All';
+    tempSchoolYear.value = 'All';
     tempSearchQuery.value = '';
+    gradeLevel.value = 'All';
+    schoolYear.value = 'All';
     searchQuery.value = '';
 };
 
@@ -142,51 +151,53 @@ const viewHealthExam = (student) => {
 <template>
     <div class="p-4 bg-gray-50 rounded-lg">
         <!-- Filters and Search -->
-        <div class="grid grid-cols-12 gap-4 mb-6">
-            <div class="col-span-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                <Select
-                    v-model="gradeLevel"
-                    :options="gradeLevels"
-                    placeholder="Select Grade"
-                    class="w-full"
-                />
-            </div>
-            <div class="col-span-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
-                <Select
-                    v-model="schoolYear"
-                    :options="schoolYears"
-                    placeholder="Select Year"
-                    class="w-full"
-                />
-            </div>
-            <div class="col-span-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
-                <div class="flex gap-2 p-2 border-2 border-gray-300 rounded-lg bg-white">
-                    <IconField iconPosition="left" class="flex-1">
+        <div class="p-4 border-2 border-gray-300 rounded-lg bg-white mb-6">
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                    <Select
+                        v-model="tempGradeLevel"
+                        :options="gradeLevels"
+                        placeholder="All"
+                        class="w-full"
+                    />
+                </div>
+                <div class="col-span-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
+                    <Select
+                        v-model="tempSchoolYear"
+                        :options="schoolYears"
+                        placeholder="All"
+                        class="w-full"
+                    />
+                </div>
+                <div class="col-span-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
+                    <IconField iconPosition="left" class="w-full">
                         <InputIcon class="pi pi-search text-gray-400" />
                         <InputText
                             v-model="tempSearchQuery"
                             placeholder="Search by name or LRN"
-                            class="w-full pl-8 py-2 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm"
-                            @keyup.enter="applySearch"
+                            class="w-full"
+                            @keyup.enter="applyFilters"
                         />
                     </IconField>
+                </div>
+                <div class="col-span-2 flex items-end gap-2">
                     <Button 
                         label="Apply" 
                         icon="pi pi-check" 
-                        @click="applySearch"
-                        severity="primary"
-                        size="small"
+                        @click="applyFilters"
+                        severity="success"
+                        class="flex-1"
                     />
                     <Button 
                         label="Clear" 
                         icon="pi pi-times" 
-                        @click="clearSearch"
+                        @click="clearFilters"
                         severity="secondary"
                         outlined
-                        size="small"
+                        class="flex-1"
                     />
                 </div>
             </div>
