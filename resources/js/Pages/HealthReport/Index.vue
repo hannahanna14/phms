@@ -619,7 +619,7 @@ const onStudentSearch = async () => {
     searchLoading.value = true;
 
     try {
-        const response = await axios.get('/api/students/search', {
+        const response = await axios.get('/api/health-report/students/search', {
             params: { query },
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -674,7 +674,7 @@ const selectAllAssignedStudents = async () => {
     
     try {
         // Get all assigned students by searching with empty query
-        const response = await axios.get('/api/students/search', {
+        const response = await axios.get('/api/health-report/students/search', {
             params: { query: '' }, // Empty query to get all assigned students
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',

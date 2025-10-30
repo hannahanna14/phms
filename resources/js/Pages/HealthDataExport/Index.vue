@@ -31,7 +31,9 @@
                                 <Select 
                                     v-model="healthExamFilters.grade_level"
                                     :options="gradeOptions"
-                                    placeholder="All Grades"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Grade Level"
                                     class="w-full"
                                 />
                             </div>
@@ -79,7 +81,9 @@
                                 <Select 
                                     v-model="oralHealthExamFilters.grade_level"
                                     :options="gradeOptions"
-                                    placeholder="All Grades"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Grade Level"
                                     class="w-full"
                                 />
                             </div>
@@ -127,7 +131,9 @@
                                 <Select 
                                     v-model="healthTreatmentFilters.grade_level"
                                     :options="gradeOptions"
-                                    placeholder="All Grades"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Grade Level"
                                     class="w-full"
                                 />
                             </div>
@@ -163,7 +169,9 @@
                                 <Select 
                                     v-model="oralHealthTreatmentFilters.grade_level"
                                     :options="gradeOptions"
-                                    placeholder="All Grades"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Grade Level"
                                     class="w-full"
                                 />
                             </div>
@@ -199,7 +207,9 @@
                                 <Select 
                                     v-model="incidentFilters.grade_level"
                                     :options="gradeOptions"
-                                    placeholder="All Grades"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Grade Level"
                                     class="w-full"
                                 />
                             </div>
@@ -235,9 +245,16 @@ const props = defineProps({
     schoolSettings: Object
 })
 
-// Grade options
+// Grade level options
 const gradeOptions = [
-    'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'
+    { label: 'Kinder 1', value: 'Kinder 1' },
+    { label: 'Kinder 2', value: 'Kinder 2' },
+    { label: 'Grade 1', value: 'Grade 1' },
+    { label: 'Grade 2', value: 'Grade 2' },
+    { label: 'Grade 3', value: 'Grade 3' },
+    { label: 'Grade 4', value: 'Grade 4' },
+    { label: 'Grade 5', value: 'Grade 5' },
+    { label: 'Grade 6', value: 'Grade 6' }
 ]
 
 // Loading states
@@ -285,6 +302,12 @@ const incidentFilters = ref({
 
 // Export functions
 const exportHealthExaminations = async (format) => {
+    // Validate that a grade level is selected
+    if (healthExamFilters.value.grade_level === null || healthExamFilters.value.grade_level === undefined) {
+        alert('⚠️ Please select a grade level before exporting.')
+        return
+    }
+    
     loading.value.healthExam = true
     try {
         const params = new URLSearchParams({
@@ -311,6 +334,12 @@ const exportHealthExaminations = async (format) => {
 }
 
 const exportOralHealthExaminations = async (format) => {
+    // Validate that a grade level is selected
+    if (oralHealthExamFilters.value.grade_level === null || oralHealthExamFilters.value.grade_level === undefined) {
+        alert('⚠️ Please select a grade level before exporting.')
+        return
+    }
+    
     loading.value.oralHealthExam = true
     try {
         const params = new URLSearchParams({
@@ -327,6 +356,12 @@ const exportOralHealthExaminations = async (format) => {
 }
 
 const exportHealthTreatments = async (format) => {
+    // Validate that a grade level is selected
+    if (healthTreatmentFilters.value.grade_level === null || healthTreatmentFilters.value.grade_level === undefined) {
+        alert('⚠️ Please select a grade level before exporting.')
+        return
+    }
+    
     loading.value.healthTreatment = true
     try {
         const params = new URLSearchParams({
@@ -343,6 +378,12 @@ const exportHealthTreatments = async (format) => {
 }
 
 const exportOralHealthTreatments = async (format) => {
+    // Validate that a grade level is selected
+    if (oralHealthTreatmentFilters.value.grade_level === null || oralHealthTreatmentFilters.value.grade_level === undefined) {
+        alert('⚠️ Please select a grade level before exporting.')
+        return
+    }
+    
     loading.value.oralHealthTreatment = true
     try {
         const params = new URLSearchParams({
@@ -359,6 +400,12 @@ const exportOralHealthTreatments = async (format) => {
 }
 
 const exportIncidents = async (format) => {
+    // Validate that a grade level is selected
+    if (incidentFilters.value.grade_level === null || incidentFilters.value.grade_level === undefined) {
+        alert('⚠️ Please select a grade level before exporting.')
+        return
+    }
+    
     loading.value.incident = true
     try {
         const params = new URLSearchParams({

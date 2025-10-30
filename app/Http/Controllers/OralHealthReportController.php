@@ -167,27 +167,28 @@ class OralHealthReportController extends Controller
             }
         }
         
+        // Get students first, then apply sorting
+        $students = $studentsQuery->get();
+        
         // Apply sorting based on user selection
         $sortBy = $request->sort_by ?? 'Name (A-Z)';
         
         switch ($sortBy) {
             case 'Name (A-Z)':
-                $studentsQuery->orderBy('full_name', 'asc');
+                $students = $this->sortByLastName($students, false);
                 break;
             case 'Name (Z-A)':
-                $studentsQuery->orderBy('full_name', 'desc');
+                $students = $this->sortByLastName($students, true);
                 break;
             case 'Age (Youngest First)':
-                $studentsQuery->orderBy('age', 'asc');
+                $students = $students->sortBy('age')->values();
                 break;
             case 'Age (Oldest First)':
-                $studentsQuery->orderBy('age', 'desc');
+                $students = $students->sortByDesc('age')->values();
                 break;
             default:
-                $studentsQuery->orderBy('full_name', 'asc');
+                $students = $this->sortByLastName($students, false);
         }
-        
-        $students = $studentsQuery->get();
 
         $reportData = [];
 
@@ -196,7 +197,8 @@ class OralHealthReportController extends Controller
             
             // Basic student info - only include selected fields
             if (in_array('name', $selectedFields)) {
-                $studentData['name'] = $student->full_name;
+                // Format name as "Last Name, First Name Middle Initial"
+                $studentData['name'] = $this->formatNameForReport($student->full_name);
             }
             if (in_array('lrn', $selectedFields)) {
                 $studentData['lrn'] = $student->lrn;
@@ -302,6 +304,142 @@ class OralHealthReportController extends Controller
             'maxValues' => $request->maxValues ?? [],
             'selected_students' => $request->selected_students ?? []
         ]);
+    }
+
+    public function searchStudents(Request $request)
+    {
+        try {
+            $query = $request->get('query', '');
+            
+            // For teachers with empty query, return all assigned students
+            $user = auth()->user();
+            if (strlen($query) < 1) {
+                if ($user && $user->role === 'teacher') {
+                    // Return all assigned students for teachers
+                    $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                    if ($assignedStudentIds->isEmpty()) {
+                        return response()->json([]);
+                    }
+                    
+                    $students = Student::whereIn('id', $assignedStudentIds)
+                        ->select('id', 'full_name', 'lrn', 'grade_level')
+                        ->orderBy('full_name')
+                        ->get();
+                        
+                    $result = $students->map(function($student) {
+                        $formattedName = $this->formatNameForReport($student->full_name);
+                        return [
+                            'id' => $student->id,
+                            'name' => $formattedName,
+                            'lrn' => $student->lrn,
+                            'grade_level' => $student->grade_level,
+                            'section' => 'N/A',
+                            'display_text' => $formattedName . ' (LRN: ' . $student->lrn . ')'
+                        ];
+                    });
+                    
+                    return response()->json($result);
+                }
+                return response()->json([]);
+            }
+            
+            Log::info("Searching for: '{$query}'");
+            
+            $user = auth()->user();
+            
+            Log::info("Search Debug - User Info:", [
+                'user_id' => $user ? $user->id : 'null',
+                'user_role' => $user ? $user->role : 'null',
+                'is_authenticated' => auth()->check()
+            ]);
+            
+            // Build base query with search criteria
+            $studentsQuery = Student::where(function($q) use ($query) {
+                // Always search by LRN (anywhere in LRN)
+                $q->whereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%']);
+                
+                // For single character: only match first letter of first name or last name
+                if (strlen($query) === 1) {
+                    $q->orWhere(function($subQ) use ($query) {
+                        // Match first letter of first name (name starts with this letter)
+                        $subQ->whereRaw('LOWER(full_name) LIKE ?', [strtolower($query) . '%'])
+                             // Match first letter after a space (last name starts with this letter)
+                             ->orWhereRaw('LOWER(full_name) LIKE ?', ['% ' . strtolower($query) . '%']);
+                    });
+                } else {
+                    // For multi-character: search anywhere in name
+                    $q->orWhereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%']);
+                }
+            });
+            
+            // Filter by teacher assignments if user is a teacher
+            if ($user->role === 'teacher') {
+                $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+                Log::info("Teacher search - filtering by assigned students:", ['assigned_ids' => $assignedStudentIds->toArray()]);
+                
+                if ($assignedStudentIds->isEmpty()) {
+                    return response()->json([]);
+                }
+                
+                $studentsQuery->whereIn('id', $assignedStudentIds);
+            }
+            
+            $students = $studentsQuery->select('id', 'full_name', 'lrn', 'grade_level')
+                ->orderBy('full_name')
+                ->limit(20)
+                ->get();
+            
+            Log::info("Search results:", [
+                'user_role' => $user->role,
+                'total_found' => count($students),
+                'student_names' => $students->pluck('full_name')->toArray()
+            ]);
+            
+            $result = $students->map(function($student) {
+                $formattedName = $this->formatNameForReport($student->full_name);
+                return [
+                    'id' => $student->id,
+                    'name' => $formattedName,
+                    'lrn' => $student->lrn,
+                    'grade_level' => $student->grade_level,
+                    'section' => 'N/A',
+                    'display_text' => $formattedName . ' (LRN: ' . $student->lrn . ')'
+                ];
+            });
+            
+            return response()->json($result);
+            
+        } catch (\Exception $e) {
+            Log::error('Student search error: ' . $e->getMessage());
+            
+            // Fallback to basic query without section if there's an issue
+            try {
+                $students = Student::whereRaw('LOWER(full_name) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->orWhereRaw('LOWER(lrn) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->select('id', 'full_name', 'lrn', 'grade_level')
+                    ->orderBy('full_name')
+                    ->limit(20)
+                    ->get();
+                
+                $result = $students->map(function($student) {
+                    $formattedName = $this->formatNameForReport($student->full_name);
+                    return [
+                        'id' => $student->id,
+                        'name' => $formattedName,
+                        'lrn' => $student->lrn,
+                        'grade_level' => $student->grade_level,
+                        'section' => 'N/A',
+                        'display_text' => $formattedName . ' (LRN: ' . $student->lrn . ')'
+                    ];
+                });
+                
+                return response()->json($result);
+                
+            } catch (\Exception $e2) {
+                Log::error('Student search fallback error: ' . $e2->getMessage());
+                return response()->json(['error' => 'Search failed'], 500);
+            }
+        }
     }
 
     public function exportPdf(Request $request)
@@ -463,27 +601,28 @@ class OralHealthReportController extends Controller
             }
         }
         
-        // Apply sorting
+        // Get students first, then apply sorting
+        $students = $studentsQuery->get();
+        
+        // Apply sorting based on user selection
         $sortBy = $request->sort_by ?? 'Name (A-Z)';
         
         switch ($sortBy) {
             case 'Name (A-Z)':
-                $studentsQuery->orderBy('full_name', 'asc');
+                $students = $this->sortByLastName($students, false);
                 break;
             case 'Name (Z-A)':
-                $studentsQuery->orderBy('full_name', 'desc');
+                $students = $this->sortByLastName($students, true);
                 break;
             case 'Age (Youngest First)':
-                $studentsQuery->orderBy('age', 'asc');
+                $students = $students->sortBy('age')->values();
                 break;
             case 'Age (Oldest First)':
-                $studentsQuery->orderBy('age', 'desc');
+                $students = $students->sortByDesc('age')->values();
                 break;
             default:
-                $studentsQuery->orderBy('full_name', 'asc');
+                $students = $this->sortByLastName($students, false);
         }
-        
-        $students = $studentsQuery->get();
         
         \Log::info('PDF Export Debug:', [
             'students_count' => $students->count(),
@@ -502,7 +641,7 @@ class OralHealthReportController extends Controller
             ]);
             
             $studentData = [
-                'name' => $student->full_name,
+                'name' => $this->formatNameForReport($student->full_name),
                 'lrn' => $student->lrn,
                 'grade_level' => $student->grade_level,
                 'section' => $student->section,
@@ -701,4 +840,59 @@ class OralHealthReportController extends Controller
         ], 500);
     }
 }
+
+    /**
+     * Format student name as "Last Name, First Name Middle Initial"
+     * Assumes full_name is stored as "First Middle Last"
+     */
+    private function formatNameForReport($fullName)
+    {
+        if (empty($fullName)) {
+            return 'N/A';
+        }
+
+        $nameParts = explode(' ', trim($fullName));
+        $count = count($nameParts);
+
+        if ($count === 1) {
+            // Only one name part
+            return $nameParts[0];
+        } elseif ($count === 2) {
+            // First Last -> Last, First
+            return $nameParts[1] . ', ' . $nameParts[0];
+        } else {
+            // First Middle Last -> Last, First M.
+            $lastName = array_pop($nameParts);
+            $firstName = array_shift($nameParts);
+            $middleInitial = !empty($nameParts) ? strtoupper(substr($nameParts[0], 0, 1)) . '.' : '';
+            
+            return $lastName . ', ' . $firstName . ($middleInitial ? ' ' . $middleInitial : '');
+        }
+    }
+
+    /**
+     * Extract last name from full name
+     */
+    private function getLastName($fullName)
+    {
+        if (empty($fullName)) {
+            return '';
+        }
+        $nameParts = explode(' ', trim($fullName));
+        return end($nameParts);
+    }
+
+    /**
+     * Sort students by last name
+     */
+    private function sortByLastName($students, $descending = false)
+    {
+        return $students->sort(function($a, $b) use ($descending) {
+            $lastNameA = strtolower($this->getLastName($a->full_name));
+            $lastNameB = strtolower($this->getLastName($b->full_name));
+            
+            $comparison = strcmp($lastNameA, $lastNameB);
+            return $descending ? -$comparison : $comparison;
+        })->values();
+    }
 }

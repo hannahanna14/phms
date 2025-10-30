@@ -243,10 +243,48 @@ const messagesContainer = ref(null)
 // Create reactive copy of conversations to allow updates
 const conversations = ref([...props.conversations])
 
+// Track which conversations have been marked as read locally using localStorage
+const getMarkedAsRead = () => {
+    try {
+        const stored = localStorage.getItem('markedAsReadConversations')
+        return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch {
+        return new Set()
+    }
+}
+
+const markedAsRead = ref(getMarkedAsRead())
+
+// Save to localStorage whenever it changes
+const saveMarkedAsRead = () => {
+    try {
+        localStorage.setItem('markedAsReadConversations', JSON.stringify([...markedAsRead.value]))
+    } catch (error) {
+        console.error('Failed to save read status:', error)
+    }
+}
+
 // Watch for changes in props.conversations and update reactive copy
 watch(() => props.conversations, (newConversations) => {
-    conversations.value = [...newConversations]
-}, { deep: true })
+    // Clean up markedAsRead for conversations that have new unread messages
+    newConversations.forEach(conv => {
+        // If server shows unread_count > 0 and it's different from what we had before,
+        // it means there are genuinely new messages, so remove from markedAsRead
+        const oldConv = conversations.value.find(c => c.id === conv.id)
+        if (conv.unread_count > 0 && oldConv && conv.unread_count !== oldConv.unread_count) {
+            markedAsRead.value.delete(conv.id)
+            saveMarkedAsRead()
+        }
+    })
+    
+    // Preserve the unread_count = 0 for conversations that were marked as read
+    conversations.value = newConversations.map(conv => {
+        if (markedAsRead.value.has(conv.id)) {
+            return { ...conv, unread_count: 0 }
+        }
+        return { ...conv }
+    })
+}, { deep: true, immediate: true })
 
 // Computed properties
 const filteredConversations = computed(() => {
@@ -269,12 +307,22 @@ const getConversationInitials = (conversation) => {
 
 // Actions
 const selectConversation = async (conversationId) => {
-    // First, visit the conversation
+    // Update the local conversation's unread count to 0 immediately for instant UI feedback
+    const conversation = conversations.value.find(c => c.id === conversationId)
+    if (conversation) {
+        conversation.unread_count = 0
+    }
+    
+    // Add to markedAsRead set and save to localStorage
+    markedAsRead.value.add(conversationId)
+    saveMarkedAsRead()
+    
+    // Navigate to the conversation
     router.visit(route('consultation.index', { conversation: conversationId }), {
-        preserveState: true,
+        preserveState: false, // Changed to false to get fresh data from server
         preserveScroll: false,
         onSuccess: async () => {
-            // After successfully loading the conversation, mark it as read
+            // After navigation, mark as read on the server
             try {
                 await fetch(`/api/consultation/${conversationId}/read`, {
                     method: 'POST',
@@ -283,12 +331,6 @@ const selectConversation = async (conversationId) => {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 })
-                
-                // Update the local conversation's unread count to 0
-                const conversation = conversations.value.find(c => c.id === conversationId)
-                if (conversation) {
-                    conversation.unread_count = 0
-                }
             } catch (error) {
                 console.error('Failed to mark conversation as read:', error)
             }

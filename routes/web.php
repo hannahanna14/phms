@@ -110,17 +110,20 @@ Route::middleware(['auth'])->group(function () {
     // Health Report Routes
     Route::get('/health-report', [HealthReportController::class, 'index'])
         ->name('health-report.index');
-    Route::match(['GET', 'POST'], '/api/health-report/generate', [HealthReportController::class, 'generate'])
+    Route::match(['GET', 'POST'], '/health-report/generate', [HealthReportController::class, 'generate'])
         ->name('health-report.generate');
     Route::match(['GET', 'POST'], '/health-report/export-pdf', [HealthReportController::class, 'exportPdf'])
         ->name('health-report.export-pdf');
     Route::get('/health-report/preview-pdf', [HealthReportController::class, 'previewPdf'])
         ->name('health-report.preview-pdf');
+    Route::get('/api/health-report/students/search', [HealthReportController::class, 'searchStudents'])
+        ->name('health-report.search-students');
 
     // Oral Health Report Routes
     Route::get('/oral-health-report', [OralHealthReportController::class, 'index'])->name('oral-health-report.index');
     Route::match(['GET', 'POST'], '/oral-health-report/generate', [OralHealthReportController::class, 'generate'])->name('oral-health-report.generate');
     Route::match(['GET', 'POST'], '/oral-health-report/export-pdf', [OralHealthReportController::class, 'exportPdf'])->name('oral-health-report.export-pdf');
+    Route::get('/api/oral-health-report/students/search', [OralHealthReportController::class, 'searchStudents'])->name('oral-health-report.search-students');
 
     // Health examination PDF routes
     Route::get('/health-examination-pdf/{studentId}', [App\Http\Controllers\HealthReportController::class, 'exportHealthExaminationPdf'])->name('health-examination.export-pdf');
