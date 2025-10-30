@@ -538,7 +538,14 @@
                                 }
                                 
                                 $throatDisplay = $exam->throat ?? '';
+                                if ($exam->throat === 'Others (specify)' && $exam->throat_specify) {
+                                    $throatDisplay = $exam->throat_specify;
+                                }
+                                
                                 $neckDisplay = $exam->neck ?? '';
+                                if ($exam->neck === 'Others (specify)' && $exam->neck_specify) {
+                                    $neckDisplay = $exam->neck_specify;
+                                }
                                 
                                 $combined = array_filter([$mouthDisplay, $throatDisplay, $neckDisplay]);
                                 echo implode('<br>', $combined);

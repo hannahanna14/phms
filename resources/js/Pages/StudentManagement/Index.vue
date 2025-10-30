@@ -61,11 +61,20 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
-                            <InputText 
-                                v-model="searchQuery" 
-                                placeholder="Search by name or LRN..."
-                                class="w-full"
-                            />
+                            <div class="flex gap-2">
+                                <InputText 
+                                    v-model="searchQuery" 
+                                    placeholder="Search by name or LRN..."
+                                    class="w-full"
+                                    @keyup.enter="applyFilters"
+                                />
+                                <Button 
+                                    label="Search"
+                                    icon="pi pi-search" 
+                                    @click="applyFilters"
+                                    severity="secondary"
+                                />
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>

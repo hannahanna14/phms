@@ -38,6 +38,19 @@
                                 />
                             </div>
 
+                            <!-- Sort By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <Select 
+                                    v-model="healthExamFilters.sort_by"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Sort Order"
+                                    class="w-full"
+                                />
+                            </div>
+
                             <!-- Include Personal Info -->
                             <div class="flex items-center">
                                 <Checkbox 
@@ -84,6 +97,19 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     placeholder="Select Grade Level"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <!-- Sort By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <Select 
+                                    v-model="oralHealthExamFilters.sort_by"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Sort Order"
                                     class="w-full"
                                 />
                             </div>
@@ -138,6 +164,19 @@
                                 />
                             </div>
 
+                            <!-- Sort By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <Select 
+                                    v-model="healthTreatmentFilters.sort_by"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Sort Order"
+                                    class="w-full"
+                                />
+                            </div>
+
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
                                 <Button 
@@ -172,6 +211,19 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     placeholder="Select Grade Level"
+                                    class="w-full"
+                                />
+                            </div>
+
+                            <!-- Sort By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <Select 
+                                    v-model="oralHealthTreatmentFilters.sort_by"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Sort Order"
                                     class="w-full"
                                 />
                             </div>
@@ -247,7 +299,7 @@ const props = defineProps({
 
 // Grade level options
 const gradeOptions = [
-    { label: 'Kinder 1', value: 'Kinder 1' },
+    { label: 'All Grades', value: 'all' },
     { label: 'Kinder 2', value: 'Kinder 2' },
     { label: 'Grade 1', value: 'Grade 1' },
     { label: 'Grade 2', value: 'Grade 2' },
@@ -255,6 +307,13 @@ const gradeOptions = [
     { label: 'Grade 4', value: 'Grade 4' },
     { label: 'Grade 5', value: 'Grade 5' },
     { label: 'Grade 6', value: 'Grade 6' }
+]
+
+// Sort options
+const sortOptions = [
+    { label: 'Student Name (A-Z)', value: 'name_asc' },
+    { label: 'Student Name (Z-A)', value: 'name_desc' },
+    { label: 'Grade Level & Date', value: 'grade_date' }
 ]
 
 // Loading states
@@ -271,43 +330,41 @@ const loading = ref({
 const healthExamFilters = ref({
     date_from: null,
     date_to: null,
-    grade_level: null,
+    grade_level: 'all',
+    sort_by: 'name_asc',
     include_personal_info: true
 })
 
 const oralHealthExamFilters = ref({
     date_from: null,
     date_to: null,
-    grade_level: null,
+    grade_level: 'all',
+    sort_by: 'name_asc',
     include_personal_info: true
 })
 
 const healthTreatmentFilters = ref({
     date_from: null,
     date_to: null,
-    grade_level: null
+    grade_level: 'all',
+    sort_by: 'name_asc'
 })
 
 const oralHealthTreatmentFilters = ref({
     date_from: null,
     date_to: null,
-    grade_level: null
+    grade_level: 'all',
+    sort_by: 'name_asc'
 })
 
 const incidentFilters = ref({
     date_from: null,
-    date_to: null,
-    grade_level: null
+    grade_level: 'all',
+    sort_by: 'name_asc'
 })
 
 // Export functions
 const exportHealthExaminations = async (format) => {
-    // Validate that a grade level is selected
-    if (healthExamFilters.value.grade_level === null || healthExamFilters.value.grade_level === undefined) {
-        alert('⚠️ Please select a grade level before exporting.')
-        return
-    }
-    
     loading.value.healthExam = true
     try {
         const params = new URLSearchParams({
@@ -334,12 +391,6 @@ const exportHealthExaminations = async (format) => {
 }
 
 const exportOralHealthExaminations = async (format) => {
-    // Validate that a grade level is selected
-    if (oralHealthExamFilters.value.grade_level === null || oralHealthExamFilters.value.grade_level === undefined) {
-        alert('⚠️ Please select a grade level before exporting.')
-        return
-    }
-    
     loading.value.oralHealthExam = true
     try {
         const params = new URLSearchParams({
@@ -347,21 +398,25 @@ const exportOralHealthExaminations = async (format) => {
             ...prepareFilters(oralHealthExamFilters.value)
         })
         
-        window.open(`/health-data-export/oral-health-examinations?${params}`, '_blank')
+        // Direct navigation to trigger download
+        window.location.href = `/health-data-export/oral-health-examinations?${params}`
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            alert(`✅ Oral Health Examinations export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+        }, 2000)
+        
     } catch (error) {
         console.error('Export failed:', error)
+        alert('❌ Export failed. Please try again.')
     } finally {
-        loading.value.oralHealthExam = false
+        setTimeout(() => {
+            loading.value.oralHealthExam = false
+        }, 2000)
     }
 }
 
 const exportHealthTreatments = async (format) => {
-    // Validate that a grade level is selected
-    if (healthTreatmentFilters.value.grade_level === null || healthTreatmentFilters.value.grade_level === undefined) {
-        alert('⚠️ Please select a grade level before exporting.')
-        return
-    }
-    
     loading.value.healthTreatment = true
     try {
         const params = new URLSearchParams({
@@ -369,21 +424,25 @@ const exportHealthTreatments = async (format) => {
             ...prepareFilters(healthTreatmentFilters.value)
         })
         
-        window.open(`/health-data-export/health-treatments?${params}`, '_blank')
+        // Direct navigation to trigger download
+        window.location.href = `/health-data-export/health-treatments?${params}`
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            alert(`✅ Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+        }, 2000)
+        
     } catch (error) {
         console.error('Export failed:', error)
+        alert('❌ Export failed. Please try again.')
     } finally {
-        loading.value.healthTreatment = false
+        setTimeout(() => {
+            loading.value.healthTreatment = false
+        }, 2000)
     }
 }
 
 const exportOralHealthTreatments = async (format) => {
-    // Validate that a grade level is selected
-    if (oralHealthTreatmentFilters.value.grade_level === null || oralHealthTreatmentFilters.value.grade_level === undefined) {
-        alert('⚠️ Please select a grade level before exporting.')
-        return
-    }
-    
     loading.value.oralHealthTreatment = true
     try {
         const params = new URLSearchParams({
@@ -391,21 +450,25 @@ const exportOralHealthTreatments = async (format) => {
             ...prepareFilters(oralHealthTreatmentFilters.value)
         })
         
-        window.open(`/health-data-export/oral-health-treatments?${params}`, '_blank')
+        // Direct navigation to trigger download
+        window.location.href = `/health-data-export/oral-health-treatments?${params}`
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            alert(`✅ Oral Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+        }, 2000)
+        
     } catch (error) {
         console.error('Export failed:', error)
+        alert('❌ Export failed. Please try again.')
     } finally {
-        loading.value.oralHealthTreatment = false
+        setTimeout(() => {
+            loading.value.oralHealthTreatment = false
+        }, 2000)
     }
 }
 
 const exportIncidents = async (format) => {
-    // Validate that a grade level is selected
-    if (incidentFilters.value.grade_level === null || incidentFilters.value.grade_level === undefined) {
-        alert('⚠️ Please select a grade level before exporting.')
-        return
-    }
-    
     loading.value.incident = true
     try {
         const params = new URLSearchParams({
@@ -413,11 +476,21 @@ const exportIncidents = async (format) => {
             ...prepareFilters(incidentFilters.value)
         })
         
-        window.open(`/health-data-export/incidents?${params}`, '_blank')
+        // Direct navigation to trigger download
+        window.location.href = `/health-data-export/incidents?${params}`
+        
+        // Show success message after a short delay
+        setTimeout(() => {
+            alert(`✅ Incidents export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+        }, 2000)
+        
     } catch (error) {
         console.error('Export failed:', error)
+        alert('❌ Export failed. Please try again.')
     } finally {
-        loading.value.incident = false
+        setTimeout(() => {
+            loading.value.incident = false
+        }, 2000)
     }
 }
 

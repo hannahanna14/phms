@@ -16,12 +16,18 @@
 
                 <!-- Search -->
                 <div class="p-3 border-b">
-                    <InputText
-                        v-model="searchQuery"
-                        placeholder="Search conversations..."
-                        class="w-full"
-                        icon="pi pi-search"
-                    />
+                    <div class="flex gap-2">
+                        <InputText
+                            v-model="searchQuery"
+                            placeholder="Search conversations..."
+                            class="w-full"
+                        />
+                        <Button 
+                            label="Search"
+                            icon="pi pi-search" 
+                            severity="secondary"
+                        />
+                    </div>
                 </div>
 
                 <!-- Conversations List -->

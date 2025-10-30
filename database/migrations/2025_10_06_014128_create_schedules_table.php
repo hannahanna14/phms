@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->json('attendees')->nullable(); // Store array of student IDs or staff names
+            $table->json('selected_users')->nullable(); // Store selected users for the schedule
             $table->text('notes')->nullable();
             $table->timestamps();
 

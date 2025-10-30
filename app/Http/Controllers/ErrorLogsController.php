@@ -70,7 +70,12 @@ class ErrorLogsController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
                   ->orWhere('event', 'like', "%{$search}%")
-                  ->orWhere('subject_type', 'like', "%{$search}%");
+                  ->orWhere('subject_type', 'like', "%{$search}%")
+                  ->orWhere('properties', 'like', "%{$search}%")
+                  ->orWhereHas('causer', function($q) use ($search) {
+                      $q->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -201,9 +206,28 @@ class ErrorLogsController extends Controller
 
         switch ($logType) {
             case 'activity':
-                $logs = Activity::with('causer', 'subject')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+                $query = Activity::with('causer', 'subject')
+                    ->orderBy('created_at', 'desc');
+                
+                // Apply the same filters as the index page
+                if ($request->filled('search')) {
+                    $search = $request->get('search');
+                    $query->where(function($q) use ($search) {
+                        $q->where('description', 'like', "%{$search}%")
+                          ->orWhere('event', 'like', "%{$search}%")
+                          ->orWhere('subject_type', 'like', "%{$search}%");
+                    });
+                }
+
+                if ($request->filled('date_from')) {
+                    $query->where('created_at', '>=', $request->get('date_from'));
+                }
+
+                if ($request->filled('date_to')) {
+                    $query->where('created_at', '<=', $request->get('date_to') . ' 23:59:59');
+                }
+                
+                $logs = $query->get();
                 
                 $content = "Activity Logs Export - " . date('Y-m-d H:i:s') . "\n";
                 $content .= str_repeat("=", 50) . "\n\n";

@@ -41,11 +41,11 @@
                     </nav>
                 </div>
 
-                <!-- Filters -->
-                <div class="p-6 bg-gray-50 border-b">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Search and Filters -->
+                <div class="p-4 bg-gray-50 border-b">
+                    <div class="flex gap-3 items-end flex-wrap">
                         <!-- Search -->
-                        <div>
+                        <div style="width: 300px;">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
                             <InputText 
                                 v-model="filters.search" 
@@ -54,9 +54,16 @@
                                 @keyup.enter="applyFilters"
                             />
                         </div>
+                        <Button 
+                            label="Search"
+                            icon="pi pi-search" 
+                            @click="applyFilters"
+                            class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                        />
+                        <div class="flex-grow"></div>
 
                         <!-- Date From -->
-                        <div>
+                        <div style="width: 180px;">
                             <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
                             <DatePicker 
                                 v-model="filters.date_from" 
@@ -67,7 +74,7 @@
                         </div>
 
                         <!-- Date To -->
-                        <div>
+                        <div style="width: 180px;">
                             <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
                             <DatePicker 
                                 v-model="filters.date_to" 
@@ -78,7 +85,7 @@
                         </div>
 
                         <!-- Log Level (for Laravel logs) -->
-                        <div v-if="logType === 'laravel'">
+                        <div v-if="logType === 'laravel'" style="width: 180px;">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Log Level</label>
                             <Select 
                                 v-model="filters.level"
@@ -89,21 +96,19 @@
                         </div>
 
                         <!-- Filter Actions -->
-                        <div class="flex items-end">
-                            <Button 
-                                label="Apply Filters" 
-                                icon="pi pi-filter"
-                                @click="applyFilters"
-                                class="mr-2"
-                            />
-                            <Button 
-                                label="Clear" 
-                                icon="pi pi-times"
-                                @click="clearFilters"
-                                outlined
-                                severity="secondary"
-                            />
-                        </div>
+                        <Button 
+                            label="Apply" 
+                            icon="pi pi-filter"
+                            @click="applyFilters"
+                            severity="success"
+                        />
+                        <Button 
+                            label="Clear" 
+                            icon="pi pi-times"
+                            @click="clearFilters"
+                            outlined
+                            severity="secondary"
+                        />
                     </div>
                 </div>
 
@@ -170,13 +175,10 @@
                                     IP Address
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Action
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Description
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Subject
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
                                 </th>
                             </tr>
                         </thead>
@@ -207,18 +209,26 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ log.properties?.ip_address || 'N/A' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span :class="getEventBadgeClass(log.event)" class="px-2 py-1 text-xs font-medium rounded-full">
-                                        {{ log.event }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
-                                    <div class="truncate" :title="log.description">
-                                        {{ log.description }}
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    <div class="flex items-center space-x-2">
+                                        <span :class="getEventBadgeClass(log.event)" class="px-2 py-1 text-xs font-medium rounded-full">
+                                            {{ log.event }}
+                                        </span>
+                                        <span class="truncate" :title="log.description">
+                                            {{ log.description }}
+                                        </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ getSubjectName(log.subject_type) }}
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    <Button 
+                                        icon="pi pi-eye" 
+                                        @click="viewLogDetails(log)"
+                                        text
+                                        rounded
+                                        severity="secondary"
+                                        size="small"
+                                        v-tooltip.left="'View Details'"
+                                    />
                                 </td>
                             </tr>
                         </tbody>
@@ -246,12 +256,9 @@
                                     Timestamp
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Level
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Message
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -261,23 +268,25 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ log.timestamp }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span :class="getLogLevelClass(log.level)" class="px-2 py-1 text-xs font-medium rounded-full">
-                                        {{ log.level }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-2xl">
-                                    <div class="truncate" :title="log.message">
-                                        {{ log.message }}
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    <div class="flex items-center space-x-2">
+                                        <span :class="getLogLevelClass(log.level)" class="px-2 py-1 text-xs font-medium rounded-full">
+                                            {{ log.level }}
+                                        </span>
+                                        <span class="truncate" :title="log.message">
+                                            {{ log.message }}
+                                        </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <Button 
-                                        label="View Details" 
                                         icon="pi pi-eye"
                                         @click="viewLogDetails(log)"
                                         text
+                                        rounded
+                                        severity="secondary"
                                         size="small"
+                                        v-tooltip.left="'View Details'"
                                     />
                                 </td>
                             </tr>
@@ -408,11 +417,26 @@ const refreshLogs = () => {
 const downloadLogs = async () => {
     downloading.value = true
     try {
-        window.location.href = `/error-logs/download?type=${logType.value}`
+        const params = new URLSearchParams({
+            type: logType.value,
+            search: filters.value.search || '',
+            date_from: filters.value.date_from ? filters.value.date_from.toISOString().split('T')[0] : '',
+            date_to: filters.value.date_to ? filters.value.date_to.toISOString().split('T')[0] : '',
+            level: filters.value.level || ''
+        })
+        
+        // Remove empty parameters
+        Array.from(params.keys()).forEach(key => {
+            if (!params.get(key)) params.delete(key)
+        })
+        
+        window.location.href = `/error-logs/download?${params.toString()}`
     } catch (error) {
         console.error('Download failed:', error)
     } finally {
-        downloading.value = false
+        setTimeout(() => {
+            downloading.value = false
+        }, 1000)
     }
 }
 

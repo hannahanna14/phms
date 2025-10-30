@@ -19,14 +19,21 @@
 
             <!-- Search -->
             <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <span class="p-input-icon-left w-full">
-                    <i class="pi pi-search" />
-                    <InputText 
-                        v-model="searchQuery" 
-                        placeholder="Search by student name..." 
-                        class="w-full"
+                <div class="flex gap-2">
+                    <span class="p-input-icon-left flex-1">
+                        <i class="pi pi-search" />
+                        <InputText 
+                            v-model="searchQuery" 
+                            placeholder="Search by student name..." 
+                            class="w-full"
+                        />
+                    </span>
+                    <Button 
+                        label="Search"
+                        icon="pi pi-search" 
+                        severity="secondary"
                     />
-                </span>
+                </div>
             </div>
 
             <!-- Students with Incidents -->

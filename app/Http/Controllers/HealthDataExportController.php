@@ -33,21 +33,22 @@ class HealthDataExportController extends Controller
     {
         // Only admins can export data
         if (auth()->user()->role !== 'admin') {
-            abort(403, 'Access denied. Only administrators can export health data.');
+            abort(403, 'Unauthorized action.');
         }
 
+        // Validate request
         $validated = $request->validate([
             'format' => 'required|in:csv',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,lrn_asc,lrn_desc,date_desc,date_asc,grade_date',
             'include_personal_info' => 'boolean'
         ]);
 
         // Get health examinations data
         $query = \App\Models\HealthExamination::with('student')
-            ->whereHas('student') // Only include records with existing students
-            ->orderBy('examination_date', 'desc');
+            ->whereHas('student'); // Only include records with existing students
 
         // Apply filters
         if (!empty($validated['date_from'])) {
@@ -58,15 +59,47 @@ class HealthDataExportController extends Controller
             $query->where('examination_date', '<=', $validated['date_to']);
         }
 
-        if (!empty($validated['grade_level'])) {
+        if (!empty($validated['grade_level']) && $validated['grade_level'] !== 'all') {
             $gradeLevel = $validated['grade_level'];
-            $query->where(function($q) use ($gradeLevel) {
+            $query->whereHas('student', function($q) use ($gradeLevel) {
+                // Handle different grade level formats
                 $q->where('grade_level', $gradeLevel)
-                  ->orWhere('grade_level', "Grade {$gradeLevel}");
+                  ->orWhere('grade_level', 'LIKE', $gradeLevel . '%');
             });
         }
 
-        $examinations = $query->get();
+        // Apply sorting
+        $sortBy = $validated['sort_by'] ?? 'name_asc';
+        
+        if ($sortBy === 'name_desc') {
+            $examinations = $query->join('students', 'health_examinations.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'desc')
+                ->select('health_examinations.*')
+                ->get();
+        } elseif ($sortBy === 'grade_date') {
+            $examinations = $query->join('students', 'health_examinations.student_id', '=', 'students.id')
+                ->orderByRaw("
+                    CASE 
+                        WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
+                        WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
+                        WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
+                        WHEN students.grade_level = 'Grade 3' OR students.grade_level = '3' THEN 4
+                        WHEN students.grade_level = 'Grade 4' OR students.grade_level = '4' THEN 5
+                        WHEN students.grade_level = 'Grade 5' OR students.grade_level = '5' THEN 6
+                        WHEN students.grade_level = 'Grade 6' OR students.grade_level = '6' THEN 7
+                        ELSE 99
+                    END
+                ")
+                ->orderBy('health_examinations.examination_date', 'desc')
+                ->select('health_examinations.*')
+                ->get();
+        } else {
+            // Default: name_asc
+            $examinations = $query->join('students', 'health_examinations.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'asc')
+                ->select('health_examinations.*')
+                ->get();
+        }
 
         // Log the export activity
         activity()
@@ -100,12 +133,12 @@ class HealthDataExportController extends Controller
                 ]);
             }
             $csvHeaders = array_merge($csvHeaders, [
-                'Examination Date', 'School Year', 'Age', 'Weight (kg)', 'Height (cm)', 'BMI',
-                'Nutritional Status (BMI)', 'Nutritional Status (Height)', 'Temperature', 'Blood Pressure',
-                'Heart Rate', 'Pulse Rate', 'Respiratory Rate', 'Vision Screening', 'Auditory Screening',
-                'Skin', 'Scalp', 'Eyes', 'Ears', 'Nose', 'Mouth', 'Neck', 'Throat', 'Chest', 'Back',
-                'Heart', 'Abdomen', 'Deformities', 'Iron Supplementation', 'Deworming', 'Immunization',
-                'SBFP Beneficiary', '4Ps Beneficiary', 'Menarche', 'Remarks'
+                'Examination Date', 'School Year', 'Weight (kg)', 'Height (cm)',
+                'Nutritional Status (BMI)', 'Nutritional Status (Height)', 'Temperature',
+                'Heart Rate', 'Vision Screening', 'Auditory Screening',
+                'Skin', 'Scalp', 'Eye', 'Ear', 'Nose', 'Mouth', 'Neck', 'Throat',
+                'Lungs', 'Heart', 'Abdomen', 'Deformities', 'Iron Supplementation', 'Deworming Status',
+                'SBFP Beneficiary', '4Ps Beneficiary', 'Remarks'
             ]);
             
             fputcsv($file, $csvHeaders);
@@ -120,46 +153,66 @@ class HealthDataExportController extends Controller
                         $examination->student->lrn ?? 'N/A',
                         $examination->student->grade_level ?? 'N/A',
                         $examination->student->section ?? 'N/A',
-                        $examination->student->gender ?? 'N/A',
+                        $examination->student->sex ?? 'N/A',
                         $examination->student->date_of_birth ? $examination->student->date_of_birth->format('Y-m-d') : 'N/A',
                     ]);
                 }
                 
+                // Helper function to get field value with specify support
+                $getFieldValue = function($field, $specifyField) use ($examination) {
+                    $value = $examination->$field ?? '';
+                    
+                    // Check if value is "Others (specify)" or similar variations
+                    if (stripos($value, 'others') !== false && stripos($value, 'specify') !== false) {
+                        if (!empty($examination->$specifyField)) {
+                            return $examination->$specifyField;
+                        }
+                    }
+                    
+                    return $value ?: 'N/A';
+                };
+                
+                // Get lungs value (separate from heart)
+                $lungsValue = $examination->lungs ?? '';
+                if (stripos($lungsValue, 'others') !== false && stripos($lungsValue, 'specify') !== false) {
+                    $lungsValue = $examination->lungs_specify ?? $examination->lungs_other_specify ?? $lungsValue;
+                }
+                $lungsValue = $lungsValue ?: 'N/A';
+                
+                // Get heart value (separate from lungs)
+                $heartValue = $examination->heart ?? '';
+                if (stripos($heartValue, 'others') !== false && stripos($heartValue, 'specify') !== false) {
+                    $heartValue = $examination->heart_specify ?? $examination->heart_other_specify ?? $heartValue;
+                }
+                $heartValue = $heartValue ?: 'N/A';
+                
                 $row = array_merge($row, [
                     $examination->examination_date ? $examination->examination_date->format('Y-m-d') : 'N/A',
                     $examination->school_year ?? 'N/A',
-                    $examination->age ?? 'N/A',
                     $examination->weight ?? 'N/A',
                     $examination->height ?? 'N/A',
-                    $examination->bmi ?? 'N/A',
                     $examination->nutritional_status_bmi ?? 'N/A',
                     $examination->nutritional_status_height ?? 'N/A',
                     $examination->temperature ?? 'N/A',
-                    $examination->blood_pressure ?? 'N/A',
                     $examination->heart_rate ?? 'N/A',
-                    $examination->pulse_rate ?? 'N/A',
-                    $examination->respiratory_rate ?? 'N/A',
-                    $examination->vision_screening ?? 'N/A',
-                    $examination->auditory_screening ?? 'N/A',
-                    $examination->skin ?? 'N/A',
-                    $examination->scalp ?? 'N/A',
-                    $examination->eyes ?? 'N/A',
-                    $examination->ears ?? 'N/A',
-                    $examination->nose ?? 'N/A',
-                    $examination->mouth ?? 'N/A',
-                    $examination->neck ?? 'N/A',
-                    $examination->throat ?? 'N/A',
-                    $examination->chest ?? 'N/A',
-                    $examination->back ?? 'N/A',
-                    $examination->heart ?? 'N/A',
-                    $examination->abdomen ?? 'N/A',
-                    $examination->deformities ?? 'N/A',
+                    $getFieldValue('vision_screening', 'vision_screening_specify'),
+                    $getFieldValue('auditory_screening', 'auditory_screening_specify'),
+                    $getFieldValue('skin', 'skin_specify'),
+                    $getFieldValue('scalp', 'scalp_specify'),
+                    $getFieldValue('eye', 'eye_specify'),
+                    $getFieldValue('ear', 'ear_specify'),
+                    $getFieldValue('nose', 'nose_specify'),
+                    $getFieldValue('mouth', 'mouth_specify'),
+                    $getFieldValue('neck', 'neck_specify'),
+                    $getFieldValue('throat', 'throat_specify'),
+                    $lungsValue,
+                    $heartValue,
+                    $getFieldValue('abdomen', 'abdomen_specify'),
+                    $getFieldValue('deformities', 'deformities_specify'),
                     $examination->iron_supplementation ?? 'N/A',
-                    $examination->deworming ?? 'N/A',
-                    $examination->immunization ?? 'N/A',
+                    $examination->deworming_status ?? 'N/A',
                     $examination->sbfp_beneficiary ? 'Yes' : 'No',
                     $examination->four_ps_beneficiary ? 'Yes' : 'No',
-                    $examination->menarche ?? 'N/A',
                     $examination->remarks ?? 'N/A',
                 ]);
                 
@@ -181,18 +234,19 @@ class HealthDataExportController extends Controller
             abort(403, 'Access denied. Only administrators can export health data.');
         }
 
+        // Validate request
         $validated = $request->validate([
             'format' => 'required|in:csv',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date',
             'include_personal_info' => 'boolean'
         ]);
 
         // Get oral health examinations data
         $query = \App\Models\OralHealthExamination::with('student')
-            ->whereHas('student') // Only include records with existing students
-            ->orderBy('examination_date', 'desc');
+            ->whereHas('student'); // Only include records with existing students
 
         // Apply filters
         if (!empty($validated['date_from'])) {
@@ -203,15 +257,46 @@ class HealthDataExportController extends Controller
             $query->where('examination_date', '<=', $validated['date_to']);
         }
 
-        if (!empty($validated['grade_level'])) {
+        if (!empty($validated['grade_level']) && $validated['grade_level'] !== 'all') {
             $gradeLevel = $validated['grade_level'];
-            $query->where(function($q) use ($gradeLevel) {
+            $query->whereHas('student', function($q) use ($gradeLevel) {
                 $q->where('grade_level', $gradeLevel)
-                  ->orWhere('grade_level', "Grade {$gradeLevel}");
+                  ->orWhere('grade_level', 'LIKE', $gradeLevel . '%');
             });
         }
 
-        $examinations = $query->get();
+        // Apply sorting
+        $sortBy = $validated['sort_by'] ?? 'name_asc';
+        
+        if ($sortBy === 'name_desc') {
+            $examinations = $query->join('students', 'oral_health_examinations.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'desc')
+                ->select('oral_health_examinations.*')
+                ->get();
+        } elseif ($sortBy === 'grade_date') {
+            $examinations = $query->join('students', 'oral_health_examinations.student_id', '=', 'students.id')
+                ->orderByRaw("
+                    CASE 
+                        WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
+                        WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
+                        WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
+                        WHEN students.grade_level = 'Grade 3' OR students.grade_level = '3' THEN 4
+                        WHEN students.grade_level = 'Grade 4' OR students.grade_level = '4' THEN 5
+                        WHEN students.grade_level = 'Grade 5' OR students.grade_level = '5' THEN 6
+                        WHEN students.grade_level = 'Grade 6' OR students.grade_level = '6' THEN 7
+                        ELSE 99
+                    END
+                ")
+                ->orderBy('oral_health_examinations.examination_date', 'desc')
+                ->select('oral_health_examinations.*')
+                ->get();
+        } else {
+            // Default: name_asc
+            $examinations = $query->join('students', 'oral_health_examinations.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'asc')
+                ->select('oral_health_examinations.*')
+                ->get();
+        }
 
         // Log the export activity
         activity()
@@ -268,7 +353,7 @@ class HealthDataExportController extends Controller
                         $examination->student->lrn ?? 'N/A',
                         $examination->student->grade_level ?? 'N/A',
                         $examination->student->section ?? 'N/A',
-                        $examination->student->gender ?? 'N/A',
+                        $examination->student->sex ?? 'N/A',
                         $examination->student->date_of_birth ? $examination->student->date_of_birth->format('Y-m-d') : 'N/A',
                     ]);
                 }
@@ -344,13 +429,13 @@ class HealthDataExportController extends Controller
             'format' => 'required|in:csv',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
-            'grade_level' => 'nullable|string'
+            'grade_level' => 'nullable|string',
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date'
         ]);
 
         // Get health treatments data
         $query = \App\Models\HealthTreatment::with('student')
-            ->whereHas('student') // Only include records with existing students
-            ->orderBy('date', 'desc');
+            ->whereHas('student'); // Only include records with existing students
 
         // Apply filters
         if (!empty($validated['date_from'])) {
@@ -361,15 +446,46 @@ class HealthDataExportController extends Controller
             $query->where('date', '<=', $validated['date_to']);
         }
 
-        if (!empty($validated['grade_level'])) {
+        if (!empty($validated['grade_level']) && $validated['grade_level'] !== 'all') {
             $gradeLevel = $validated['grade_level'];
-            $query->where(function($q) use ($gradeLevel) {
+            $query->whereHas('student', function($q) use ($gradeLevel) {
                 $q->where('grade_level', $gradeLevel)
-                  ->orWhere('grade_level', "Grade {$gradeLevel}");
+                  ->orWhere('grade_level', 'LIKE', $gradeLevel . '%');
             });
         }
 
-        $treatments = $query->get();
+        // Apply sorting
+        $sortBy = $validated['sort_by'] ?? 'name_asc';
+        
+        if ($sortBy === 'name_desc') {
+            $treatments = $query->join('students', 'health_treatments.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'desc')
+                ->select('health_treatments.*')
+                ->get();
+        } elseif ($sortBy === 'grade_date') {
+            $treatments = $query->join('students', 'health_treatments.student_id', '=', 'students.id')
+                ->orderByRaw("
+                    CASE 
+                        WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
+                        WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
+                        WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
+                        WHEN students.grade_level = 'Grade 3' OR students.grade_level = '3' THEN 4
+                        WHEN students.grade_level = 'Grade 4' OR students.grade_level = '4' THEN 5
+                        WHEN students.grade_level = 'Grade 5' OR students.grade_level = '5' THEN 6
+                        WHEN students.grade_level = 'Grade 6' OR students.grade_level = '6' THEN 7
+                        ELSE 99
+                    END
+                ")
+                ->orderBy('health_treatments.date', 'desc')
+                ->select('health_treatments.*')
+                ->get();
+        } else {
+            // Default: name_asc
+            $treatments = $query->join('students', 'health_treatments.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'asc')
+                ->select('health_treatments.*')
+                ->get();
+        }
 
         // Log the export activity
         activity()
@@ -441,13 +557,13 @@ class HealthDataExportController extends Controller
             'format' => 'required|in:csv',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
-            'grade_level' => 'nullable|string'
+            'grade_level' => 'nullable|string',
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date'
         ]);
 
         // Get oral health treatments data
         $query = \App\Models\OralHealthTreatment::with('student')
-            ->whereHas('student') // Only include records with existing students
-            ->orderBy('date', 'desc');
+            ->whereHas('student'); // Only include records with existing students
 
         // Apply filters
         if (!empty($validated['date_from'])) {
@@ -458,15 +574,46 @@ class HealthDataExportController extends Controller
             $query->where('date', '<=', $validated['date_to']);
         }
 
-        if (!empty($validated['grade_level'])) {
+        if (!empty($validated['grade_level']) && $validated['grade_level'] !== 'all') {
             $gradeLevel = $validated['grade_level'];
-            $query->where(function($q) use ($gradeLevel) {
+            $query->whereHas('student', function($q) use ($gradeLevel) {
                 $q->where('grade_level', $gradeLevel)
-                  ->orWhere('grade_level', "Grade {$gradeLevel}");
+                  ->orWhere('grade_level', 'LIKE', $gradeLevel . '%');
             });
         }
 
-        $treatments = $query->get();
+        // Apply sorting
+        $sortBy = $validated['sort_by'] ?? 'name_asc';
+        
+        if ($sortBy === 'name_desc') {
+            $treatments = $query->join('students', 'oral_health_treatments.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'desc')
+                ->select('oral_health_treatments.*')
+                ->get();
+        } elseif ($sortBy === 'grade_date') {
+            $treatments = $query->join('students', 'oral_health_treatments.student_id', '=', 'students.id')
+                ->orderByRaw("
+                    CASE 
+                        WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
+                        WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
+                        WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
+                        WHEN students.grade_level = 'Grade 3' OR students.grade_level = '3' THEN 4
+                        WHEN students.grade_level = 'Grade 4' OR students.grade_level = '4' THEN 5
+                        WHEN students.grade_level = 'Grade 5' OR students.grade_level = '5' THEN 6
+                        WHEN students.grade_level = 'Grade 6' OR students.grade_level = '6' THEN 7
+                        ELSE 99
+                    END
+                ")
+                ->orderBy('oral_health_treatments.date', 'desc')
+                ->select('oral_health_treatments.*')
+                ->get();
+        } else {
+            // Default: name_asc
+            $treatments = $query->join('students', 'oral_health_treatments.student_id', '=', 'students.id')
+                ->orderBy('students.full_name', 'asc')
+                ->select('oral_health_treatments.*')
+                ->get();
+        }
 
         // Log the export activity
         activity()

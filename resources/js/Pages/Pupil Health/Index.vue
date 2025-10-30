@@ -150,28 +150,10 @@ const viewHealthExam = (student) => {
 
 <template>
     <div class="p-4 bg-gray-50 rounded-lg">
-        <!-- Filters and Search -->
+        <!-- Search and Filters -->
         <div class="p-4 border-2 border-gray-300 rounded-lg bg-white mb-6">
-            <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                    <Select
-                        v-model="tempGradeLevel"
-                        :options="gradeLevels"
-                        placeholder="All"
-                        class="w-full"
-                    />
-                </div>
-                <div class="col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
-                    <Select
-                        v-model="tempSchoolYear"
-                        :options="schoolYears"
-                        placeholder="All"
-                        class="w-full"
-                    />
-                </div>
-                <div class="col-span-4">
+            <div class="flex gap-3 items-end flex-wrap">
+                <div style="width: 300px;">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
                     <IconField iconPosition="left" class="w-full">
                         <InputIcon class="pi pi-search text-gray-400" />
@@ -183,23 +165,44 @@ const viewHealthExam = (student) => {
                         />
                     </IconField>
                 </div>
-                <div class="col-span-2 flex items-end gap-2">
-                    <Button 
-                        label="Apply" 
-                        icon="pi pi-check" 
-                        @click="applyFilters"
-                        severity="success"
-                        class="flex-1"
-                    />
-                    <Button 
-                        label="Clear" 
-                        icon="pi pi-times" 
-                        @click="clearFilters"
-                        severity="secondary"
-                        outlined
-                        class="flex-1"
+                <Button 
+                    label="Search"
+                    icon="pi pi-search" 
+                    @click="applyFilters"
+                    class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                />
+                <div class="flex-grow"></div>
+                <div style="width: 180px;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                    <Select
+                        v-model="tempGradeLevel"
+                        :options="gradeLevels"
+                        placeholder="All"
+                        class="w-full"
                     />
                 </div>
+                <div style="width: 180px;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
+                    <Select
+                        v-model="tempSchoolYear"
+                        :options="schoolYears"
+                        placeholder="All"
+                        class="w-full"
+                    />
+                </div>
+                <Button 
+                    label="Apply" 
+                    icon="pi pi-check" 
+                    @click="applyFilters"
+                    severity="success"
+                />
+                <Button 
+                    label="Clear" 
+                    icon="pi pi-times" 
+                    @click="clearFilters"
+                    severity="secondary"
+                    outlined
+                />
             </div>
         </div>
 

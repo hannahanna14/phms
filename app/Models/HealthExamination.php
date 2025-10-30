@@ -60,6 +60,8 @@ class HealthExamination extends Model
 
     protected $casts = [
         'examination_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function student(): BelongsTo

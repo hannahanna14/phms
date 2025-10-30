@@ -17,6 +17,10 @@ return new class extends Migration
             $table->text('school_address')->nullable();
             $table->string('school_phone')->nullable();
             $table->string('school_email')->nullable();
+            $table->string('school_id')->nullable();
+            $table->string('district')->nullable();
+            $table->string('division')->nullable();
+            $table->string('region')->nullable();
             $table->string('principal_name')->nullable();
             $table->string('school_logo')->nullable();
             $table->timestamps();
