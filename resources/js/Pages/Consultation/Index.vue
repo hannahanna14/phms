@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -238,6 +238,8 @@ const props = defineProps({
     users: Array
 })
 
+const page = usePage()
+
 // Reactive data
 const searchQuery = ref('')
 const newMessage = ref('')
@@ -249,47 +251,9 @@ const messagesContainer = ref(null)
 // Create reactive copy of conversations to allow updates
 const conversations = ref([...props.conversations])
 
-// Track which conversations have been marked as read locally using localStorage
-const getMarkedAsRead = () => {
-    try {
-        const stored = localStorage.getItem('markedAsReadConversations')
-        return stored ? new Set(JSON.parse(stored)) : new Set()
-    } catch {
-        return new Set()
-    }
-}
-
-const markedAsRead = ref(getMarkedAsRead())
-
-// Save to localStorage whenever it changes
-const saveMarkedAsRead = () => {
-    try {
-        localStorage.setItem('markedAsReadConversations', JSON.stringify([...markedAsRead.value]))
-    } catch (error) {
-        console.error('Failed to save read status:', error)
-    }
-}
-
 // Watch for changes in props.conversations and update reactive copy
 watch(() => props.conversations, (newConversations) => {
-    // Clean up markedAsRead for conversations that have new unread messages
-    newConversations.forEach(conv => {
-        // If server shows unread_count > 0 and it's different from what we had before,
-        // it means there are genuinely new messages, so remove from markedAsRead
-        const oldConv = conversations.value.find(c => c.id === conv.id)
-        if (conv.unread_count > 0 && oldConv && conv.unread_count !== oldConv.unread_count) {
-            markedAsRead.value.delete(conv.id)
-            saveMarkedAsRead()
-        }
-    })
-    
-    // Preserve the unread_count = 0 for conversations that were marked as read
-    conversations.value = newConversations.map(conv => {
-        if (markedAsRead.value.has(conv.id)) {
-            return { ...conv, unread_count: 0 }
-        }
-        return { ...conv }
-    })
+    conversations.value = newConversations.map(conv => ({ ...conv }))
 }, { deep: true, immediate: true })
 
 // Computed properties
@@ -313,34 +277,24 @@ const getConversationInitials = (conversation) => {
 
 // Actions
 const selectConversation = async (conversationId) => {
-    // Update the local conversation's unread count to 0 immediately for instant UI feedback
-    const conversation = conversations.value.find(c => c.id === conversationId)
-    if (conversation) {
-        conversation.unread_count = 0
+    // Mark as read on server first
+    try {
+        const response = await fetch(`/api/consultation/${conversationId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        const data = await response.json()
+        console.log('Mark as read response:', data)
+    } catch (error) {
+        console.error('Failed to mark as read:', error)
     }
     
-    // Add to markedAsRead set and save to localStorage
-    markedAsRead.value.add(conversationId)
-    saveMarkedAsRead()
-    
-    // Navigate to the conversation
+    // Then navigate to the conversation
     router.visit(route('consultation.index', { conversation: conversationId }), {
-        preserveState: false, // Changed to false to get fresh data from server
-        preserveScroll: false,
-        onSuccess: async () => {
-            // After navigation, mark as read on the server
-            try {
-                await fetch(`/api/consultation/${conversationId}/read`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-            } catch (error) {
-                console.error('Failed to mark conversation as read:', error)
-            }
-        }
+        preserveState: false,
+        preserveScroll: false
     })
 }
 
@@ -354,8 +308,10 @@ const sendMessage = async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 conversation_id: props.selectedConversation.id,
                 content: newMessage.value.trim()
@@ -364,18 +320,28 @@ const sendMessage = async () => {
         
         if (response.ok) {
             const data = await response.json()
+            
             // Add message to local state
             props.messages.push(data.message)
             newMessage.value = ''
             
+            // Update latest message for this conversation
+            const conversation = conversations.value.find(c => c.id === props.selectedConversation.id)
+            if (conversation) {
+                conversation.latest_message = {
+                    content: data.message.content,
+                    sender_name: data.message.sender.name,
+                    created_at: data.message.created_at,
+                    formatted_time: data.message.formatted_time,
+                    sender_id: data.message.sender.id
+                }
+                // Backend already marks as read when sending, so set to 0 locally
+                conversation.unread_count = 0
+            }
+            
             // Scroll to bottom
             await nextTick()
             scrollToBottom()
-            
-            // Refresh conversation list to update last message
-            setTimeout(() => {
-                router.reload({ only: ['conversations'] })
-            }, 100)
         }
     } catch (error) {
         console.error('Error sending message:', error)
@@ -480,6 +446,8 @@ onMounted(() => {
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -488,6 +456,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .messages-container {
@@ -495,6 +464,7 @@ onMounted(() => {
     overflow-y: auto;
     padding: 1rem;
     background: #f9fafb;
+    min-height: 0;
 }
 
 .messages-list {
@@ -540,6 +510,7 @@ onMounted(() => {
     padding: 1rem;
     border-top: 1px solid #e5e7eb;
     background: white;
+    flex-shrink: 0;
 }
 
 :deep(.p-textarea) {

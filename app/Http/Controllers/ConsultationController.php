@@ -39,6 +39,7 @@ class ConsultationController extends Controller
                     'latest_message' => $conversation->latestMessage ? [
                         'content' => $conversation->latestMessage->content,
                         'sender_name' => $conversation->latestMessage->sender->full_name,
+                        'sender_id' => $conversation->latestMessage->sender_id,
                         'created_at' => $conversation->latestMessage->created_at,
                         'formatted_time' => $conversation->latestMessage->formatted_time
                     ] : null,
@@ -148,6 +149,9 @@ class ConsultationController extends Controller
             'message_type' => $request->message_type ?? 'text'
         ]);
 
+        // Mark conversation as read for the sender
+        $conversation->markAsReadForUser(auth()->id());
+
         return response()->json([
             'message' => [
                 'id' => $message->id,
@@ -212,9 +216,25 @@ class ConsultationController extends Controller
         
         if ($conversation->hasParticipant(auth()->id())) {
             $conversation->markAsReadForUser(auth()->id());
+            
+            // Get updated unread count to verify
+            $unreadCount = $conversation->getUnreadCountForUser(auth()->id());
+            
+            // Log for debugging
+            \Log::info('Marked conversation as read', [
+                'conversation_id' => $conversationId,
+                'user_id' => auth()->id(),
+                'unread_count_after' => $unreadCount,
+                'timestamp' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'unread_count' => $unreadCount
+            ]);
         }
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => false, 'message' => 'Not a participant'], 403);
     }
 
     /**

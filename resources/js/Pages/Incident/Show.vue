@@ -78,8 +78,16 @@
                                     </tr>
                                     <tr v-for="incident in incidents" :key="incident.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2">{{ formatDate(incident.date) }}</td>
-                                        <td class="py-2">{{ incident.complaint }}</td>
-                                        <td class="py-2">{{ incident.actions_taken }}</td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="incident.complaint">
+                                                {{ incident.complaint }}
+                                            </div>
+                                        </td>
+                                        <td class="py-2" style="max-width: 200px; word-break: break-all;">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="incident.actions_taken">
+                                                {{ incident.actions_taken }}
+                                            </div>
+                                        </td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
                                                 <Button 
@@ -90,6 +98,7 @@
                                                     outlined
                                                     @click="viewIncident(incident)"
                                                     class="!p-1 !text-xs"
+                                                    title="View Incident"
                                                 />
                                                 <Button 
                                                     v-if="userRole === 'nurse'"
@@ -98,6 +107,7 @@
                                                     severity="warning"
                                                     @click="editIncident(incident)"
                                                     class="!p-1 !text-xs"
+                                                    title="Edit Incident"
                                                 />
                                             </div>
                                         </td>

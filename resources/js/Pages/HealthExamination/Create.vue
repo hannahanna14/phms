@@ -38,6 +38,7 @@
                             step="0.1" 
                             min="35" 
                             max="42" 
+                            placeholder="e.g., 36.5"
                         />
                         <small class="text-gray-500">Normal range: 35°C - 42°C</small>
                         <small class="text-red-500" v-if="errors.temperature">{{ errors.temperature }}</small>
@@ -50,6 +51,7 @@
                             type="number" 
                             min="40" 
                             max="200" 
+                            placeholder="e.g., 80"
                         />
                         <small class="text-gray-500">Normal range: 40-200 bpm</small>
                         <small class="text-red-500" v-if="errors.heart_rate">{{ errors.heart_rate }}</small>
@@ -63,6 +65,7 @@
                             step="0.1" 
                             min="50" 
                             max="200" 
+                            placeholder="e.g., 120.5"
                         />
                         <small class="text-gray-500">Range: 50-200 cm</small>
                         <small class="text-red-500" v-if="errors.height">{{ errors.height }}</small>
@@ -76,6 +79,7 @@
                             step="0.1" 
                             min="10" 
                             max="150" 
+                            placeholder="e.g., 25.0"
                         />
                         <small class="text-gray-500">Range: 10-150 kg</small>
                         <small class="text-red-500" v-if="errors.weight">{{ errors.weight }}</small>
@@ -86,12 +90,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Nutritional Status(BMI) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" />
+                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" placeholder="Select BMI status" />
                         <small class="text-red-500" v-if="errors.nutritional_status_bmi">{{ errors.nutritional_status_bmi }}</small>
                     </div>
                     <div class="form-group">
                         <label>Nutritional Status(Height for Age) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" />
+                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" placeholder="Select height status" />
                         <small class="text-red-500" v-if="errors.nutritional_status_height">{{ errors.nutritional_status_height }}</small>
                     </div>
                 </div>
@@ -100,7 +104,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Vision Screening <span class="text-red-500">*</span></label>
-                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" />
+                        <Select v-model="form.vision_screening" :options="screeningOptions" class="w-full" placeholder="Select vision result" />
                         <small class="text-red-500" v-if="errors.vision_screening">{{ errors.vision_screening }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.vision_screening === 'Others (specify)'" class="mt-2">
@@ -113,7 +117,7 @@
                     </div>
                     <div class="form-group">
                         <label>Auditory Screening <span class="text-red-500">*</span></label>
-                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" />
+                        <Select v-model="form.auditory_screening" :options="screeningOptions" class="w-full" placeholder="Select auditory result" />
                         <small class="text-red-500" v-if="errors.auditory_screening">{{ errors.auditory_screening }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.auditory_screening === 'Others (specify)'" class="mt-2">
@@ -130,7 +134,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Skin <span class="text-red-500">*</span></label>
-                        <Select v-model="form.skin" :options="skinOptions" class="w-full" />
+                        <Select v-model="form.skin" :options="skinOptions" class="w-full" placeholder="Select skin condition" />
                         <small class="text-red-500" v-if="errors.skin">{{ errors.skin }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.skin === 'Others (specify)'" class="mt-2">
@@ -144,7 +148,7 @@
                     </div>
                     <div class="form-group">
                         <label>Scalp <span class="text-red-500">*</span></label>
-                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" />
+                        <Select v-model="form.scalp" :options="scalpOptions" class="w-full" placeholder="Select scalp condition" />
                         <small class="text-red-500" v-if="errors.scalp">{{ errors.scalp }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.scalp === 'Others (specify)'" class="mt-2">
@@ -158,7 +162,7 @@
                     </div>
                     <div class="form-group">
                         <label>Eye <span class="text-red-500">*</span></label>
-                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" />
+                        <Select v-model="form.eye" :options="eyeOptions" class="w-full" placeholder="Select eye condition" />
                         <small class="text-red-500" v-if="errors.eye">{{ errors.eye }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.eye === 'Others (specify)'" class="mt-2">
@@ -175,7 +179,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div class="form-group">
                         <label>Ear <span class="text-red-500">*</span></label>
-                        <Select v-model="form.ear" :options="earOptions" class="w-full" />
+                        <Select v-model="form.ear" :options="earOptions" class="w-full" placeholder="Select ear condition" />
                         <small class="text-red-500" v-if="errors.ear">{{ errors.ear }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.ear === 'Others (specify)'" class="mt-2">
@@ -189,7 +193,7 @@
                     </div>
                     <div class="form-group">
                         <label>Nose <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nose" :options="noseOptions" class="w-full" />
+                        <Select v-model="form.nose" :options="noseOptions" class="w-full" placeholder="Select nose condition" />
                         <small class="text-red-500" v-if="errors.nose">{{ errors.nose }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.nose === 'Others (specify)'" class="mt-2">
@@ -203,7 +207,7 @@
                     </div>
                     <div class="form-group">
                         <label>Mouth <span class="text-red-500">*</span></label>
-                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" />
+                        <Select v-model="form.mouth" :options="mouthOptions" class="w-full" placeholder="Select mouth condition" />
                         <small class="text-red-500" v-if="errors.mouth">{{ errors.mouth }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.mouth === 'Others (specify)'" class="mt-2">
@@ -220,7 +224,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Throat</label>
-                        <Select v-model="form.throat" :options="['Normal', 'Inflamed', 'Enlarged tonsils', 'Others (specify)']" class="w-full" />
+                        <Select v-model="form.throat" :options="['Normal', 'Inflamed', 'Enlarged tonsils', 'Others (specify)']" class="w-full" placeholder="Select throat condition" />
                         <small class="text-red-500" v-if="errors.throat">{{ errors.throat }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.throat === 'Others (specify)'" class="mt-2">
@@ -234,7 +238,7 @@
                     </div>
                     <div class="form-group">
                         <label>Neck</label>
-                        <Select v-model="form.neck" :options="['Normal', 'Lymph nodes enlarged', 'Stiff neck', 'Others (specify)']" class="w-full" />
+                        <Select v-model="form.neck" :options="['Normal', 'Lymph nodes enlarged', 'Stiff neck', 'Others (specify)']" class="w-full" placeholder="Select neck condition" />
                         <small class="text-red-500" v-if="errors.neck">{{ errors.neck }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.neck === 'Others (specify)'" class="mt-2">
@@ -251,7 +255,7 @@
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
                         <label>Lungs <span class="text-red-500">*</span></label>
-                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" />
+                        <Select v-model="form.lungs" :options="lungsOptions" class="w-full" placeholder="Select lungs condition" />
                         <small class="text-red-500" v-if="errors.lungs">{{ errors.lungs }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.lungs === 'Others (specify)'" class="mt-2">
@@ -265,7 +269,7 @@
                     </div>
                     <div class="form-group">
                         <label>Heart <span class="text-red-500">*</span></label>
-                        <Select v-model="form.heart" :options="heartOptions" class="w-full" />
+                        <Select v-model="form.heart" :options="heartOptions" class="w-full" placeholder="Select heart condition" />
                         <small class="text-red-500" v-if="errors.heart">{{ errors.heart }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.heart === 'Others (specify)'" class="mt-2">
@@ -279,7 +283,7 @@
                     </div>
                     <div class="form-group">
                         <label>Abdomen <span class="text-red-500">*</span></label>
-                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" />
+                        <Select v-model="form.abdomen" :options="abdomenOptions" class="w-full" placeholder="Select abdomen condition" />
                         <small class="text-red-500" v-if="errors.abdomen">{{ errors.abdomen }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.abdomen === 'Others (specify)'" class="mt-2">
@@ -293,7 +297,7 @@
                     </div>
                     <div class="form-group">
                         <label>Deformities <span class="text-red-500">*</span></label>
-                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" />
+                        <Select v-model="form.deformities" :options="deformitiesOptions" class="w-full" placeholder="Select deformities status" />
                         <small class="text-red-500" v-if="errors.deformities">{{ errors.deformities }}</small>
                         <!-- Additional text box for "Others (specify)" -->
                         <div v-if="form.deformities === 'Others (specify)'" class="mt-2">
@@ -312,17 +316,17 @@
                     <h3 class="text-md font-semibold mb-4 text-blue-800">Immunization & Benefits</h3>
                     <div class="grid grid-cols-5 gap-4">
                         <div class="form-group">
-                            <label>Iron Supplementation</label>
+                            <label for="iron_supplementation_check">Iron Supplementation</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.iron_supplementation_check" :binary="true" />
+                                <Checkbox v-model="form.iron_supplementation_check" inputId="iron_supplementation_check" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.iron_supplementation">{{ errors.iron_supplementation }}</small>
                         </div>
                         <div class="form-group">
-                            <label>Dewormed</label>
+                            <label for="deworming_check">Dewormed</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.deworming_check" :binary="true" />
+                                <Checkbox v-model="form.deworming_check" inputId="deworming_check" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.deworming_status">{{ errors.deworming_status }}</small>
@@ -333,17 +337,17 @@
                             <small class="text-red-500" v-if="errors.immunization">{{ errors.immunization }}</small>
                         </div>
                         <div class="form-group">
-                            <label>SBFP Beneficiary</label>
+                            <label for="sbfp_beneficiary">SBFP Beneficiary</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.sbfp_beneficiary" :binary="true" />
+                                <Checkbox v-model="form.sbfp_beneficiary" inputId="sbfp_beneficiary" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.sbfp_beneficiary">{{ errors.sbfp_beneficiary }}</small>
                         </div>
                         <div class="form-group">
-                            <label>4Ps Beneficiary</label>
+                            <label for="four_ps_beneficiary">4Ps Beneficiary</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.four_ps_beneficiary" :binary="true" />
+                                <Checkbox v-model="form.four_ps_beneficiary" inputId="four_ps_beneficiary" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.four_ps_beneficiary">{{ errors.four_ps_beneficiary }}</small>

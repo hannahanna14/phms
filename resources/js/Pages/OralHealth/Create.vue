@@ -64,8 +64,8 @@
                             <h3 class="text-center text-lg font-semibold mb-4">Permanent Teeth (32 teeth)</h3>
                             <div class="teeth-section">
                                 <div class="arch-label">Upper Teeth</div>
-                                <div id="upper-teeth" class="teeth-row upper compact"></div>
-                                <div id="lower-teeth" class="teeth-row lower compact"></div>
+                                <div id="create-upper-teeth" class="teeth-row upper compact"></div>
+                                <div id="create-lower-teeth" class="teeth-row lower compact"></div>
                                 <div class="arch-label">Lower Teeth</div>
                             </div>
                         </div>
@@ -74,8 +74,8 @@
                             <h3 class="text-center text-lg font-semibold mb-4">Temporary Teeth (20 teeth)</h3>
                             <div class="teeth-section">
                                 <div class="arch-label">Upper Temporary Teeth</div>
-                                <div id="upper-primary" class="teeth-row upper primary compact"></div>
-                                <div id="lower-primary" class="teeth-row lower primary compact"></div>
+                                <div id="create-upper-primary" class="teeth-row upper primary compact"></div>
+                                <div id="create-lower-primary" class="teeth-row lower primary compact"></div>
                                 <div class="arch-label">Lower Temporary Teeth</div>
                             </div>
                         </div>
@@ -331,15 +331,15 @@
     </div>
 
     <!-- Side Panel for Symbol Selection -->
-    <div id="symbol-panel" class="side-panel">
+    <div id="create-symbol-panel" class="side-panel">
         <div class="panel-header">
-            <h3 id="selected-tooth-title">Select a tooth</h3>
-            <button id="close-panel" class="close-btn" type="button">&times;</button>
+            <h3 id="create-selected-tooth-title">Select a tooth</h3>
+            <button id="create-close-panel" class="close-btn" type="button">&times;</button>
         </div>
 
         <div class="panel-content">
-            <div class="current-symbols-display" id="current-symbols-display">
-                <strong>Current conditions:</strong> <span id="tooth-symbols">None</span>
+            <div class="current-symbols-display" id="create-current-symbols-display">
+                <strong>Current conditions:</strong> <span id="create-tooth-symbols">None</span>
             </div>
 
             <div class="symbol-categories">
@@ -384,8 +384,8 @@
             </div>
 
             <div class="panel-actions">
-                <button id="clear-tooth-symbols" class="action-btn secondary" type="button">Clear Tooth</button>
-                <button id="confirm-symbols" class="action-btn primary" type="button">Confirm</button>
+                <button id="create-clear-tooth-symbols" class="action-btn secondary" type="button">Clear Tooth</button>
+                <button id="create-confirm-symbols" class="action-btn primary" type="button">Confirm</button>
             </div>
         </div>
     </div>
@@ -565,7 +565,7 @@ const initializeDentalChart = () => {
 }
 
 const createUpperTeeth = () => {
-    const container = document.getElementById('upper-teeth')
+    const container = document.getElementById('create-upper-teeth')
     if (!container) return
 
     const toothNumbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
@@ -588,7 +588,7 @@ const createUpperTeeth = () => {
 }
 
 const createLowerTeeth = () => {
-    const container = document.getElementById('lower-teeth')
+    const container = document.getElementById('create-lower-teeth')
     if (!container) return
 
     const toothNumbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
@@ -611,8 +611,8 @@ const createLowerTeeth = () => {
 }
 
 const createTemporaryTeeth = () => {
-    const upperContainer = document.getElementById('upper-primary')
-    const lowerContainer = document.getElementById('lower-primary')
+    const upperContainer = document.getElementById('create-upper-primary')
+    const lowerContainer = document.getElementById('create-lower-primary')
     if (!upperContainer || !lowerContainer) return
 
     // Upper Temporary Teeth
@@ -675,12 +675,12 @@ const addToothSelectionFunctionality = () => {
 }
 
 const openSidePanel = () => {
-    const panel = document.getElementById('symbol-panel')
+    const panel = document.getElementById('create-symbol-panel')
     if (panel) panel.classList.add('open')
 }
 
 const closeSidePanel = () => {
-    const panel = document.getElementById('symbol-panel')
+    const panel = document.getElementById('create-symbol-panel')
     if (panel) panel.classList.remove('open')
 
     if (selectedTooth) {
@@ -696,13 +696,13 @@ const updatePanelContent = () => {
     const toothType = selectedTooth.dataset.type
     const category = selectedTooth.dataset.category || 'Permanent'
 
-    const titleElement = document.getElementById('selected-tooth-title')
+    const titleElement = document.getElementById('create-selected-tooth-title')
     if (titleElement) {
         titleElement.textContent = `${category} Tooth ${toothNumber} (${toothType})`
     }
 
     const currentSymbols = toothSymbols[toothNumber] || []
-    const symbolsDisplay = document.getElementById('tooth-symbols')
+    const symbolsDisplay = document.getElementById('create-tooth-symbols')
     if (symbolsDisplay) {
         symbolsDisplay.textContent = currentSymbols.length > 0 ? currentSymbols.join(', ') : 'None'
     }
@@ -719,7 +719,7 @@ const updatePanelContent = () => {
 }
 
 const addPanelFunctionality = () => {
-    const closeBtn = document.getElementById('close-panel')
+    const closeBtn = document.getElementById('create-close-panel')
     if (closeBtn) {
         closeBtn.addEventListener('click', closeSidePanel)
     }
@@ -751,7 +751,7 @@ const addPanelFunctionality = () => {
         })
     })
 
-    const clearBtn = document.getElementById('clear-tooth-symbols')
+    const clearBtn = document.getElementById('create-clear-tooth-symbols')
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
             if (!selectedTooth) return
@@ -765,7 +765,7 @@ const addPanelFunctionality = () => {
         })
     }
 
-    const confirmBtn = document.getElementById('confirm-symbols')
+    const confirmBtn = document.getElementById('create-confirm-symbols')
     if (confirmBtn) {
         confirmBtn.addEventListener('click', closeSidePanel)
     }

@@ -133,7 +133,7 @@ const updateTreatment = () => {
 
 const goBack = () => {
     // Go back to the oral health examination page with proper parameters
-    router.visit(`/pupil-health/oral-health-examination/${props.student.id}?grade=${props.treatment.grade_level}`);
+    router.visit(`/pupil-health/oral-health/${props.student.id}?grade=${props.treatment.grade_level}`);
 };
 </script>
 

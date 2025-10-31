@@ -330,17 +330,17 @@
                     <h3 class="text-md font-semibold mb-4 text-blue-800">Immunization & Benefits</h3>
                     <div class="grid grid-cols-5 gap-4">
                         <div class="form-group">
-                            <label>Iron Supplementation</label>
+                            <label for="edit_iron_supplementation_check">Iron Supplementation</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.iron_supplementation_check" :binary="true" />
+                                <Checkbox v-model="form.iron_supplementation_check" inputId="edit_iron_supplementation_check" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.iron_supplementation">{{ errors.iron_supplementation }}</small>
                         </div>
                         <div class="form-group">
-                            <label>Dewormed</label>
+                            <label for="edit_deworming_check">Dewormed</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.deworming_check" :binary="true" />
+                                <Checkbox v-model="form.deworming_check" inputId="edit_deworming_check" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.deworming_status">{{ errors.deworming_status }}</small>
@@ -351,17 +351,17 @@
                             <small class="text-red-500" v-if="errors.immunization">{{ errors.immunization }}</small>
                         </div>
                         <div class="form-group">
-                            <label>SBFP Beneficiary</label>
+                            <label for="edit_sbfp_beneficiary">SBFP Beneficiary</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.sbfp_beneficiary" :binary="true" />
+                                <Checkbox v-model="form.sbfp_beneficiary" inputId="edit_sbfp_beneficiary" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.sbfp_beneficiary">{{ errors.sbfp_beneficiary }}</small>
                         </div>
                         <div class="form-group">
-                            <label>4Ps Beneficiary</label>
+                            <label for="edit_four_ps_beneficiary">4Ps Beneficiary</label>
                             <div class="flex items-center gap-2">
-                                <Checkbox v-model="form.four_ps_beneficiary" :binary="true" />
+                                <Checkbox v-model="form.four_ps_beneficiary" inputId="edit_four_ps_beneficiary" :binary="true" />
                                 <span class="text-sm">Yes</span>
                             </div>
                             <small class="text-red-500" v-if="errors.four_ps_beneficiary">{{ errors.four_ps_beneficiary }}</small>

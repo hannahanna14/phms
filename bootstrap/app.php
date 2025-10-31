@@ -17,9 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
         ]);
         
+        $middleware->validateCsrfTokens(except: [
+            'api/consultation/*',
+        ]);
+        
         $middleware->alias([
             'teacher' => \App\Http\Middleware\TeacherMiddleware::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

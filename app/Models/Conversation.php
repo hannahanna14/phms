@@ -64,11 +64,18 @@ class Conversation extends Model
 
         $lastReadAt = $participant->pivot->last_read_at;
         
+        // If user has never read the conversation, only count messages from the last 24 hours
+        if (!$lastReadAt) {
+            return $this->messages()
+                       ->where('sender_id', '!=', $userId)
+                       ->where('created_at', '>', now()->subDay())
+                       ->count();
+        }
+        
+        // Count messages created AFTER the last read timestamp
         return $this->messages()
                    ->where('sender_id', '!=', $userId)
-                   ->when($lastReadAt, function($query) use ($lastReadAt) {
-                       return $query->where('created_at', '>', $lastReadAt);
-                   })
+                   ->where('created_at', '>', $lastReadAt)
                    ->count();
     }
 
@@ -77,9 +84,26 @@ class Conversation extends Model
      */
     public function markAsReadForUser($userId)
     {
-        $this->participants()
-             ->where('user_id', $userId)
-             ->update(['last_read_at' => now()]);
+        // Use current timestamp to mark as read
+        $readTimestamp = now();
+        
+        // Update using DB query directly to ensure it works
+        $updated = \DB::table('conversation_participants')
+            ->where('conversation_id', $this->id)
+            ->where('user_id', $userId)
+            ->update(['last_read_at' => $readTimestamp, 'updated_at' => now()]);
+        
+        // Log for debugging
+        \Log::info('Updated last_read_at', [
+            'conversation_id' => $this->id,
+            'user_id' => $userId,
+            'last_read_at' => $readTimestamp,
+            'rows_updated' => $updated,
+            'participant_exists' => \DB::table('conversation_participants')
+                ->where('conversation_id', $this->id)
+                ->where('user_id', $userId)
+                ->exists()
+        ]);
     }
 
     /**

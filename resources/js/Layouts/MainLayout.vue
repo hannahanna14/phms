@@ -86,11 +86,7 @@
                                     @view-all-notifications="handleViewAllNotifications"
                                 />
 
-                                <button
-                                    @click="toggleUserMenu"
-                                    v-ripple
-                                    class="relative overflow-hidden w-full border-0 bg-transparent flex items-start justify-center pl-4 hover:bg-surface-100 dark:hover:bg-surface-800 rounded-none cursor-pointer transition-colors duration-200"
-                                >
+                                <div class="flex items-start justify-center pl-4">
                                     <Avatar
                                         image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
                                         class="mr-2"
@@ -100,8 +96,7 @@
                                         <span class="font-bold text-xs">{{ user.full_name }}</span>
                                         <span class="text-xs">{{ user.role }}</span>
                                     </span>
-                                </button>
-                                <Menu ref="userMenu" :model="userMenuItems" popup />
+                                </div>
                             </div>
                         </template>
                     </Menubar>
@@ -216,11 +211,13 @@ const markNotificationAsRead = (notificationId) => {
 }
 
 const markAllNotificationsAsRead = () => {
-    markAllAsRead()
+    const userId = page.props.auth?.user?.id
+    markAllAsRead(userId)
 }
 
 const deleteNotification = (notificationId) => {
-    removeNotification(notificationId)
+    const userId = page.props.auth?.user?.id
+    removeNotification(notificationId, userId)
 }
 
 const handleClearAllNotifications = () => {
@@ -302,31 +299,36 @@ const sideBarItems = computed(() => {
             label: 'Pupil Health',
             icon: 'pi pi-heart',
             route: '/pupil-health'
-        },
-        {
+        }
+    ]
+
+    // Add Health Report and Oral Health Report for admin and nurse only
+    if (userRole === 'admin' || userRole === 'nurse') {
+        baseItems.push({
             label: 'Health Report',
             icon: 'pi pi-chart-bar',
             route: '/health-report'
-        },
-        {
+        })
+        baseItems.push({
             label: 'Oral Health Report',
             icon: 'pi pi-file-check',
             route: '/oral-health-report'
-        },
-        {
-            separator: true
-        },
-        {
-            label: 'Calendar',
-            icon: 'pi pi-calendar',
-            route: '/schedule-calendar'
-        },
-        {
-            label: 'Consultation Messages',
-            icon: 'pi pi-comments',
-            route: '/consultation'
-        }
-    ]
+        })
+    }
+
+    baseItems.push({
+        separator: true
+    })
+    baseItems.push({
+        label: 'Calendar',
+        icon: 'pi pi-calendar',
+        route: '/schedule-calendar'
+    })
+    baseItems.push({
+        label: 'Consultation Messages',
+        icon: 'pi pi-comments',
+        route: '/consultation'
+    })
 
     // Add Settings for admin users only
     if (userRole === 'admin') {
@@ -409,17 +411,18 @@ const checkUnrecordedStudents = async () => {
         const data = await response.json()
 
         if (data.notifications && data.notifications.length > 0) {
+            const userId = page.props.auth?.user?.id
             data.notifications.forEach(notification => {
                 if (notification.type === 'unrecorded_student') {
                     addNotification(createUnrecordedStudentNotification(
                         notification.student_name,
                         notification.missing_type
-                    ))
+                    ), userId)
                 } else if (notification.type === 'batch_unrecorded') {
                     addNotification(createBatchUnrecordedNotification(
                         notification.count,
                         notification.record_type
-                    ))
+                    ), userId)
                 }
             })
         }
@@ -435,8 +438,9 @@ const checkScheduleNotifications = async () => {
         const data = await response.json()
 
         if (data.notifications && data.notifications.length > 0) {
+            const userId = page.props.auth?.user?.id
             data.notifications.forEach(notification => {
-                addNotification(createScheduleNotification(notification))
+                addNotification(createScheduleNotification(notification), userId)
             })
         }
     } catch (error) {
@@ -524,7 +528,8 @@ const stopGlobalTimerMonitoring = () => {
 
 // Initialize notifications when component mounts
 onMounted(() => {
-    initializeNotifications()
+    const userId = page.props.auth?.user?.id
+    initializeNotifications(userId)
 
     // Clear cached notifications based on current user role
     const userRole = page.props.auth?.user?.role

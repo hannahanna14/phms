@@ -698,16 +698,26 @@ const addTooltipFunctionality = () => {
             
             // Symbol descriptions
             const symbolDescriptions = {
-                'X': 'Decayed',
-                'D': 'Decayed',
+                'X': 'Carious tooth indicated for extraction',
+                'D': 'Carious tooth indicated for filling',
                 'F': 'Filled',
-                'F2': 'Treatment/Filled',
-                'M': 'Missing',
+                'F2': 'Permanent filled tooth with recurrence of decay',
+                'M': 'Missing tooth',
                 'RF': 'Root Fragment',
                 'E': 'Extraction needed',
                 'C': 'Caries',
                 'R': 'Root canal',
-                'I': 'Impacted'
+                'I': 'Impacted',
+                '√': 'Sound/erupted Permanent tooth',
+                'PFS': 'Pit and Fissure Sealant',
+                'JC': 'Jacket Crown',
+                'P': 'Pontic',
+                'RPD': 'Removable Partial Denture',
+                'FB': 'Fixed Bridge',
+                'CD': 'Complete Denture',
+                'GI': 'Glass Ionomer',
+                'CO': 'Composite',
+                'AM': 'Amalgam'
             };
             
             // Remove any existing tooltips

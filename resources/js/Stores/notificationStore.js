@@ -4,36 +4,28 @@ import { ref, computed } from 'vue'
 const notifications = ref([])
 const isLoading = ref(false)
 
-// LocalStorage key for persistence
-const STORAGE_KEY = 'phms_notifications'
+// User-specific dismissed notifications tracking
+const getDismissedKey = (userId) => `phms_dismissed_notifications_${userId}`
 
-// Load notifications from localStorage
-const loadNotificationsFromStorage = () => {
+const loadDismissedNotifications = (userId) => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) {
-            const parsedNotifications = JSON.parse(stored)
-            // Convert date strings back to Date objects
-            return parsedNotifications.map(notification => ({
-                ...notification,
-                created_at: new Date(notification.created_at),
-                timestamp: notification.timestamp ? new Date(notification.timestamp) : new Date(notification.created_at)
-            }))
-        }
-    } catch (error) {
-        console.error('Error loading notifications from storage:', error)
-    }
-    return []
-}
-
-// Save notifications to localStorage
-const saveNotificationsToStorage = () => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications.value))
-    } catch (error) {
-        console.error('Error saving notifications to storage:', error)
+        const stored = localStorage.getItem(getDismissedKey(userId))
+        return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch {
+        return new Set()
     }
 }
+
+const saveDismissedNotifications = (userId, dismissedSet) => {
+    try {
+        localStorage.setItem(getDismissedKey(userId), JSON.stringify([...dismissedSet]))
+    } catch (error) {
+        console.error('Error saving dismissed notifications:', error)
+    }
+}
+
+// Track dismissed notifications per user
+const dismissedNotifications = ref(new Set())
 
 // Role-based notification filtering
 const getFilteredNotifications = (userRole) => {
@@ -82,10 +74,13 @@ const unreadCount = computed(() => {
 })
 
 // Actions
-const initializeNotifications = () => {
-    // Load existing notifications from localStorage
-    notifications.value = loadNotificationsFromStorage()
-    console.log(`📱 Loaded ${notifications.value.length} notifications from storage`)
+const initializeNotifications = (userId) => {
+    // Load dismissed notifications for this user
+    if (userId) {
+        dismissedNotifications.value = loadDismissedNotifications(userId)
+    }
+    notifications.value = []
+    console.log('📱 Notifications initialized')
 }
 
 // Check for students without health records (to be called periodically)
@@ -100,61 +95,86 @@ const checkExpiredTimers = async () => {
     // This should be called when treatment timers complete
 }
 
-const addNotification = (notification) => {
-    // Check for duplicate notifications (same type and message)
-    // Only prevent duplicates if the notification still exists (not deleted)
+const addNotification = (notification, userId) => {
+    // Create a unique key for this notification
+    const notificationKey = `${notification.type}_${notification.message}`
+    
+    // Skip if already dismissed by this user
+    if (dismissedNotifications.value.has(notificationKey)) {
+        return
+    }
+    
+    // Check for duplicate notifications
     const isDuplicate = notifications.value.some(existing => 
         existing.type === notification.type &&
         existing.message === notification.message &&
-        !existing.dismissed // Only check non-dismissed notifications
+        !existing.dismissed
     )
     
     if (isDuplicate) {
-        console.log('🔄 Duplicate notification prevented:', notification.title)
         return
     }
     
     const newNotification = {
         id: Date.now(),
+        notificationKey,
         read: false,
         dismissed: false,
         created_at: new Date(),
         ...notification
     }
     notifications.value.unshift(newNotification)
-    
-    // Save to localStorage for persistence
-    saveNotificationsToStorage()
-    console.log('💾 Notification saved to storage:', newNotification.title)
 }
 
 const markAsRead = (notificationId) => {
     const notification = notifications.value.find(n => n.id === notificationId)
     if (notification) {
         notification.read = true
-        saveNotificationsToStorage()
     }
 }
 
-const markAllAsRead = () => {
-    notifications.value.forEach(n => n.read = true)
-    saveNotificationsToStorage()
-    console.log('📖 All notifications marked as read and saved')
+const markAllAsRead = (userId) => {
+    // Mark all as read AND dismiss them so they don't reappear
+    notifications.value.forEach(n => {
+        n.read = true
+        n.dismissed = true
+        
+        // Add to dismissed set
+        if (n.notificationKey && userId) {
+            dismissedNotifications.value.add(n.notificationKey)
+        }
+    })
+    
+    // Save dismissed notifications
+    if (userId) {
+        saveDismissedNotifications(userId, dismissedNotifications.value)
+    }
+    console.log('📖 All notifications marked as read and dismissed')
 }
 
-const removeNotification = (notificationId) => {
+const removeNotification = (notificationId, userId) => {
     const notification = notifications.value.find(n => n.id === notificationId)
     if (notification) {
         notification.dismissed = true
-        saveNotificationsToStorage()
-        console.log('🗑️ Notification dismissed and saved')
+        
+        // Add to dismissed set and save
+        if (notification.notificationKey && userId) {
+            dismissedNotifications.value.add(notification.notificationKey)
+            saveDismissedNotifications(userId, dismissedNotifications.value)
+        }
+        console.log('🗑️ Notification dismissed')
     }
 }
 
 const clearAllNotifications = () => {
     notifications.value = []
-    saveNotificationsToStorage()
-    console.log('🧹 All notifications cleared and saved')
+    console.log('🧹 All notifications cleared')
+}
+
+const clearOldReadNotifications = () => {
+    // Remove read or dismissed notifications
+    notifications.value = notifications.value.filter(n => !n.read && !n.dismissed)
+    console.log('🧹 Read/dismissed notifications cleared')
 }
 
 // Notification types and their configurations
@@ -220,13 +240,13 @@ const createBatchUnrecordedNotification = (count, recordType) => {
 
 // Clear notifications for role change or reset
 const clearNotificationsForRole = (userRole) => {
+    // When switching roles, clear notifications that don't apply
     if (userRole === 'teacher') {
-        // For teachers, remove all non-schedule notifications
+        // Teachers should only see schedule notifications
         notifications.value = notifications.value.filter(notification => {
             return ['schedule_reminder', 'schedule_today'].includes(notification.type)
         })
     }
-    saveNotificationsToStorage()
 }
 
 // Export the store
@@ -246,6 +266,7 @@ export const useNotificationStore = () => {
         markAllAsRead,
         removeNotification,
         clearAllNotifications,
+        clearOldReadNotifications,
         getFilteredNotifications,
         clearNotificationsForRole,
         
