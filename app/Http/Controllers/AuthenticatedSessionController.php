@@ -34,7 +34,8 @@ class AuthenticatedSessionController extends Controller
                 ])
                 ->log('User logged in successfully');
 
-            return redirect()->intended('/');
+            // Always redirect to dashboard after login
+            return redirect('/');
         }
 
         // Log failed login attempt

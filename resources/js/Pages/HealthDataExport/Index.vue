@@ -266,6 +266,19 @@
                                 />
                             </div>
 
+                            <!-- Sort By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <Select 
+                                    v-model="incidentFilters.sort_by"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Sort Order"
+                                    class="w-full"
+                                />
+                            </div>
+
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
                                 <Button 
