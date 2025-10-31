@@ -76,6 +76,13 @@
                         </template>
                         <template #end>
                             <div class="flex items-center space-x-3">
+                                <!-- Viewer Only Badge for Teachers -->
+                                <div v-if="user.role === 'teacher'" class="flex items-center">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full border border-blue-300 shadow-sm">
+                                        👁️ Viewer Only
+                                    </span>
+                                </div>
+
                                 <!-- Notification Dropdown -->
                                 <NotificationDropdown
                                     :notifications="filteredNotifications"
