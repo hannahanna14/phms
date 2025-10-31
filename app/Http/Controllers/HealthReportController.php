@@ -209,7 +209,17 @@ class HealthReportController extends Controller
                     foreach ($request->health_exam_fields as $field) {
                         // Check if the field exists in the HealthExamination model
                         if (in_array($field, (new HealthExamination())->getFillable())) {
-                            $healthData[$field] = $healthExam->$field ?? 'N/A';
+                            $value = $healthExam->$field ?? 'N/A';
+                            
+                            // Check if value is "Others (specify)" and replace with the specify field
+                            if (stripos($value, 'others') !== false && stripos($value, 'specify') !== false) {
+                                $specifyField = $field . '_specify';
+                                if (!empty($healthExam->$specifyField)) {
+                                    $value = $healthExam->$specifyField;
+                                }
+                            }
+                            
+                            $healthData[$field] = $value;
                         } else {
                             $healthData[$field] = 'N/A';
                         }
@@ -412,7 +422,17 @@ class HealthReportController extends Controller
                         foreach ($request->health_exam_fields as $field) {
                             // Check if the field exists in the HealthExamination model
                             if (in_array($field, (new HealthExamination())->getFillable())) {
-                                $healthData[$field] = $healthExam->$field ?? 'N/A';
+                                $value = $healthExam->$field ?? 'N/A';
+                                
+                                // Check if value is "Others (specify)" and replace with the specify field
+                                if (stripos($value, 'others') !== false && stripos($value, 'specify') !== false) {
+                                    $specifyField = $field . '_specify';
+                                    if (!empty($healthExam->$specifyField)) {
+                                        $value = $healthExam->$specifyField;
+                                    }
+                                }
+                                
+                                $healthData[$field] = $value;
                             } else {
                                 $healthData[$field] = 'N/A';
                             }

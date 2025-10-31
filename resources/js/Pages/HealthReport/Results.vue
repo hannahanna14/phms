@@ -165,6 +165,7 @@
                     stripedRows
                     :scrollable="true"
                     scrollHeight="600px"
+                    class="break-words-table"
                 >
                         <!-- Dynamic columns based on selected fields -->
                         <Column v-if="fields.includes('name')" field="name" header="Name" sortable frozen />
@@ -212,81 +213,81 @@
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('vision_screening')" header="Vision Screening">
+                        <Column v-if="health_exam_fields.includes('vision_screening')" header="Vision Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.vision_screening || 'N/A'">{{ (data.health_exam?.vision_screening || 'N/A').substring(0, 15) }}{{ (data.health_exam?.vision_screening || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.vision_screening || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('auditory_screening')" header="Auditory Screening">
+                        <Column v-if="health_exam_fields.includes('auditory_screening')" header="Auditory Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.auditory_screening || 'N/A'">{{ (data.health_exam?.auditory_screening || 'N/A').substring(0, 15) }}{{ (data.health_exam?.auditory_screening || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.auditory_screening || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('skin')" header="Skin">
+                        <Column v-if="health_exam_fields.includes('skin')" header="Skin" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.skin || 'N/A'">{{ (data.health_exam?.skin || 'N/A').substring(0, 15) }}{{ (data.health_exam?.skin || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.skin || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('scalp')" header="Scalp">
+                        <Column v-if="health_exam_fields.includes('scalp')" header="Scalp" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.scalp || 'N/A'">{{ (data.health_exam?.scalp || 'N/A').substring(0, 15) }}{{ (data.health_exam?.scalp || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.scalp || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('eye')" header="Eyes">
+                        <Column v-if="health_exam_fields.includes('eye')" header="Eyes" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.eye || 'N/A'">{{ (data.health_exam?.eye || 'N/A').substring(0, 15) }}{{ (data.health_exam?.eye || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.eye || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('ear')" header="Ears">
+                        <Column v-if="health_exam_fields.includes('ear')" header="Ears" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.ear || 'N/A'">{{ (data.health_exam?.ear || 'N/A').substring(0, 15) }}{{ (data.health_exam?.ear || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.ear || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('nose')" header="Nose">
+                        <Column v-if="health_exam_fields.includes('nose')" header="Nose" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.nose || 'N/A'">{{ (data.health_exam?.nose || 'N/A').substring(0, 15) }}{{ (data.health_exam?.nose || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.nose || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('mouth')" header="Mouth">
+                        <Column v-if="health_exam_fields.includes('mouth')" header="Mouth" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.mouth || 'N/A'">{{ (data.health_exam?.mouth || 'N/A').substring(0, 15) }}{{ (data.health_exam?.mouth || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.mouth || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('throat')" header="Throat">
+                        <Column v-if="health_exam_fields.includes('throat')" header="Throat" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.throat || 'N/A'">{{ (data.health_exam?.throat || 'N/A').substring(0, 15) }}{{ (data.health_exam?.throat || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.throat || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('neck')" header="Neck">
+                        <Column v-if="health_exam_fields.includes('neck')" header="Neck" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.neck || 'N/A'">{{ (data.health_exam?.neck || 'N/A').substring(0, 15) }}{{ (data.health_exam?.neck || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.neck || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('lungs_heart')" header="Lungs/Heart">
+                        <Column v-if="health_exam_fields.includes('lungs_heart')" header="Lungs/Heart" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.lungs_heart || 'N/A'">{{ (data.health_exam?.lungs_heart || 'N/A').substring(0, 15) }}{{ (data.health_exam?.lungs_heart || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.lungs_heart || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('abdomen')" header="Abdomen">
+                        <Column v-if="health_exam_fields.includes('abdomen')" header="Abdomen" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.abdomen || 'N/A'">{{ (data.health_exam?.abdomen || 'N/A').substring(0, 15) }}{{ (data.health_exam?.abdomen || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.abdomen || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('deformities')" header="Deformities">
+                        <Column v-if="health_exam_fields.includes('deformities')" header="Deformities" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.deformities || 'N/A'">{{ (data.health_exam?.deformities || 'N/A').substring(0, 15) }}{{ (data.health_exam?.deformities || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.deformities || 'N/A' }}
                             </template>
                         </Column>
 
@@ -320,15 +321,15 @@
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('other_specify')" header="Other Specify">
+                        <Column v-if="health_exam_fields.includes('other_specify')" header="Other Specify" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.other_specify || 'N/A'">{{ (data.health_exam?.other_specify || 'N/A').substring(0, 15) }}{{ (data.health_exam?.other_specify || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.other_specify || 'N/A' }}
                             </template>
                         </Column>
 
-                        <Column v-if="health_exam_fields.includes('remarks')" header="Remarks">
+                        <Column v-if="health_exam_fields.includes('remarks')" header="Remarks" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
-                                <span :title="data.health_exam?.remarks || 'N/A'">{{ (data.health_exam?.remarks || 'N/A').substring(0, 15) }}{{ (data.health_exam?.remarks || 'N/A').length > 15 ? '...' : '' }}</span>
+                                {{ data.health_exam?.remarks || 'N/A' }}
                             </template>
                         </Column>
                 </DataTable>
@@ -620,6 +621,54 @@ const generateBrowserPDF = (data) => {
 
 .table-container table {
     min-width: 100%;
+}
+
+/* Force word wrapping in DataTable cells */
+:deep(.break-words-table) {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+:deep(.break-words-table .p-datatable-tbody > tr > td) {
+    word-wrap: break-word !important;
+    word-break: break-all !important;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    padding: 8px !important;
+    vertical-align: top !important;
+}
+
+:deep(.break-words-table .p-datatable-thead > tr > th) {
+    word-break: break-word !important;
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+}
+
+/* Specific styling for long text columns */
+:deep(.break-words-table .p-datatable-tbody > tr > td div) {
+    word-wrap: break-word !important;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    max-width: 100% !important;
+}
+
+/* Ensure table layout allows wrapping */
+:deep(.break-words-table .p-datatable-table) {
+    table-layout: fixed !important;
+}
+
+:deep(.break-words-table .p-datatable-wrapper) {
+    overflow-x: auto !important;
+}
+
+/* Remove any text truncation */
+:deep(.break-words-table .p-datatable-tbody > tr > td span) {
+    white-space: normal !important;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
 }
 
 /* Print Styles */

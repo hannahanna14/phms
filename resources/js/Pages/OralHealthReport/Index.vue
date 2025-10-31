@@ -675,33 +675,44 @@ watch(() => form.processing, (newProcessing) => {
     updateButtonState();
 });
 
-// Student search functionality
-const onStudentSearch = async () => {
+// Student search functionality with debouncing
+let searchTimeout = null;
+
+const onStudentSearch = () => {
     const query = searchQuery.value;
+
+    // Clear previous timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
 
     if (!query || query.length < 1) {
         studentOptions.value = [];
+        searchLoading.value = false;
         return;
     }
 
     searchLoading.value = true;
 
-    try {
-        const response = await axios.get('/api/oral-health-report/students/search', {
-            params: { query },
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
+    // Debounce: wait 300ms after user stops typing
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await axios.get('/api/oral-health-report/students/search', {
+                params: { query },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
 
-        studentOptions.value = response.data;
-    } catch (error) {
-        console.error('Error searching students:', error);
-        studentOptions.value = [];
-    } finally {
-        searchLoading.value = false;
-    }
+            studentOptions.value = response.data;
+        } catch (error) {
+            console.error('Error searching students:', error);
+            studentOptions.value = [];
+        } finally {
+            searchLoading.value = false;
+        }
+    }, 300); // 300ms delay
 };
 
 // Add student to selection

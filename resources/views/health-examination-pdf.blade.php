@@ -266,10 +266,11 @@
             font-size: 5px;
             padding: 0.5px;
             line-height: 1.0;
-            max-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            vertical-align: top;
         }
         
         /* Handle long text in specific rows */

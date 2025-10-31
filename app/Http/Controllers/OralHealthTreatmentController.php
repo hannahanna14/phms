@@ -174,7 +174,7 @@ class OralHealthTreatmentController extends Controller
         }
 
         // For Inertia requests, redirect back with success message
-        return redirect()->route('pupil-health.oral-health-exam.show', [
+        return redirect()->route('pupil-health.oral-health.show', [
             'student' => $oralHealthTreatment->student_id,
             'grade' => $oralHealthTreatment->grade_level
         ])->with('success', 'Oral health treatment updated successfully.');

@@ -69,7 +69,9 @@
             text-align: center;
             font-size: 8px;
             word-wrap: break-word;
-            overflow: hidden;
+            word-break: break-all;
+            white-space: normal;
+            overflow-wrap: anywhere;
             vertical-align: top;
         }
         .data-table th {
@@ -109,11 +111,12 @@
             }
         }
         
-        /* Text truncation for long content */
+        /* Allow text wrapping for long content */
         .col-health-wide,
         .col-health {
-            white-space: nowrap;
-            text-overflow: ellipsis;
+            white-space: normal;
+            word-break: break-all;
+            overflow-wrap: anywhere;
         }
         .footer {
             margin-top: 30px;

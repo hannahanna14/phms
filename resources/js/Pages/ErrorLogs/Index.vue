@@ -221,13 +221,12 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <Button 
+                                        label="View Details"
                                         icon="pi pi-eye" 
                                         @click="viewLogDetails(log)"
                                         text
-                                        rounded
                                         severity="secondary"
                                         size="small"
-                                        v-tooltip.left="'View Details'"
                                     />
                                 </td>
                             </tr>
@@ -249,16 +248,16 @@
             <!-- Laravel Error Logs Table -->
             <div v-else-if="logType === 'laravel'" class="bg-white rounded-lg shadow-md">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 table-fixed">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                                     Timestamp
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Message
                                 </th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                                     Actions
                                 </th>
                             </tr>
@@ -269,24 +268,23 @@
                                     {{ log.timestamp }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                    <div class="flex items-center space-x-2">
-                                        <span :class="getLogLevelClass(log.level)" class="px-2 py-1 text-xs font-medium rounded-full">
+                                    <div class="flex items-start space-x-2">
+                                        <span :class="getLogLevelClass(log.level)" class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap">
                                             {{ log.level }}
                                         </span>
-                                        <span class="truncate" :title="log.message">
+                                        <span class="break-words" style="word-break: break-word; overflow-wrap: anywhere;">
                                             {{ log.message }}
                                         </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <Button 
+                                        label="View Details"
                                         icon="pi pi-eye"
                                         @click="viewLogDetails(log)"
                                         text
-                                        rounded
                                         severity="secondary"
                                         size="small"
-                                        v-tooltip.left="'View Details'"
                                     />
                                 </td>
                             </tr>
@@ -307,8 +305,47 @@
         <!-- Log Details Dialog -->
         <Dialog v-model:visible="showLogDetails" modal header="Log Details" class="w-full max-w-4xl">
             <div v-if="selectedLog" class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <pre class="text-sm text-gray-800 whitespace-pre-wrap">{{ selectedLog.full_content }}</pre>
+                <!-- Activity Log Details -->
+                <div v-if="logType === 'activity'" class="space-y-3">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-2">Event Information</h3>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="font-medium text-gray-600">Event:</span>
+                                <span class="ml-2">{{ selectedLog.event || 'N/A' }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Timestamp:</span>
+                                <span class="ml-2">{{ formatDateTime(selectedLog.created_at) }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">User:</span>
+                                <span class="ml-2">{{ selectedLog.causer?.full_name || 'System' }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Role:</span>
+                                <span class="ml-2">{{ selectedLog.causer?.role || 'system' }}</span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="font-medium text-gray-600">Subject Type:</span>
+                                <span class="ml-2">{{ getSubjectName(selectedLog.subject_type) }}</span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="font-medium text-gray-600">Description:</span>
+                                <p class="ml-2 mt-1 text-gray-800">{{ selectedLog.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="selectedLog.properties" class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-2">Properties</h3>
+                        <pre class="text-sm text-gray-800 whitespace-pre-wrap overflow-auto max-h-96">{{ JSON.stringify(selectedLog.properties, null, 2) }}</pre>
+                    </div>
+                </div>
+                
+                <!-- System Error Log Details -->
+                <div v-else class="bg-gray-50 p-4 rounded-lg">
+                    <pre class="text-sm text-gray-800 whitespace-pre-wrap overflow-auto max-h-96">{{ selectedLog.full_content || selectedLog.message }}</pre>
                 </div>
             </div>
         </Dialog>

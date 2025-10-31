@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class HealthExamination extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'student_id',
         'grade_level',
@@ -67,5 +70,13 @@ class HealthExamination extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['student_id', 'grade_level', 'examination_date', 'vision_screening', 'auditory_screening'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
