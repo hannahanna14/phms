@@ -1,0 +1,29 @@
+/* HealthExamination Component Styles */
+
+.health-examination {
+    @apply p-5;
+}
+
+.search-container {
+    @apply mb-5;
+}
+
+.search-input {
+    @apply w-full p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.students-list {
+    @apply flex flex-col gap-2.5;
+}
+
+.student-item {
+    @apply p-4 border border-gray-200 rounded bg-white hover:shadow-md transition-shadow;
+}
+
+.student-name {
+    @apply font-bold mb-1 text-gray-900;
+}
+
+.student-details {
+    @apply flex gap-4 text-gray-600 text-sm;
+}

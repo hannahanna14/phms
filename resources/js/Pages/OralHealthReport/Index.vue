@@ -421,6 +421,8 @@
 import { Head } from '@inertiajs/vue3';
 import { useForm } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 import Dropdown from 'primevue/dropdown';
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'

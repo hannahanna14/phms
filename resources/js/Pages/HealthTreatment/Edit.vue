@@ -102,6 +102,8 @@ import { router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
+import '../../../css/pages/shared/CrudForm.css';
+import '../../../css/pages/HealthTreatment/Edit.css';
 
 const props = defineProps({
     treatment: Object,

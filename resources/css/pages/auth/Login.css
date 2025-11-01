@@ -1,0 +1,93 @@
+/* Login Page Styles */
+
+.login-container {
+    @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600;
+}
+
+/* Glass Card */
+.login-card {
+    @apply backdrop-blur-md bg-white/20 p-8 rounded-2xl shadow-2xl border border-white/30 w-[400px];
+}
+
+.login-logo-container {
+    @apply flex justify-center mb-6;
+}
+
+.login-logo {
+    @apply w-32 drop-shadow-lg;
+}
+
+/* Form */
+.login-form {
+    @apply space-y-6;
+}
+
+/* Form Fields */
+.form-field {
+    @apply space-y-2;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-white mb-2;
+}
+
+.form-input {
+    @apply w-full px-4 py-3 rounded-xl bg-white/90 backdrop-blur-sm border-2 transition-all duration-200 placeholder-gray-500;
+    @apply focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white;
+}
+
+.form-input-default {
+    @apply border-white/30 hover:border-white/50;
+}
+
+.form-input-error {
+    @apply border-red-400 bg-red-50/90;
+}
+
+.form-input-password {
+    @apply w-full px-4 py-3 pr-12 rounded-xl bg-white/90 backdrop-blur-sm border-2 transition-all duration-200 placeholder-gray-500;
+    @apply focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white;
+}
+
+/* Password Toggle */
+.password-toggle-btn {
+    @apply absolute inset-y-0 right-0 pr-4 flex items-center text-gray-600 hover:text-gray-800 transition-colors;
+}
+
+/* Error Messages */
+.error-message {
+    @apply text-red-100 text-sm mt-2 bg-red-500/20 p-2 rounded-lg backdrop-blur-sm;
+}
+
+.error-message-general {
+    @apply text-red-100 text-sm bg-red-500/20 p-3 rounded-lg backdrop-blur-sm border border-red-400/30;
+}
+
+/* Submit Button */
+.login-button {
+    @apply w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-xl font-medium shadow-lg;
+    @apply hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-white/50;
+    @apply transform hover:scale-[1.02] transition-all duration-200;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+}
+
+.login-button-loading {
+    @apply flex items-center justify-center;
+}
+
+/* Custom backdrop blur support for older browsers */
+.backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth animations */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced shadow for glass effect */
+.shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}

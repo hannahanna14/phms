@@ -162,6 +162,8 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 
 const { student } = usePage().props;
 

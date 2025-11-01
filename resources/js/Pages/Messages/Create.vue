@@ -182,6 +182,10 @@ import Dropdown from 'primevue/dropdown'
 import Checkbox from 'primevue/checkbox'
 import Avatar from 'primevue/avatar'
 import InputNumber from 'primevue/inputnumber'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Messages/Create.css'
 
 const props = defineProps({
     users: Array,
@@ -280,11 +284,3 @@ const submit = () => {
     })
 }
 </script>
-
-<style scoped>
-.create-message-page {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-</style>

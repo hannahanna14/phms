@@ -7,11 +7,11 @@
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
         @update:visible="$emit('close')"
     >
-        <div v-if="incident" class="space-y-6">
+        <div v-if="incident" class="modal-content">
             <!-- Student Info -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-semibold text-gray-700 mb-2">Student Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="student-info-section">
+                <h3 class="section-title">Student Information</h3>
+                <div class="info-grid">
                     <div><strong>Name:</strong> {{ student?.full_name }}</div>
                     <div><strong>LRN:</strong> {{ student?.lrn }}</div>
                     <div><strong>Grade:</strong> {{ incident.grade_level }}</div>
@@ -21,30 +21,30 @@
 
             <!-- Incident Details -->
             <div>
-                <h3 class="font-semibold text-gray-700 mb-4">Incident Details</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Incident</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ new Date(incident.date).toLocaleDateString() }}</div>
+                <h3 class="section-title-large">Incident Details</h3>
+                <div class="details-section">
+                    <div class="field-container">
+                        <label class="field-label">Date of Incident</label>
+                        <div class="field-value">{{ new Date(incident.date).toLocaleDateString() }}</div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Complaint</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ incident.complaint }}</div>
+                    <div class="field-container">
+                        <label class="field-label">Complaint</label>
+                        <div class="field-value">{{ incident.complaint }}</div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Actions Taken</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ incident.actions_taken }}</div>
+                    <div class="field-container">
+                        <label class="field-label">Actions Taken</label>
+                        <div class="field-value">{{ incident.actions_taken }}</div>
                     </div>
                 </div>
             </div>
 
 
             <!-- Record Information -->
-            <div class="pt-4 border-t">
-                <h3 class="font-semibold text-gray-700 mb-2">Record Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+            <div class="record-info-section">
+                <h3 class="section-title">Record Information</h3>
+                <div class="record-info-grid">
                     <div><strong>Created:</strong> {{ new Date(incident.created_at).toLocaleString() }}</div>
                     <div><strong>Last Updated:</strong> {{ new Date(incident.updated_at).toLocaleString() }}</div>
                 </div>
@@ -60,6 +60,8 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import { useTimerNotifications } from '@/Utils/timerMixin.js';
 import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js';
+// Import component styles
+import '../../../css/components/modals/IncidentViewModal.css';
 
 const props = defineProps({
     visible: Boolean,
@@ -73,9 +75,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'edit']);
 
 const getAlertClass = () => {
-    if (props.timerStatus?.status === 'expired') return 'bg-red-100 text-red-800';
-    if (props.timerStatus?.status === 'active') return 'bg-yellow-100 text-yellow-800';
-    return 'bg-gray-100 text-gray-800';
+    if (props.timerStatus?.status === 'expired') return 'alert-expired';
+    if (props.timerStatus?.status === 'active') return 'alert-active';
+    return 'alert-default';
 };
 
 const editIncident = () => {

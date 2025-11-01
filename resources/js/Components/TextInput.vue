@@ -1,4 +1,7 @@
 <script setup>
+// Import component styles
+import '../../css/components/TextInput.css'
+
 const model = defineModel({
     type: null,
     required: true
@@ -18,9 +21,16 @@ defineProps({
 </script>
 
 <template>
-    <div class="mb-6">
-        <label>{{ name }}</label>
-        <input :type="type" v-model="model" :class="{'!ring-red-500' : message}">
-        <small class="error" v-if="message">{{ message }}</small>
+    <div class="text-input-container">
+        <label class="text-input-label">{{ name }}</label>
+        <input 
+            :type="type" 
+            v-model="model" 
+            :class="[
+                'text-input-field',
+                { 'text-input-error': message }
+            ]"
+        >
+        <small class="text-input-error-message" v-if="message">{{ message }}</small>
     </div>
 </template>

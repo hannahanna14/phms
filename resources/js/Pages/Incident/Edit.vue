@@ -94,8 +94,18 @@ import { useForm, usePage, router } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
+import { useFormPersistence } from '@/composables/useFormPersistence';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
+// Import page-specific styles
+import '../../../css/pages/Incident/Edit.css';
 
-const { incident, student } = usePage().props
+const props = defineProps({
+    incident: Object,
+    student: Object
+})
+
+const { incident, student } = props
 
 // Initialize form with existing incident data
 const form = useForm({
@@ -127,9 +137,5 @@ const updateIncident = () => {
 const goBack = () => {
     // Go back to the incident page with proper parameters
     router.visit(`/pupil-health/incident/${student.id}?grade=${encodeURIComponent(incident.grade_level)}`)
-}
+};
 </script>
-
-<style scoped>
-/* Additional styling if needed */
-</style>

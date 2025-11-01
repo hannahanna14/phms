@@ -1,0 +1,181 @@
+/* Shared CRUD Form Styles */
+/* Used by Create, Edit, Show pages for Health Examination, Health Treatment, Incidents, etc. */
+
+/* Main Container */
+.health-examination-form,
+.health-treatment-form,
+.incident-form,
+.oral-health-form {
+    @apply p-6;
+}
+
+.white-container {
+    @apply bg-white rounded-lg shadow-md p-6;
+}
+
+/* Header Section */
+.form-header {
+    @apply text-center mb-6;
+}
+
+.form-title {
+    @apply text-2xl font-bold text-gray-800 mb-2;
+}
+
+.form-subtitle {
+    @apply text-gray-600;
+}
+
+/* Student Info Card */
+.student-info-card {
+    @apply bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4;
+}
+
+.student-info-label {
+    @apply font-semibold text-gray-700;
+}
+
+/* Section Headers */
+.section-header {
+    @apply text-lg font-semibold mb-4;
+}
+
+.section-header-large {
+    @apply text-xl font-bold mb-4 text-gray-800;
+}
+
+/* Form Layout */
+.form-container {
+    @apply space-y-6;
+}
+
+.form-grid-2 {
+    @apply grid grid-cols-2 gap-4;
+}
+
+.form-grid-3 {
+    @apply grid grid-cols-3 gap-4;
+}
+
+.form-grid-4 {
+    @apply grid grid-cols-4 gap-4;
+}
+
+/* Form Groups */
+.form-group {
+    @apply space-y-2;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-label-required::after {
+    content: " *";
+    @apply text-red-500;
+}
+
+.form-input {
+    @apply w-full;
+}
+
+.form-hint {
+    @apply text-gray-500 text-sm;
+}
+
+.form-error {
+    @apply text-red-500 text-sm;
+}
+
+/* Character Counter */
+.char-counter {
+    @apply text-sm text-gray-500;
+}
+
+.char-counter-exceeded {
+    @apply text-red-500 font-semibold;
+}
+
+/* Action Buttons */
+.form-actions {
+    @apply flex justify-end gap-3 mt-6 pt-4 border-t;
+}
+
+.btn-submit {
+    @apply bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors;
+}
+
+.btn-cancel {
+    @apply bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400 transition-colors;
+}
+
+.btn-back {
+    @apply bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition-colors;
+}
+
+/* View/Show Page Specific */
+.view-container {
+    @apply space-y-6;
+}
+
+.view-section {
+    @apply bg-gray-50 p-4 rounded-lg;
+}
+
+.view-label {
+    @apply font-semibold text-gray-700;
+}
+
+.view-value {
+    @apply text-gray-900;
+}
+
+/* Checkbox Groups */
+.checkbox-group {
+    @apply space-y-2;
+}
+
+.checkbox-item {
+    @apply flex items-center gap-2;
+}
+
+/* Radio Groups */
+.radio-group {
+    @apply space-y-2;
+}
+
+.radio-item {
+    @apply flex items-center gap-2;
+}
+
+/* Divider */
+.form-divider {
+    @apply border-t border-gray-200 my-6;
+}
+
+/* Alert/Notice */
+.form-notice {
+    @apply bg-blue-50 border-l-4 border-blue-500 p-4 mb-4;
+}
+
+.form-notice-text {
+    @apply text-blue-700 text-sm;
+}
+
+/* Loading State */
+.form-loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-grid-2,
+    .form-grid-3,
+    .form-grid-4 {
+        @apply grid-cols-1;
+    }
+    
+    .student-info-card {
+        @apply grid-cols-1;
+    }
+}

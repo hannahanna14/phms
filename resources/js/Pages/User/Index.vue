@@ -60,6 +60,10 @@ import { ref, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import MainLayout from '@/Layouts/MainLayout.vue'
 import InputText from 'primevue/inputtext'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/User/Index.css'
 
 const props = defineProps({
     users: {
@@ -96,34 +100,3 @@ const getRoleBadgeClass = (role) => {
     }
 }
 </script>
-
-<style scoped>
-.main-view {
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.user-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.user-table th,
-.user-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.user-table th {
-    background-color: #f8fafc;
-    font-weight: 600;
-    color: #4a5568;
-}
-
-.user-table tr:hover {
-    background-color: #f8fafc;
-}
-</style>

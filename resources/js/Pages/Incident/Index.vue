@@ -79,6 +79,10 @@ import { Head } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Incident/Index.css'
 
 const props = defineProps({
     students: {
@@ -105,52 +109,3 @@ const viewStudentIncidents = (student) => {
     window.location.href = `/pupil-health/incident/${student.id}?grade=${student.grade_level}`
 }
 </script>
-
-<style scoped>
-.health-examination {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-.search-container {
-    margin-bottom: 20px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 8px 8px 8px 35px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    background-color: white;
-}
-
-.student-table-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.student-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.student-table th,
-.student-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.student-table th {
-    font-weight: 600;
-    color: #374151;
-}
-
-.student-table tr:hover {
-    background-color: #f9fafb;
-}
-</style>

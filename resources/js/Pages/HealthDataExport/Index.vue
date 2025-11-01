@@ -302,6 +302,8 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import Button from 'primevue/button'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'

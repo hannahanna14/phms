@@ -77,6 +77,8 @@
 import { ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
+// Import modal styles (shared with other modals)
+import '../../../css/components/modals/HealthTreatmentViewModal.css';
 
 const props = defineProps({
     visible: {

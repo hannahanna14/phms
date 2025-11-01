@@ -160,6 +160,10 @@
 import { Head, router } from '@inertiajs/vue3'
 import { ref, computed, onMounted } from 'vue'
 import Button from 'primevue/button'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Messages/Index.css'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Badge from 'primevue/badge'
@@ -261,35 +265,3 @@ const onPageChange = (event) => {
     })
 }
 </script>
-
-<style scoped>
-.messages-page {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-.message-item {
-    transition: all 0.2s ease;
-}
-
-.message-item:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-:deep(.p-tabview .p-tabview-nav li .p-tabview-nav-link) {
-    padding: 1rem 1.5rem;
-}
-
-:deep(.p-tabview .p-tabview-panels) {
-    padding: 0;
-}
-</style>

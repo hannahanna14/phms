@@ -1,26 +1,26 @@
 <template>
-    <div class="bg-gray-100 h-screen">
-        <div class="flex flex-col md:flex-row h-full">
+    <div class="main-container">
+        <div class="layout-wrapper">
             <!-- Sidebar -->
             <aside
                 :class="[
-                    'fixed top-0 left-0 h-full transition-all duration-300 z-[1100] bg-white shadow-lg',
-                    isSidebarOpen ? 'w-60' : 'w-0 overflow-hidden'
+                    'sidebar',
+                    isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'
                 ]"
             >
-                <div class="card flex justify-center h-full">
+                <div class="card sidebar-card">
                     <TieredMenu
                         :model="sideBarItems"
-                        class="w-full md:w-60 h-full flex-shrink-0 !rounded-none"
+                        class="sidebar-menu"
                     >
                         <template #start>
-                            <div class="flex items-center w-full pt-20 px-2">
+                            <div class="sidebar-logo-container">
                                 <img
                                     :src="logoSrc"
                                     alt="MedPort Logo"
-                                    class="h-8 w-8 mr-3"
+                                    class="sidebar-logo"
                                 />
-                                <span class="text-xl font-bold text-blue-600">MedPort</span>
+                                <span class="sidebar-brand">MedPort</span>
                             </div>
                         </template>
                         <template #item="{ item, props, hasSubmenu }">
@@ -28,26 +28,24 @@
                                 v-if="item.route"
                                 :href="item.route"
                                 :class="[
-                                    'no-underline w-full text-left p-3 flex items-center transition-all duration-200',
-                                    isActiveRoute(item.route)
-                                        ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500 font-semibold'
-                                        : 'hover:bg-gray-100 text-gray-700'
+                                    'menu-item-link',
+                                    isActiveRoute(item.route) ? 'menu-item-active' : 'menu-item-inactive'
                                 ]"
                                 v-bind="props.action"
                             >
                                 <span :class="[
                                     item.icon,
-                                    isActiveRoute(item.route) ? 'text-blue-600' : 'text-gray-500'
+                                    isActiveRoute(item.route) ? 'menu-item-icon-active' : 'menu-item-icon-inactive'
                                 ]" />
                                 <span class="ml-2">{{ item.label }}</span>
                             </Link>
                             <button
                                 v-else-if="item.command"
                                 @click="item.command"
-                                class="w-full text-left p-3 hover:bg-gray-100 flex items-center no-underline border-none bg-transparent cursor-pointer text-gray-700 transition-all duration-200"
+                                class="menu-item-button"
                                 v-bind="props.action"
                             >
-                                <span :class="[item.icon, 'text-gray-500']" />
+                                <span :class="[item.icon, 'menu-item-icon-inactive']" />
                                 <span class="ml-2">{{ item.label }}</span>
                             </button>
                         </template>
@@ -57,28 +55,30 @@
 
             <!-- Main Content -->
             <main
-                class="flex-1 transition-all duration-300 relative"
-                :class="isSidebarOpen ? 'md:ml-60' : 'ml-0'"
+                :class="[
+                    'main-content',
+                    isSidebarOpen ? 'main-content-shifted' : 'main-content-full'
+                ]"
             >
 
-                <header class="fixed top-0 left-0 right-0 z-[1100]">
-                    <Menubar :model="menuBarItems" class="w-full md:w-100 !border-l-0 !rounded-none">
+                <header class="main-header">
+                    <Menubar :model="menuBarItems" class="header-menubar md:w-100 !border-l-0 !rounded-none">
                         <template #start>
                             <button
                                 @click="toggleSidebar"
-                                class="bg-transparent border-none p-2 mr-2 cursor-pointer hover:bg-gray-200 rounded"
+                                class="sidebar-toggle-btn"
                             >
-                                <i class="pi pi-bars text-gray-700"></i>
+                                <i class="pi pi-bars sidebar-toggle-icon"></i>
                             </button>
-                            <Link href="/" class="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors no-underline">
+                            <Link href="/" class="header-brand-link">
                                 MedPort
                             </Link>
                         </template>
                         <template #end>
-                            <div class="flex items-center space-x-3">
+                            <div class="header-end-container">
                                 <!-- Viewer Only Badge for Teachers -->
-                                <div v-if="user.role === 'teacher'" class="flex items-center">
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full border border-blue-300 shadow-sm">
+                                <div v-if="user.role === 'teacher'" class="viewer-badge-container">
+                                    <span class="viewer-badge">
                                         👁️ Viewer Only
                                     </span>
                                 </div>
@@ -93,15 +93,15 @@
                                     @view-all-notifications="handleViewAllNotifications"
                                 />
 
-                                <div class="flex items-start justify-center pl-4">
+                                <div class="user-info-container">
                                     <Avatar
                                         image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-                                        class="mr-2"
+                                        class="user-avatar"
                                         shape="circle"
                                     />
-                                    <span class="inline-flex flex-col items-start">
-                                        <span class="font-bold text-xs">{{ user.full_name }}</span>
-                                        <span class="text-xs">{{ user.role }}</span>
+                                    <span class="user-details">
+                                        <span class="user-name">{{ user.full_name }}</span>
+                                        <span class="user-role">{{ user.role }}</span>
                                     </span>
                                 </div>
                             </div>
@@ -109,7 +109,7 @@
                     </Menubar>
                 </header>
 
-                <div class="md:mt-16 p-4">
+                <div class="content-wrapper">
                     <slot></slot>
                 </div>
             </main>
@@ -134,6 +134,8 @@ import Menu from 'primevue/menu'
 import ToastNotification from '@/Components/ToastNotification.vue'
 // Import the logo
 import logoSrc from '@/assets/logo.png'
+// Import component styles
+import '../../css/layouts/MainLayout.css'
 
 // Import notification components
 import NotificationDropdown from '@/Components/NotificationDropdown.vue'
@@ -565,10 +567,3 @@ onUnmounted(() => {
     stopGlobalTimerMonitoring()
 })
 </script>
-
-<style scoped>
-.sidebar-closed {
-    width: 0;
-    overflow: hidden;
-}
-</style>

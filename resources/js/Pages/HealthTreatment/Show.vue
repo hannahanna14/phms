@@ -74,6 +74,8 @@ import { computed, onMounted, onUnmounted } from 'vue';
 import Button from 'primevue/button';
 import { useTimerNotifications } from '@/Utils/timerMixin.js';
 import { integrateHealthTreatmentNotifications } from '@/Utils/notificationIntegration.js';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 
 const props = defineProps({
     treatment: Object,

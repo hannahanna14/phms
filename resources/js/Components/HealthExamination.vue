@@ -22,6 +22,9 @@
 </template>
 
 <script>
+// Import component styles
+import '../../css/components/HealthExamination.css'
+
 export default {
   name: 'HealthExamination',
   data() {
@@ -53,45 +56,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.health-examination {
-  padding: 20px;
-}
-
-.search-container {
-  margin-bottom: 20px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.students-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.student-item {
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  background-color: white;
-}
-
-.student-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.student-details {
-  display: flex;
-  gap: 15px;
-  color: #666;
-  font-size: 14px;
-}
-</style>

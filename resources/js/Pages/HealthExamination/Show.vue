@@ -1,8 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { usePage, Link } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
+import { Head, usePage } from '@inertiajs/vue3'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
+// Import page-specific styles
+import '../../../css/pages/HealthExamination/Show.css';
 import Tag from 'primevue/tag';
 import Select from 'primevue/select';
 import HealthTreatmentViewModal from '@/Components/Modals/HealthTreatmentViewModal.vue';
@@ -717,12 +721,3 @@ onMounted(() => {
         />
     </div>
 </template>
-
-<style scoped>
-/* Enhanced back button hover effect */
-:deep(.p-button-outlined:hover) {
-    background-color: #64748b !important;
-    color: white !important;
-    border-color: #64748b !important;
-}
-</style>

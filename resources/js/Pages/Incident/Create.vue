@@ -119,6 +119,10 @@ import Textarea from 'primevue/textarea';
 import DatePicker from 'primevue/datepicker';
 import Card from 'primevue/card';
 import { useFormPersistence } from '@/composables/useFormPersistence';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
+// Import page-specific styles
+import '../../../css/pages/Incident/Create.css';
 
 const { student } = usePage().props;
 
@@ -181,7 +185,3 @@ const cancel = () => {
     window.history.back();
 };
 </script>
-
-<style scoped>
-/* Additional styling if needed */
-</style>

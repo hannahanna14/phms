@@ -342,6 +342,8 @@
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import logoUrl from '../../assets/logo.png';

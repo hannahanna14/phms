@@ -55,6 +55,10 @@
 import { ref, computed } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/OralHealth/Index.css'
 
 const props = defineProps({
     students: {

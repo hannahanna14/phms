@@ -376,6 +376,8 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import Button from 'primevue/button';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';

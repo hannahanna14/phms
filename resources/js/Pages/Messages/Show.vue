@@ -156,6 +156,10 @@
 import { Head, router, usePage } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import Avatar from 'primevue/avatar'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Messages/Show.css'
 import Tag from 'primevue/tag'
 
 const props = defineProps({

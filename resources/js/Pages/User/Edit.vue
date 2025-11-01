@@ -89,6 +89,10 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Select from 'primevue/select'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/User/Edit.css'
 
 const props = defineProps({
     user: {
@@ -111,30 +115,3 @@ const submit = () => {
     form.put(route('users.update', props.user.id))
 }
 </script>
-
-<style scoped>
-.health-examination {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-.card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-:deep(.p-password-input) {
-    width: 100%;
-}
-
-:deep(.p-dropdown) {
-    width: 100%;
-}
-</style>

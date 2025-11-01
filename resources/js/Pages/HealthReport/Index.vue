@@ -360,6 +360,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';

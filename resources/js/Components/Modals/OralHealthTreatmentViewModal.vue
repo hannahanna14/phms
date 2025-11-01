@@ -63,6 +63,8 @@
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
+// Import modal styles (shared with other modals)
+import '../../../css/components/modals/HealthTreatmentViewModal.css';
 import { useTimerNotifications } from '@/Utils/timerMixin.js';
 import { integrateOralHealthTreatmentNotifications } from '@/Utils/notificationIntegration.js';
 

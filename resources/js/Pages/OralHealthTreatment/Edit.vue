@@ -49,7 +49,11 @@ import { ref, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
+import Textarea from 'primevue/textarea'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/OralHealthTreatment/Edit.css'
 
 const props = defineProps({
     treatment: Object,
@@ -136,24 +140,3 @@ const goBack = () => {
     router.visit(`/pupil-health/oral-health/${props.student.id}?grade=${props.treatment.grade_level}`);
 };
 </script>
-
-<style scoped>
-/* Invalid field styling */
-input:invalid:not(:placeholder-shown),
-textarea:invalid:not(:placeholder-shown) {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
-}
-
-input:invalid:focus:not(:placeholder-shown),
-textarea:invalid:focus:not(:placeholder-shown) {
-    outline: 2px solid #ef4444 !important;
-    outline-offset: 0px;
-}
-
-:deep(.p-inputtext:invalid:not(:placeholder-shown)),
-:deep(.p-inputtextarea:invalid:not(:placeholder-shown)) {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
-}
-</style>

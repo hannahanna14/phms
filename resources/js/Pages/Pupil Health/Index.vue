@@ -8,6 +8,8 @@ import Column from 'primevue/column';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Button from 'primevue/button';
+// Import component styles
+import '../../../css/pages/PupilHealthIndex.css';
 
 const page = usePage();
 const currentYear = new Date().getFullYear();
@@ -149,12 +151,12 @@ const viewHealthExam = (student) => {
 </script>
 
 <template>
-    <div class="p-4 bg-gray-50 rounded-lg">
+    <div class="pupil-health-container">
         <!-- Search and Filters -->
-        <div class="p-4 border-2 border-gray-300 rounded-lg bg-white mb-6">
-            <div class="flex gap-3 items-end flex-wrap">
-                <div style="width: 300px;">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Pupils</label>
+        <div class="filters-card">
+            <div class="filters-row">
+                <div class="search-field-container">
+                    <label class="field-label">Search Pupils</label>
                     <IconField iconPosition="left" class="w-full">
                         <InputIcon class="pi pi-search text-gray-400" />
                         <InputText
@@ -169,11 +171,11 @@ const viewHealthExam = (student) => {
                     label="Search"
                     icon="pi pi-search" 
                     @click="applyFilters"
-                    class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                    class="search-button"
                 />
-                <div class="flex-grow"></div>
-                <div style="width: 180px;">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                <div class="flex-spacer"></div>
+                <div class="filter-field-container">
+                    <label class="field-label">Grade Level</label>
                     <Select
                         v-model="tempGradeLevel"
                         :options="gradeLevels"
@@ -181,8 +183,8 @@ const viewHealthExam = (student) => {
                         class="w-full"
                     />
                 </div>
-                <div style="width: 180px;">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">School Year</label>
+                <div class="filter-field-container">
+                    <label class="field-label">School Year</label>
                     <Select
                         v-model="tempSchoolYear"
                         :options="schoolYears"
@@ -207,11 +209,11 @@ const viewHealthExam = (student) => {
         </div>
 
         <!-- Student List Section -->
-        <div class="mb-4">
-            <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+        <div class="student-list-header">
+            <h2 class="student-list-title">
                 <i class="pi pi-users mr-3 text-indigo-600"></i>
                 Pupil List
-                <span class="ml-3 text-sm text-gray-500 font-normal">
+                <span class="student-count">
                     ({{ pupilRecords.length }} pupils)
                 </span>
             </h2>
@@ -226,10 +228,10 @@ const viewHealthExam = (student) => {
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} pupils"
             tableStyle="min-width: 50rem"
-            class="shadow-md rounded-lg"
+            class="pupil-table"
             paginatorPosition="both"
         >
-            <Column field="formatted_name" header="Name" sortable class="font-semibold">
+            <Column field="formatted_name" header="Name" sortable class="name-column">
                 <template #body="slotProps">
                     {{ slotProps.data.formatted_name }}
                 </template>
@@ -247,7 +249,7 @@ const viewHealthExam = (student) => {
                     <Select
                         v-model="recordTypeSelections[slotProps.data.id]"
                         :options="['Health Examination', 'Oral Health Examination', 'Incident']"
-                        class="w-60" placeholder="Select Record Type"
+                        class="record-select" placeholder="Select Record Type"
                     />
                 </template>
             </Column>
@@ -266,7 +268,3 @@ const viewHealthExam = (student) => {
         </DataTable>
     </div>
 </template>
-
-<style scoped>
-/* Additional custom styling can be added here if needed */
-</style>

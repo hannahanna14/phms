@@ -123,6 +123,8 @@
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import DataTable from 'primevue/datatable';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 

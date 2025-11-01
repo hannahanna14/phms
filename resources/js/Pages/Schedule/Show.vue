@@ -167,6 +167,10 @@
 import { Head, router } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Schedule/Show.css'
 import Avatar from 'primevue/avatar'
 
 const props = defineProps({
@@ -242,6 +246,7 @@ const updateStatus = (newStatus) => {
 const deleteSchedule = () => {
     if (confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
         router.delete(route('schedule-calendar.destroy', props.schedule.id))
+        window.history.back()
     }
 }
 </script>

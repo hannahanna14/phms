@@ -58,17 +58,27 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, defineProps } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import { useTimerNotifications } from '@/Utils/timerMixin.js';
 import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
+// Import page-specific styles
+import '../../../css/pages/Incident/View.css';
 
-const { incident, student, timer_status, remaining_minutes } = usePage().props
+const props = defineProps({
+    incident: Object,
+    student: Object,
+    timer_status: Object,
+    remaining_minutes: Number
+})
+
 const userRole = usePage().props.auth?.user?.role
 
 const editIncident = () => {
-    window.location.href = `/pupil-health/incident/${incident.id}/edit`
+    window.location.href = `/pupil-health/incident/${props.incident.id}/edit`
 }
 
 const goBack = () => {
@@ -135,7 +145,3 @@ onUnmounted(() => {
     }
 });
 </script>
-
-<style scoped>
-/* Additional styling if needed */
-</style>

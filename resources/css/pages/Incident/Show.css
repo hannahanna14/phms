@@ -1,0 +1,23 @@
+/* Incident Show Page Styles */
+
+.incident-show {
+    padding: 20px;
+    background-color: #f5f7f9;
+    min-height: 100vh;
+}
+
+.white-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.text-gray-600 {
+    color: #6b7280;
+}
+
+.border-b {
+    border-bottom: 1px solid #e5e7eb;
+}

@@ -6,6 +6,10 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css';
+// Import page-specific styles
+import '../../../css/pages/HealthTreatment/Create.css';
 
 const { student } = usePage().props;
 
@@ -168,7 +172,6 @@ const cancel = () => {
                                     dateFormat="mm/dd/yy"
                                     placeholder="MM/DD/YYYY"
                                     class="w-full"
-                                    :class="{ 'p-invalid': form.errors.date }"
                                 />
                                 <small v-if="form.errors.date" class="text-red-500">{{ form.errors.date }}</small>
                             </div>
@@ -183,13 +186,12 @@ const cancel = () => {
                                 v-model="form.title"
                                 placeholder="Title"
                                 class="w-full"
-                                :class="{ 'p-invalid': form.errors.title, 'border-red-500': titleExceeded }"
                                 @input="handleInput('title', limits.title)"
                                 :maxlength="limits.title"
                             />
                             <div class="flex justify-between items-center mt-1">
                                 <small v-if="form.errors.title" class="text-red-500">{{ form.errors.title }}</small>
-                                <small :class="titleExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                <small class="ml-auto">
                                     {{ titleCount }}/{{ limits.title }}
                                 </small>
                             </div>
@@ -206,13 +208,12 @@ const cancel = () => {
                                     placeholder="Enter text"
                                     rows="4"
                                     class="w-full"
-                                    :class="{ 'p-invalid': form.errors.chief_complaint, 'border-red-500': chiefComplaintExceeded }"
                                     @input="handleInput('chief_complaint', limits.chief_complaint)"
                                     :maxlength="limits.chief_complaint"
                                 />
                                 <div class="flex justify-between items-center mt-1">
                                     <small v-if="form.errors.chief_complaint" class="text-red-500">{{ form.errors.chief_complaint }}</small>
-                                    <small :class="chiefComplaintExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                    <small class="ml-auto">
                                         {{ chiefComplaintCount }}/{{ limits.chief_complaint }}
                                     </small>
                                 </div>
@@ -226,13 +227,12 @@ const cancel = () => {
                                     placeholder="Enter text"
                                     rows="4"
                                     class="w-full"
-                                    :class="{ 'p-invalid': form.errors.treatment, 'border-red-500': treatmentExceeded }"
                                     @input="handleInput('treatment', limits.treatment)"
                                     :maxlength="limits.treatment"
                                 />
                                 <div class="flex justify-between items-center mt-1">
                                     <small v-if="form.errors.treatment" class="text-red-500">{{ form.errors.treatment }}</small>
-                                    <small :class="treatmentExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                    <small class="ml-auto">
                                         {{ treatmentCount }}/{{ limits.treatment }}
                                     </small>
                                 </div>
@@ -249,13 +249,12 @@ const cancel = () => {
                                 placeholder="Enter text"
                                 rows="3"
                                 class="w-full"
-                                :class="{ 'p-invalid': form.errors.remarks, 'border-red-500': remarksExceeded }"
                                 @input="handleInput('remarks', limits.remarks)"
                                 :maxlength="limits.remarks"
                             />
                             <div class="flex justify-between items-center mt-1">
                                 <small v-if="form.errors.remarks" class="text-red-500">{{ form.errors.remarks }}</small>
-                                <small :class="remarksExceeded ? 'text-red-500 font-semibold' : 'text-gray-500'" class="ml-auto">
+                                <small class="ml-auto">
                                     {{ remarksCount }}/{{ limits.remarks }}
                                 </small>
                             </div>

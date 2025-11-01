@@ -1,0 +1,30 @@
+/* Home/Dashboard Page Styles */
+
+/* This file would contain extracted styles from Home.vue */
+/* Since Home.vue uses primarily inline Tailwind classes for dynamic chart components, */
+/* we'll keep the utility classes inline for flexibility with PrimeVue Chart components */
+
+/* Add any custom dashboard-specific styles here if needed */
+.dashboard-container {
+    @apply w-full;
+}
+
+.dashboard-card {
+    @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.dashboard-stat-card {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6 shadow-lg;
+}
+
+.dashboard-chart-container {
+    @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.dashboard-metric-label {
+    @apply text-sm font-medium text-gray-600;
+}
+
+.dashboard-metric-value {
+    @apply text-2xl font-bold text-gray-900;
+}

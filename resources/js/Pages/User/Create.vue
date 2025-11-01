@@ -83,6 +83,10 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/User/Create.css'
 
 onMounted(() => {
     console.log('Create User component mounted')
@@ -106,17 +110,3 @@ const submit = () => {
     form.post(route('users.store'))
 }
 </script>
-
-<style scoped>
-.field {
-    margin-bottom: 1.5rem;
-}
-
-:deep(.p-password-input) {
-    width: 100%;
-}
-
-:deep(.p-dropdown) {
-    width: 100%;
-}
-</style>

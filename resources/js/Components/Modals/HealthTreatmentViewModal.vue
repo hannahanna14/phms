@@ -7,11 +7,11 @@
         :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
         @update:visible="$emit('close')"
     >
-        <div v-if="treatment" class="space-y-6">
+        <div v-if="treatment" class="modal-content">
             <!-- Student Info -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-semibold text-gray-700 mb-2">Student Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="student-info-section">
+                <h3 class="section-title">Student Information</h3>
+                <div class="info-grid">
                     <div><strong>Name:</strong> {{ student?.full_name }}</div>
                     <div><strong>LRN:</strong> {{ student?.lrn }}</div>
                     <div><strong>Grade:</strong> {{ treatment.grade_level }}</div>
@@ -21,35 +21,35 @@
 
             <!-- Treatment Details -->
             <div>
-                <h3 class="font-semibold text-gray-700 mb-4">Treatment Details</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ treatment.title }}</div>
+                <h3 class="section-title-large">Treatment Details</h3>
+                <div class="details-section">
+                    <div class="field-container">
+                        <label class="field-label">Title</label>
+                        <div class="field-value">{{ treatment.title }}</div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Chief Complaint</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ treatment.chief_complaint }}</div>
+                    <div class="field-container">
+                        <label class="field-label">Chief Complaint</label>
+                        <div class="field-value">{{ treatment.chief_complaint }}</div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Treatment</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ treatment.treatment }}</div>
+                    <div class="field-container">
+                        <label class="field-label">Treatment</label>
+                        <div class="field-value">{{ treatment.treatment }}</div>
                     </div>
                     
-                    <div v-if="treatment.remarks">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                        <div class="p-3 bg-gray-50 rounded border">{{ treatment.remarks }}</div>
+                    <div v-if="treatment.remarks" class="field-container">
+                        <label class="field-label">Remarks</label>
+                        <div class="field-value">{{ treatment.remarks }}</div>
                     </div>
                 </div>
             </div>
 
 
             <!-- Record Information -->
-            <div class="pt-4 border-t">
-                <h3 class="font-semibold text-gray-700 mb-4">Record Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="record-info-section">
+                <h3 class="section-title-large">Record Information</h3>
+                <div class="record-info-grid">
                     <div><strong>Created:</strong> {{ formatDateTime(treatment.created_at) }}</div>
                     <div><strong>Last Updated:</strong> {{ formatDateTime(treatment.updated_at) }}</div>
                 </div>
@@ -65,6 +65,8 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import { useTimerNotifications } from '@/Utils/timerMixin.js';
 import { integrateHealthTreatmentNotifications } from '@/Utils/notificationIntegration.js';
+// Import component styles
+import '../../../css/components/modals/HealthTreatmentViewModal.css';
 
 const props = defineProps({
     visible: Boolean,
@@ -77,9 +79,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'edit']);
 
 const getAlertClass = () => {
-    if (props.timerStatus?.status === 'expired') return 'bg-red-100 text-red-800';
-    if (props.timerStatus?.status === 'active') return 'bg-yellow-100 text-yellow-800';
-    return 'bg-gray-100 text-gray-800';
+    if (props.timerStatus?.status === 'expired') return 'alert-expired';
+    if (props.timerStatus?.status === 'active') return 'alert-active';
+    return 'alert-default';
 };
 
 const editTreatment = () => {

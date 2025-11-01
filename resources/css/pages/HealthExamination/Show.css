@@ -1,0 +1,8 @@
+/* Health Examination Show Page Styles */
+
+/* Enhanced back button hover effect */
+:deep(.p-button-outlined:hover) {
+    background-color: #64748b !important;
+    color: white !important;
+    border-color: #64748b !important;
+}

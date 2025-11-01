@@ -144,6 +144,10 @@ import axios from 'axios'
 import { useTimerNotifications } from '@/Utils/timerMixin.js'
 import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
 import IncidentViewModal from '@/Components/Modals/IncidentViewModal.vue'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Incident/Show.css'
 
 const { student, userRole, currentGrade } = usePage().props
 
@@ -474,27 +478,3 @@ const editIncident = (incident) => {
     window.location.href = `/pupil-health/incident/${incident.id}/edit`;
 };
 </script>
-
-<style scoped>
-.incident-show {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-.white-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.text-gray-600 {
-    color: #6b7280;
-}
-
-.border-b {
-    border-bottom: 1px solid #e5e7eb;
-}
-</style>

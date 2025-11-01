@@ -436,6 +436,9 @@
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { ref, onMounted, computed } from 'vue'
 import Button from 'primevue/button'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+import '../../../css/pages/Schedule/Index.css'
 import Dropdown from 'primevue/dropdown'
 import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
@@ -869,75 +872,3 @@ const deleteSchedule = () => {
     }
 }
 </script>
-
-<style scoped>
-.schedule-calendar {
-    padding: 20px;
-    background-color: #f5f7f9;
-    min-height: 100vh;
-}
-
-:deep(.fc-toolbar-title) {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-:deep(.fc-button-primary) {
-    background-color: #3B82F6;
-    border-color: #3B82F6;
-}
-
-:deep(.fc-button-primary:hover) {
-    background-color: #2563EB;
-    border-color: #2563EB;
-}
-
-:deep(.fc-event) {
-    cursor: pointer;
-}
-
-:deep(.fc-daygrid-event) {
-    margin: 1px;
-    border-radius: 3px;
-}
-
-:deep(.fc-event-title) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-:deep(.fc-daygrid-event-harness) {
-    overflow: hidden !important;
-}
-
-:deep(.fc-event) {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-:deep(.p-dialog-content) {
-    overflow-y: auto;
-    max-height: calc(90vh - 200px);
-}
-
-:deep(.p-inputtext),
-:deep(.p-dropdown),
-:deep(.p-calendar) {
-    width: 100%;
-}
-
-:deep(.p-dialog-header) {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-:deep(.p-dialog-title) {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-    max-width: calc(100% - 50px);
-}
-</style>

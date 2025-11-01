@@ -1,0 +1,176 @@
+/* NotificationDropdown Component Styles */
+
+.notification-container {
+    @apply relative;
+}
+
+/* Notification Bell Button */
+.notification-bell-btn {
+    @apply relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200;
+}
+
+.notification-bell-btn-active {
+    @apply bg-gray-100;
+}
+
+.notification-bell-icon {
+    @apply w-6 h-6;
+}
+
+.notification-badge {
+    @apply absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium;
+}
+
+/* Dropdown Menu */
+.notification-dropdown {
+    @apply absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50;
+}
+
+/* Dropdown Header */
+.dropdown-header {
+    @apply px-4 py-3 border-b border-gray-200 flex items-center justify-between;
+}
+
+.dropdown-title {
+    @apply text-lg font-semibold text-gray-900;
+}
+
+.dropdown-actions {
+    @apply flex items-center space-x-2;
+}
+
+.mark-all-read-btn {
+    @apply text-sm text-blue-600 hover:text-blue-800 font-medium;
+}
+
+.clear-all-btn {
+    @apply text-sm text-red-600 hover:text-red-800 font-medium;
+}
+
+/* Notifications List */
+.notifications-list {
+    @apply max-h-96 overflow-y-auto;
+}
+
+.empty-notifications {
+    @apply px-4 py-8 text-center text-gray-500;
+}
+
+.empty-icon {
+    @apply w-12 h-12 mx-auto mb-3 text-gray-300;
+}
+
+/* Notification Item */
+.notification-item {
+    @apply px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0;
+}
+
+.notification-unread {
+    @apply bg-blue-50;
+}
+
+.notification-clickable {
+    @apply cursor-pointer;
+}
+
+.notification-content-wrapper {
+    @apply flex items-start space-x-3;
+}
+
+/* Notification Icon */
+.notification-icon-wrapper {
+    @apply flex-shrink-0 mt-1;
+}
+
+.notification-icon-container {
+    @apply w-8 h-8 rounded-full flex items-center justify-center;
+}
+
+.notification-icon {
+    @apply w-4 h-4;
+}
+
+/* Icon Color Classes */
+.icon-health-exam {
+    @apply bg-green-100 text-green-600;
+}
+
+.icon-treatment {
+    @apply bg-blue-100 text-blue-600;
+}
+
+.icon-timer-expired {
+    @apply bg-red-100 text-red-600;
+}
+
+.icon-timer-warning {
+    @apply bg-orange-100 text-orange-600;
+}
+
+.icon-schedule {
+    @apply bg-indigo-100 text-indigo-600;
+}
+
+.icon-report {
+    @apply bg-purple-100 text-purple-600;
+}
+
+.icon-incident {
+    @apply bg-yellow-100 text-yellow-600;
+}
+
+.icon-unrecorded {
+    @apply bg-red-100 text-red-600;
+}
+
+.icon-system {
+    @apply bg-gray-100 text-gray-600;
+}
+
+/* Notification Content */
+.notification-content {
+    @apply flex-1 min-w-0;
+}
+
+.notification-title {
+    @apply text-sm font-medium text-gray-900;
+}
+
+.notification-message {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.notification-time {
+    @apply text-xs text-gray-400 mt-2;
+}
+
+/* Notification Actions */
+.notification-actions {
+    @apply flex-shrink-0 flex items-center space-x-2;
+}
+
+.delete-notification-btn {
+    @apply p-1 text-gray-400 hover:text-red-500 transition-colors duration-200;
+}
+
+.delete-icon {
+    @apply w-4 h-4;
+}
+
+.unread-indicator {
+    @apply w-2 h-2 bg-blue-500 rounded-full;
+}
+
+/* Dropdown Footer */
+.dropdown-footer {
+    @apply px-4 py-3 border-t border-gray-200 text-center;
+}
+
+.view-all-btn {
+    @apply text-sm text-blue-600 hover:text-blue-800 font-medium;
+}
+
+/* Backdrop */
+.notification-backdrop {
+    @apply fixed inset-0 z-40;
+}

@@ -1,0 +1,52 @@
+/* Health Examination Create Page Styles */
+
+.health-examination-form {
+    padding: 20px;
+    background-color: #f5f7f9;
+    min-height: 100vh;
+}
+
+.white-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #374151;
+}
+
+:deep(.p-inputtext) {
+    width: 100%;
+}
+
+:deep(.p-dropdown) {
+    width: 100%;
+}
+
+:deep(.p-button) {
+    min-width: 100px;
+}
+
+/* PrimeVue invalid styling */
+:deep(.p-invalid .p-inputtext),
+:deep(.p-invalid.p-inputtext) {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+:deep(.p-invalid .p-inputtext:focus),
+:deep(.p-invalid.p-inputtext:focus) {
+    outline: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25) !important;
+}
