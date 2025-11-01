@@ -186,6 +186,12 @@ class OralHealthReportController extends Controller
             case 'Age (Oldest First)':
                 $students = $students->sortByDesc('age')->values();
                 break;
+            case 'Grade Level (Lowest First)':
+                $students = $this->sortByGradeLevel($students, false);
+                break;
+            case 'Grade Level (Highest First)':
+                $students = $this->sortByGradeLevel($students, true);
+                break;
             default:
                 $students = $this->sortByLastName($students, false);
         }
@@ -620,6 +626,12 @@ class OralHealthReportController extends Controller
             case 'Age (Oldest First)':
                 $students = $students->sortByDesc('age')->values();
                 break;
+            case 'Grade Level (Lowest First)':
+                $students = $this->sortByGradeLevel($students, false);
+                break;
+            case 'Grade Level (Highest First)':
+                $students = $this->sortByGradeLevel($students, true);
+                break;
             default:
                 $students = $this->sortByLastName($students, false);
         }
@@ -892,6 +904,36 @@ class OralHealthReportController extends Controller
             $lastNameB = strtolower($this->getLastName($b->full_name));
             
             $comparison = strcmp($lastNameA, $lastNameB);
+            return $descending ? -$comparison : $comparison;
+        })->values();
+    }
+
+    /**
+     * Sort students by grade level
+     */
+    private function sortByGradeLevel($students, $descending = false)
+    {
+        $gradeOrder = [
+            'Kinder 2' => 0, 'K-2' => 0,
+            'Grade 1' => 1, '1' => 1,
+            'Grade 2' => 2, '2' => 2,
+            'Grade 3' => 3, '3' => 3,
+            'Grade 4' => 4, '4' => 4,
+            'Grade 5' => 5, '5' => 5,
+            'Grade 6' => 6, '6' => 6,
+            'Grade 7' => 7, '7' => 7,
+            'Grade 8' => 8, '8' => 8,
+            'Grade 9' => 9, '9' => 9,
+            'Grade 10' => 10, '10' => 10,
+            'Grade 11' => 11, '11' => 11,
+            'Grade 12' => 12, '12' => 12,
+        ];
+
+        return $students->sort(function($a, $b) use ($gradeOrder, $descending) {
+            $gradeA = $gradeOrder[$a->grade_level] ?? 999;
+            $gradeB = $gradeOrder[$b->grade_level] ?? 999;
+            
+            $comparison = $gradeA - $gradeB;
             return $descending ? -$comparison : $comparison;
         })->values();
     }

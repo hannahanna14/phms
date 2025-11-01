@@ -302,11 +302,13 @@
 import { Head, Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import Button from 'primevue/button'
-// Import shared CRUD form styles
-import '../../../css/pages/shared/CrudForm.css'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/HealthDataExport/Index.css'
 
 const props = defineProps({
     schoolSettings: Object
@@ -539,7 +541,7 @@ const prepareFilters = (filters) => {
             } else if (typeof filters[key] === 'boolean') {
                 prepared[key] = filters[key] ? '1' : '0'
             } else {
-                prepared[key] = filters[key]
+                filtered[key] = filters[key]
             }
         }
     })
@@ -547,7 +549,3 @@ const prepareFilters = (filters) => {
     return prepared
 }
 </script>
-
-<style scoped>
-/* Additional styling if needed */
-</style>

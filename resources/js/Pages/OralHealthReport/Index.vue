@@ -879,6 +879,11 @@ const generateReport = () => {
         params.append('max_age', form.max_age);
     }
     
+    // Add sort_by parameter
+    if (form.sort_by) {
+        params.append('sort_by', form.sort_by);
+    }
+    
     console.log('Opening PDF with parameters:', params.toString());
     
     // Open PDF directly (server-side generation, works offline)
@@ -912,11 +917,6 @@ onMounted(() => {
     
     // Initial button state update
     updateButtonState();
-});
+    }
+);
 </script>
-
-<style scoped>
-.p-invalid {
-    border-color: #ef4444;
-}
-</style>

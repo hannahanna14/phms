@@ -54,6 +54,8 @@
                     stripedRows
                     :scrollable="true"
                     scrollHeight="600px"
+                    sortMode="single"
+                    :removableSort="false"
                 >
                         <!-- Student information columns (always shown) -->
                         <Column field="name" header="Name" sortable frozen />

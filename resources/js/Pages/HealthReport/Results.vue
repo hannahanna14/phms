@@ -166,6 +166,8 @@
                     :scrollable="true"
                     scrollHeight="600px"
                     class="break-words-table"
+                    sortMode="single"
+                    :removableSort="false"
                 >
                         <!-- Dynamic columns based on selected fields -->
                         <Column v-if="fields.includes('name')" field="name" header="Name" sortable frozen />
@@ -339,14 +341,14 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
+import { Head, router } from '@inertiajs/vue3'
+import Button from 'primevue/button'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 // Import shared CRUD form styles
-import '../../../css/pages/shared/CrudForm.css';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import logoUrl from '../../assets/logo.png';
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/HealthReport/Results.css'
 
 const props = defineProps({
     reportData: {

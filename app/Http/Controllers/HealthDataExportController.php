@@ -702,11 +702,11 @@ class HealthDataExportController extends Controller
             $query->where('date', '<=', $validated['date_to']);
         }
 
-        if (!empty($validated['grade_level'])) {
+        if (!empty($validated['grade_level']) && $validated['grade_level'] !== 'all') {
             $gradeLevel = $validated['grade_level'];
-            $query->where(function($q) use ($gradeLevel) {
+            $query->whereHas('student', function($q) use ($gradeLevel) {
                 $q->where('grade_level', $gradeLevel)
-                  ->orWhere('grade_level', "Grade {$gradeLevel}");
+                  ->orWhere('grade_level', 'LIKE', $gradeLevel . '%');
             });
         }
 

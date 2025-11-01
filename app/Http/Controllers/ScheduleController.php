@@ -120,28 +120,51 @@ class ScheduleController extends Controller
             abort(403, 'Only administrators and nurses can create schedules.');
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_datetime' => 'required|date',
-            'end_datetime' => 'required|date|after:start_datetime',
-            'type' => 'required|in:health_checkup,vaccination,meeting,training,other',
-            'status' => 'required|in:scheduled,completed,cancelled',
-            'location' => 'nullable|string|max:255',
-            'attendees' => 'nullable|array',
-            'selected_users' => 'nullable|array',
-            'notes' => 'nullable|string'
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string|max:5000',
+                'start_datetime' => 'required|date',
+                'end_datetime' => 'required|date|after:start_datetime',
+                'type' => 'required|in:health_checkup,vaccination,meeting,training,other',
+                'status' => 'required|in:scheduled,completed,cancelled',
+                'location' => 'nullable|string|max:500',
+                'attendees' => 'nullable|array',
+                'attendees.*' => 'nullable|string|max:255',
+                'selected_users' => 'nullable|array',
+                'selected_users.*' => 'nullable|integer|exists:users,id',
+                'notes' => 'nullable|string|max:5000'
+            ]);
 
-        $validated['created_by'] = auth()->id();
+            $validated['created_by'] = auth()->id();
+            
+            // Ensure arrays are properly formatted
+            $validated['attendees'] = $validated['attendees'] ?? [];
+            $validated['selected_users'] = $validated['selected_users'] ?? [];
 
-        $schedule = Schedule::create($validated);
+            \Log::info('Creating schedule with data:', $validated);
 
-        // Send notifications to attendees
-        $this->sendScheduleNotifications($schedule, 'created');
+            $schedule = Schedule::create($validated);
 
-        return redirect()->route('schedule-calendar.index')
-            ->with('success', 'Schedule created successfully.');
+            // Send notifications to attendees
+            $this->sendScheduleNotifications($schedule, 'created');
+
+            return redirect()->route('schedule-calendar.index')
+                ->with('success', 'Schedule created successfully.');
+                
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Schedule validation failed:', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            \Log::error('Schedule creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Failed to create schedule: ' . $e->getMessage()]);
+        }
     }
 
     /**

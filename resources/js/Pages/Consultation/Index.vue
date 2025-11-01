@@ -228,8 +228,12 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Avatar from 'primevue/avatar'
-import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import { useToast } from 'primevue/usetoast'
+import Toast from 'primevue/toast'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/Consultation/Index.css'
 
 const props = defineProps({
     conversations: Array,

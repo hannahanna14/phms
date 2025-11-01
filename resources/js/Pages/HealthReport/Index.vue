@@ -359,16 +359,17 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Checkbox from 'primevue/checkbox'
+import { useFormPersistence } from '@/composables/useFormPersistence'
+import axios from 'axios'
 // Import shared CRUD form styles
-import '../../../css/pages/shared/CrudForm.css';
-import Select from 'primevue/select';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Checkbox from 'primevue/checkbox';
-import { useFormPersistence } from '@/composables/useFormPersistence';
-
-import axios from 'axios';
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/HealthReport/Index.css'
 
 const props = defineProps({
     gradeLevels: {
@@ -951,15 +952,3 @@ onMounted(() => {
     setupAutoSave();
 });
 </script>
-
-<style scoped>
-.p-datatable {
-    font-size: 0.875rem;
-}
-
-.p-datatable .p-datatable-thead > tr > th {
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    font-weight: 600;
-}
-</style>

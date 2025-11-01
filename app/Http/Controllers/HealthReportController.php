@@ -115,7 +115,11 @@ class HealthReportController extends Controller
             
             // Apply grade level filter (skip if "All" is selected)
             if ($gradeLevel !== 'All') {
-                $studentsQuery->where('grade_level', $gradeLevel);
+                // Try both formats: "1" and "Grade 1"
+                $studentsQuery->where(function($q) use ($gradeLevel) {
+                    $q->where('grade_level', $gradeLevel)
+                      ->orWhere('grade_level', 'Grade ' . $gradeLevel);
+                });
             }
             
             // Apply section filter (skip if "All" is selected)
@@ -320,7 +324,11 @@ class HealthReportController extends Controller
                 
                 // Apply grade level filter (skip if "All" is selected)
                 if ($gradeLevel !== 'All') {
-                    $studentsQuery->where('grade_level', $gradeLevel);
+                    // Try both formats: "1" and "Grade 1"
+                    $studentsQuery->where(function($q) use ($gradeLevel) {
+                        $q->where('grade_level', $gradeLevel)
+                          ->orWhere('grade_level', 'Grade ' . $gradeLevel);
+                    });
                 }
                 
                 // Apply section filter (skip if "All" is selected)

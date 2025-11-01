@@ -832,9 +832,25 @@ const submitForm = () => {
         return
     }
     
-    // Clean up attendees
-    form.attendees = form.attendees.filter(a => a.trim() !== '')
-    form.selected_users = selectedUsers.value
+    // Clean up attendees - filter out empty strings
+    form.attendees = form.attendees.filter(a => a && a.trim() !== '')
+    
+    // Ensure attendees is an array (even if empty)
+    if (!Array.isArray(form.attendees)) {
+        form.attendees = []
+    }
+    
+    // Set selected users
+    form.selected_users = selectedUsers.value || []
+    
+    console.log('Submitting schedule:', {
+        title: form.title,
+        description: form.description,
+        attendees: form.attendees,
+        selected_users: form.selected_users,
+        start_datetime: form.start_datetime,
+        end_datetime: form.end_datetime
+    })
     
     if (isEditMode.value) {
         // Update
@@ -842,9 +858,12 @@ const submitForm = () => {
             onSuccess: () => {
                 showFormModal.value = false
                 if (calendar) calendar.refetchEvents()
+                alert('Schedule updated successfully!')
             },
             onError: (errors) => {
+                console.error('Schedule update error:', errors)
                 formErrors.value = errors
+                alert('Failed to update schedule. Please check the form and try again.')
             }
         })
     } else {
@@ -853,9 +872,12 @@ const submitForm = () => {
             onSuccess: () => {
                 showFormModal.value = false
                 if (calendar) calendar.refetchEvents()
+                alert('Schedule created successfully!')
             },
             onError: (errors) => {
+                console.error('Schedule creation error:', errors)
                 formErrors.value = errors
+                alert('Failed to create schedule. Please check the form and try again.')
             }
         })
     }

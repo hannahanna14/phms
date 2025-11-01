@@ -372,8 +372,11 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
-import Dialog from 'primevue/dialog'
-import Paginator from 'primevue/paginator'
+import Calendar from 'primevue/calendar'
+// Import shared CRUD form styles
+import '../../../css/pages/shared/CrudForm.css'
+// Import page-specific styles
+import '../../../css/pages/ErrorLogs/Index.css'
 
 const props = defineProps({
     logs: Object,
@@ -416,22 +419,43 @@ const switchLogType = (type) => {
 const applyFilters = () => {
     loading.value = true
     
+    // Format dates properly
+    let dateFrom = null
+    let dateTo = null
+    
+    if (filters.value.date_from) {
+        const date = new Date(filters.value.date_from)
+        dateFrom = date.getFullYear() + '-' + 
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(date.getDate()).padStart(2, '0')
+    }
+    
+    if (filters.value.date_to) {
+        const date = new Date(filters.value.date_to)
+        dateTo = date.getFullYear() + '-' + 
+                 String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                 String(date.getDate()).padStart(2, '0')
+    }
+    
     const params = {
         type: logType.value,
         per_page: perPage.value,
         search: filters.value.search || undefined,
-        date_from: filters.value.date_from ? filters.value.date_from.toISOString().split('T')[0] : undefined,
-        date_to: filters.value.date_to ? filters.value.date_to.toISOString().split('T')[0] : undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
         level: filters.value.level || undefined
     }
     
     // Remove undefined values
     Object.keys(params).forEach(key => params[key] === undefined && delete params[key])
     
+    console.log('Applying filters with params:', params)
+    
     router.get('/error-logs', params, {
         preserveState: true,
         onSuccess: (page) => {
             logs.value = page.props.logs
+            console.log('Logs loaded:', logs.value)
         },
         onFinish: () => loading.value = false
     })
@@ -454,11 +478,29 @@ const refreshLogs = () => {
 const downloadLogs = async () => {
     downloading.value = true
     try {
+        // Format dates properly
+        let dateFrom = ''
+        let dateTo = ''
+        
+        if (filters.value.date_from) {
+            const date = new Date(filters.value.date_from)
+            dateFrom = date.getFullYear() + '-' + 
+                       String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(date.getDate()).padStart(2, '0')
+        }
+        
+        if (filters.value.date_to) {
+            const date = new Date(filters.value.date_to)
+            dateTo = date.getFullYear() + '-' + 
+                     String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(date.getDate()).padStart(2, '0')
+        }
+        
         const params = new URLSearchParams({
             type: logType.value,
             search: filters.value.search || '',
-            date_from: filters.value.date_from ? filters.value.date_from.toISOString().split('T')[0] : '',
-            date_to: filters.value.date_to ? filters.value.date_to.toISOString().split('T')[0] : '',
+            date_from: dateFrom,
+            date_to: dateTo,
             level: filters.value.level || ''
         })
         
@@ -470,6 +512,7 @@ const downloadLogs = async () => {
         window.location.href = `/error-logs/download?${params.toString()}`
     } catch (error) {
         console.error('Download failed:', error)
+        alert('❌ Failed to download logs. Please try again.')
     } finally {
         setTimeout(() => {
             downloading.value = false
@@ -484,16 +527,28 @@ const confirmClearLogs = () => {
 const clearLogs = async () => {
     clearing.value = true
     try {
-        await fetch(`/error-logs/clear?type=${logType.value}`, {
+        const response = await fetch(`/error-logs/clear?type=${logType.value}`, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             }
         })
+        
+        if (!response.ok) {
+            throw new Error('Failed to clear logs')
+        }
+        
+        const result = await response.json()
+        console.log('Clear logs result:', result)
+        
         showClearConfirm.value = false
+        alert('✅ Logs cleared successfully!')
         refreshLogs() // Refresh logs
     } catch (error) {
         console.error('Clear failed:', error)
+        alert('❌ Failed to clear logs. Please try again.')
     } finally {
         clearing.value = false
     }
