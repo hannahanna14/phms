@@ -29,3 +29,85 @@
     background-color: #1d4ed8 !important;
     border-color: #1d4ed8 !important;
 }
+
+/* Error field styling */
+:deep(.p-invalid) {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+:deep(.p-invalid:focus) {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25) !important;
+}
+
+:deep(.p-inputtext.border-red-500) {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+:deep(.p-calendar.border-red-500 .p-inputtext) {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+/* Fix calendar event time display */
+:deep(.fc-event-time) {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+:deep(.fc-event-title-container) {
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
+:deep(.fc-event) {
+    padding: 2px 4px !important;
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+}
+
+:deep(.fc-daygrid-event) {
+    white-space: normal !important;
+    min-height: 20px !important;
+}
+
+/* Mobile responsive calendar */
+@media (max-width: 768px) {
+    .schedule-calendar {
+        padding: 10px;
+    }
+    
+    :deep(.fc-toolbar) {
+        flex-direction: column !important;
+        gap: 10px;
+    }
+    
+    :deep(.fc-toolbar-chunk) {
+        display: flex;
+        justify-content: center;
+    }
+    
+    :deep(.fc-toolbar-title) {
+        font-size: 1.25rem !important;
+    }
+    
+    :deep(.fc-button) {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    :deep(.fc-daygrid-day-number) {
+        font-size: 0.875rem !important;
+    }
+    
+    :deep(.fc-col-header-cell-cushion) {
+        font-size: 0.75rem !important;
+    }
+    
+    :deep(.fc-event) {
+        font-size: 0.75rem !important;
+    }
+}

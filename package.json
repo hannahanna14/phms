@@ -27,7 +27,7 @@
         "@primevue/forms": "^4.2.4",
         "@primevue/themes": "^4.2.4",
         "@vitejs/plugin-vue": "^5.2.1",
-        "chart.js": "^4.4.7",
+        "chart.js": "^4.5.1",
         "primeicons": "^7.0.0",
         "primevue": "^4.2.4",
         "tailwindcss-primeui": "^0.3.4",

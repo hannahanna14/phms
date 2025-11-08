@@ -940,30 +940,30 @@ const handleAlertClick = (alert) => {
         <div class="xl:col-span-2">
             <Card class="shadow-md">
                 <template #title>
-                    <div class="flex items-center justify-between">
-                        <div class="text-lg font-semibold text-gray-800 flex items-center">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                        <div class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
                             <i class="pi pi-chart-pie mr-2 text-green-500"></i>
-                            {{ availableGraphs.find(g => g.value === selectedGraphType)?.label || 'Health Metric' }}
+                            <span class="truncate">{{ availableGraphs.find(g => g.value === selectedGraphType)?.label || 'Health Metric' }}</span>
                         </div>
                         <!-- Grade Level and Section Filters (Hidden for Teachers) -->
-                        <div v-if="userRole !== 'teacher'" class="flex items-center space-x-4">
-                            <div class="flex items-center space-x-2">
-                                <label class="text-sm text-gray-600">Grade:</label>
+                        <div v-if="userRole !== 'teacher'" class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                                <label class="text-sm text-gray-600 whitespace-nowrap">Grade:</label>
                                 <Dropdown 
                                     v-model="selectedGradeLevel" 
                                     :options="availableGradeLevels" 
                                     @change="onFilterChange"
-                                    class="w-32 text-sm"
+                                    class="w-full sm:w-32 text-sm"
                                     placeholder="Select Grade"
                                 />
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <label class="text-sm text-gray-600">Section:</label>
+                            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                                <label class="text-sm text-gray-600 whitespace-nowrap">Section:</label>
                                 <Dropdown 
                                     v-model="selectedSection" 
                                     :options="availableSections" 
                                     @change="onFilterChange"
-                                    class="w-24 text-sm"
+                                    class="w-full sm:w-24 text-sm"
                                     placeholder="Select Section"
                                 />
                             </div>

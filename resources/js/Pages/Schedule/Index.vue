@@ -137,18 +137,18 @@
         >
             <form @submit.prevent="submitForm" class="space-y-4">
                 <!-- Title -->
-                <div>
+                <div ref="titleField">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Title <span class="text-red-500">*</span>
                     </label>
                     <InputText
                         v-model="form.title"
-                        class="w-full"
+                        :class="['w-full', { 'p-invalid border-red-500': formErrors.title }]"
                         placeholder="Enter schedule title"
                         maxlength="50"
                         required
                     />
-                    <small v-if="formErrors.title" class="text-red-500">{{ formErrors.title }}</small>
+                    <small v-if="formErrors.title" class="text-red-500 block mt-1">{{ formErrors.title }}</small>
                 </div>
 
                 <!-- Description -->
@@ -164,7 +164,7 @@
 
                 <!-- Date and Time -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div ref="startDateField">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Start Date & Time <span class="text-red-500">*</span>
                         </label>
@@ -172,15 +172,15 @@
                             v-model="form.start_datetime"
                             showTime
                             hourFormat="12"
-                            class="w-full"
+                            :class="['w-full', { 'p-invalid border-red-500': formErrors.start_datetime }]"
                             placeholder="Select start date and time"
                             :minDate="new Date()"
                             :showButtonBar="true"
                             required
                         />
-                        <small v-if="formErrors.start_datetime" class="text-red-500">{{ formErrors.start_datetime }}</small>
+                        <small v-if="formErrors.start_datetime" class="text-red-500 block mt-1">{{ formErrors.start_datetime }}</small>
                     </div>
-                    <div>
+                    <div ref="endDateField">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             End Date & Time <span class="text-red-500">*</span>
                         </label>
@@ -188,12 +188,12 @@
                             v-model="form.end_datetime"
                             showTime
                             hourFormat="12"
-                            class="w-full"
+                            :class="['w-full', { 'p-invalid border-red-500': formErrors.end_datetime }]"
                             placeholder="Select end date and time"
                             :minDate="form.start_datetime || new Date()"
                             required
                         />
-                        <small v-if="formErrors.end_datetime" class="text-red-500">{{ formErrors.end_datetime }}</small>
+                        <small v-if="formErrors.end_datetime" class="text-red-500 block mt-1">{{ formErrors.end_datetime }}</small>
                     </div>
                 </div>
 
@@ -434,7 +434,7 @@
 
 <script setup>
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import Button from 'primevue/button'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
@@ -470,6 +470,11 @@ const formErrors = ref({})
 const selectedUsers = ref([])
 const availableUsers = ref([])
 const usersLoading = ref(false)
+
+// Form field refs for scrolling to errors
+const titleField = ref(null)
+const startDateField = ref(null)
+const endDateField = ref(null)
 
 // Form data
 const form = useForm({
@@ -564,6 +569,11 @@ const initializeCalendar = () => {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short'
         },
         initialDate: `${filters.value.year}-${String(filters.value.month).padStart(2, '0')}-01`,
         events: (fetchInfo, successCallback, failureCallback) => {
@@ -829,6 +839,18 @@ const submitForm = () => {
     
     if (Object.keys(errors).length > 0) {
         formErrors.value = errors
+        
+        // Scroll to first error field
+        nextTick(() => {
+            if (errors.title && titleField.value) {
+                titleField.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            } else if (errors.start_datetime && startDateField.value) {
+                startDateField.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            } else if (errors.end_datetime && endDateField.value) {
+                endDateField.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+        })
+        
         return
     }
     

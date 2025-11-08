@@ -47,8 +47,8 @@ class HealthExaminationSeeder extends Seeder
                 $schoolYearStart = $currentYear - 1 - $yearsBack;
                 $schoolYear = $schoolYearStart . '-' . ($schoolYearStart + 1);
                 
-                // Create 1-3 examinations per grade level
-                $numExaminations = rand(1, 3);
+                // Create 1 examination per grade level
+                $numExaminations = 1;
                 
                 for ($i = 0; $i < $numExaminations; $i++) {
                     // Generate realistic vital signs based on grade level age

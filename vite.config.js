@@ -17,5 +17,14 @@ export default defineConfig({
             ]
         }),
     ],
+    server: {
+        host: 'localhost',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            protocol: 'ws',
+            host: '192.168.254.105',
+        },
+    },
     assetsInclude: ['**/*.png', '**/*.jpg', '**/*.svg'],
 });

@@ -21,6 +21,30 @@
     @apply w-0 overflow-hidden;
 }
 
+/* Mobile: Sidebar overlay */
+@media (max-width: 768px) {
+    .sidebar-open {
+        @apply w-64;
+    }
+    
+    .sidebar::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .sidebar-open::before {
+        opacity: 1;
+    }
+}
+
 .sidebar-card {
     @apply flex justify-center h-full;
 }
@@ -135,5 +159,29 @@
 
 /* Content Padding */
 .content-wrapper {
-    @apply md:mt-16 p-4;
+    @apply mt-16 p-2 sm:p-4 md:p-6;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .main-content-shifted {
+        @apply ml-0;
+    }
+    
+    .main-header {
+        @apply z-[1200];
+    }
+    
+    .header-end-container {
+        @apply space-x-1;
+    }
+    
+    .user-name,
+    .user-role {
+        @apply hidden sm:block;
+    }
+    
+    .viewer-badge {
+        @apply text-xs px-2 py-0.5;
+    }
 }

@@ -697,6 +697,25 @@ class PupilHealthController extends Controller
         ])->with('success', 'Oral health examination updated successfully.');
     }
 
+    public function getAllHealthExams(Student $student)
+    {
+        // Check if teacher has access to this student
+        $user = auth()->user();
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            if (!$assignedStudentIds->contains($student->id)) {
+                return response()->json(['error' => 'Access denied'], 403);
+            }
+        }
+
+        // Get all health examinations for this student, ordered by date
+        $healthExaminations = HealthExamination::where('student_id', $student->id)
+            ->orderBy('examination_date', 'asc')
+            ->get(['id', 'examination_date', 'grade_level', 'height', 'weight', 'school_year']);
+
+        return response()->json($healthExaminations);
+    }
+
     private function getSchoolYearForGrade($grade)
     {
         $gradeToYear = [

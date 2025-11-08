@@ -53,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('health-examination.update');
     Route::get('/pupil-health/health-examination/{student}', [PupilHealthController::class, 'showHealthExam'])
         ->name('pupil-health.health-exam.show');
+    Route::get('/api/health-examination/student/{student}/all', [PupilHealthController::class, 'getAllHealthExams'])
+        ->name('health-examination.all');
 
     Route::get('/pupil-health/oral-health/{student}', [PupilHealthController::class, 'showOralHealth'])
         ->name('pupil-health.oral-health.show');

@@ -10,6 +10,7 @@ import '../../../css/pages/HealthExamination/Show.css';
 import Tag from 'primevue/tag';
 import Select from 'primevue/select';
 import HealthTreatmentViewModal from '@/Components/Modals/HealthTreatmentViewModal.vue';
+import GrowthChart from '@/components/GrowthChart.vue';
 
 const { student, healthExamination, selectedGrade: propSelectedGrade, userRole } = usePage().props;
 
@@ -102,11 +103,13 @@ onMounted(async () => {
     // Initial load with current grade
     await fetchRecordByGrade(selectedGrade.value);
     await fetchTreatmentRecords();
+    await fetchAllHealthExaminations();
 });
 const healthRecords = ref([]);
 const recordDetails = ref({});
 const currentRecord = ref(null);
 const treatmentRecords = ref([]);
+const allHealthExaminations = ref([]);
 
 const fetchRecordByGrade = async (gradeLevel) => {
     try {
@@ -157,6 +160,22 @@ const fetchTreatmentRecords = async () => {
     } catch (error) {
         console.error('Error fetching treatment records:', error);
         treatmentRecords.value = [];
+    }
+};
+
+const fetchAllHealthExaminations = async () => {
+    try {
+        const response = await axios.get(`/api/health-examination/student/${student.id}/all`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        allHealthExaminations.value = response.data || [];
+        console.log('All health examinations fetched:', allHealthExaminations.value);
+    } catch (error) {
+        console.error('Error fetching all health examinations:', error);
+        allHealthExaminations.value = [];
     }
 };
 
@@ -705,6 +724,13 @@ onMounted(() => {
 
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Growth Chart Section -->
+            <div v-if="allHealthExaminations.length > 0" class="mt-6">
+                <div class="border rounded-lg bg-white shadow p-6">
+                    <GrowthChart :health-examinations="allHealthExaminations" />
                 </div>
             </div>
         </div>
