@@ -9,6 +9,7 @@ use App\Models\OralHealthTreatment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PupilHealthController extends Controller
@@ -16,22 +17,22 @@ class PupilHealthController extends Controller
     public function index(Request $request)
     {
         $selectedGrade = $request->query('grade') ?? 'Grade 6';
-        
+
         session(['grade' => $selectedGrade]);
         Log::info('Index - Selected Grade:', ['grade' => $selectedGrade]);
-        
+
         $user = auth()->user();
-        
+
         Log::info('Current authenticated user:', [
             'user_id' => $user->id,
             'username' => $user->username,
             'full_name' => $user->full_name,
             'role' => $user->role
         ]);
-        
+
         // Filter students based on user role
         if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
+            // Teachers can only see their assigned students (including inactive ones from past years)
             $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
             \Log::info('Teacher filtering debug:', [
                 'user_id' => $user->id,
@@ -39,37 +40,107 @@ class PupilHealthController extends Controller
                 'assigned_student_ids' => $assignedStudentIds->toArray(),
                 'assignments_count' => $user->assignedStudents()->count()
             ]);
-            
+
             if ($assignedStudentIds->isEmpty()) {
-                $studentsQuery = Student::whereRaw('1 = 0'); // Return no students if none assigned
+                $students = collect([]); // Return empty collection if none assigned
             } else {
-                $studentsQuery = Student::whereIn('id', $assignedStudentIds);
+                $students = Student::withoutGlobalScopes()
+                                  ->whereIn('id', $assignedStudentIds)
+                                  ->orderBy('school_year', 'desc')
+                                  ->orderBy('full_name', 'asc')
+                                  ->get();
             }
         } else {
-            // Admins can see all students
-            $studentsQuery = Student::query();
+            // Admins can see all students (active and inactive, all school years)
+            // Query directly using DB to get all records, then convert to models
+            $studentIds = DB::table('students')->pluck('id');
+
+            // Now get the models using those IDs, bypassing any scopes
+            $students = Student::withoutGlobalScopes()
+                              ->whereIn('id', $studentIds)
+                              ->orderBy('school_year', 'desc')
+                              ->orderBy('full_name', 'asc')
+                              ->get();
+
+            // Log what we got
+            Log::info('Admin query result:', [
+                'total_ids_found' => $studentIds->count(),
+                'students_returned' => $students->count(),
+                'unique_years' => $students->pluck('school_year')->unique()->values()->toArray(),
+                'active_count' => $students->where('is_active', true)->count(),
+                'inactive_count' => $students->where('is_active', false)->count()
+            ]);
         }
 
-        $students = $studentsQuery->get();
-        
+        // Debug: Check what we actually got
+        $actualCount = $students->count();
+
+        // Get unique school years for debugging
+        $uniqueSchoolYears = $students->pluck('school_year')->unique()->values()->toArray();
+
+        // Debug: Check total students in database
+        $totalInDb = Student::withoutGlobalScopes()->count();
+        $activeInDb = Student::withoutGlobalScopes()->where('is_active', true)->count();
+        $inactiveInDb = Student::withoutGlobalScopes()->where('is_active', false)->count();
+
+        // Force check: Get a sample of inactive students to verify they exist
+        $sampleInactive = Student::withoutGlobalScopes()
+                                 ->where('is_active', false)
+                                 ->take(5)
+                                 ->get(['id', 'full_name', 'school_year', 'is_active']);
+
         Log::info('Final student query result:', [
             'user_role' => $user->role,
-            'students_count' => $students->count(),
-            'student_names' => $students->pluck('full_name')->toArray()
+            'total_in_database' => $totalInDb,
+            'active_in_database' => $activeInDb,
+            'inactive_in_database' => $inactiveInDb,
+            'actual_students_returned' => $actualCount,
+            'unique_school_years' => $uniqueSchoolYears,
+            'active_count_in_result' => $students->where('is_active', true)->count(),
+            'inactive_count_in_result' => $students->where('is_active', false)->count(),
+            'sample_inactive_students' => $sampleInactive->map(function($s) {
+                return ['id' => $s->id, 'name' => $s->full_name, 'year' => $s->school_year, 'active' => $s->is_active];
+            })->toArray(),
+            'sample_all_students' => $students->take(10)->map(function($s) {
+                return ['name' => $s->full_name, 'year' => $s->school_year, 'active' => $s->is_active];
+            })->toArray()
         ]);
-        
+        // Compute current school year and add a computed 'is_currently_active' flag
+        $currentSchoolYear = $this->getCurrentSchoolYear();
+        $students = $students->map(function($s) use ($currentSchoolYear) {
+            $s->is_currently_active = ($s->is_active && ($s->school_year === $currentSchoolYear));
+            return $s;
+        });
+
         return Inertia::render('PupilHealth/Index', [
             'selectedGrade' => $selectedGrade,
             'students' => $students,
             'userRole' => $user->role
+            ,'currentSchoolYear' => $currentSchoolYear
         ]);
+    }
+
+    /**
+     * Determine the current school year string, e.g. "2024-2025"
+     */
+    private function getCurrentSchoolYear()
+    {
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+
+        // School year starts in June
+        if ($currentMonth >= 6) {
+            return $currentYear . '-' . ($currentYear + 1);
+        }
+
+        return ($currentYear - 1) . '-' . $currentYear;
     }
 
     public function showHealthExam(Student $student, Request $request)
     {
         $selectedGrade = $request->query('grade') ?? session('grade');
         Log::info('Show Health Exam - Selected Grade from URL:', ['grade' => $selectedGrade]);
-        
+
         // Check if teacher has access to this student
         $user = auth()->user();
         if ($user->role === 'teacher') {
@@ -78,7 +149,7 @@ class PupilHealthController extends Controller
                 abort(403, 'Access denied. You can only view your assigned students.');
             }
         }
-        
+
         // Get the health examination for this student
         $healthExamination = HealthExamination::where('student_id', $student->id)->first();
 
@@ -94,7 +165,8 @@ class PupilHealthController extends Controller
             'student' => $student,
             'healthExamination' => $healthExamination,
             'selectedGrade' => $selectedGrade,
-            'userRole' => $user->role
+            'userRole' => $user->role,
+            'currentSchoolYear' => $this->getCurrentSchoolYear()
         ]);
     }
 
@@ -104,9 +176,9 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can create health examinations.');
         }
-        
+
         $gradeLevel = $request->query('grade');
-        
+
         // Return a view for creating a new health examination
         return Inertia::render('HealthExamination/Create', [
             'student' => $student,
@@ -120,10 +192,10 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can store health examinations.');
         }
-        
+
         try {
             Log::info('Store Health Exam Request Data:', $request->all());
-            
+
             $validated = $request->validate([
                 'student_id' => 'required|exists:students,id',
                 'grade_level' => 'required|string|max:255',
@@ -176,7 +248,7 @@ class PupilHealthController extends Controller
 
             // Get student info to add school_year
             $user = auth()->user();
-        
+
         // Filter students based on user role
         if ($user->role === 'teacher') {
             // Teachers can only see their assigned students
@@ -190,7 +262,7 @@ class PupilHealthController extends Controller
             $validated['school_year'] = $student->school_year;
 
             Log::info('Creating health examination with data:', $validated);
-            
+
             // Create the health examination record
             $healthExam = HealthExamination::create($validated);
             Log::info('Health examination created successfully', ['id' => $healthExam->id]);
@@ -199,16 +271,16 @@ class PupilHealthController extends Controller
                 'student' => $validated['student_id'],
                 'grade' => $validated['grade_level']
             ]);
-            
+
             Log::info('Redirecting to:', ['url' => $redirectUrl]);
-            
+
             return redirect($redirectUrl)->with('success', 'Health examination created successfully.');
-            
+
         } catch (\Exception $e) {
             Log::error('Error creating health examination: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return back()->withInput()->withErrors([
                 'error' => 'Failed to save health examination. ' . $e->getMessage()
             ]);
@@ -234,12 +306,12 @@ class PupilHealthController extends Controller
             $allRecords = HealthExamination::where('student_id', $studentId)
                 ->where(function($query) use ($gradeLevel) {
                     $query->where('grade_level', $gradeLevel);
-                    
+
                     // If numeric grade level (e.g., "6"), also try "Grade 6" format
                     if (is_numeric($gradeLevel)) {
                         $query->orWhere('grade_level', "Grade {$gradeLevel}");
                     }
-                    
+
                     // If "Grade X" format, also try just the number
                     if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
                         $query->orWhere('grade_level', $matches[1]);
@@ -309,7 +381,7 @@ class PupilHealthController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Internal server error',
                 'message' => $e->getMessage()
@@ -327,13 +399,14 @@ class PupilHealthController extends Controller
                 abort(403, 'Access denied. You can only view your assigned students.');
             }
         }
-        
+
         $examinations = OralHealthExamination::where('student_id', $student->id)->get();
-        
+
         return Inertia::render('OralHealth/Show', [
             'student' => $student,
             'examinations' => $examinations,
             'userRole' => $user->role
+            ,'currentSchoolYear' => $this->getCurrentSchoolYear()
         ]);
     }
 
@@ -343,7 +416,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can create oral health examinations.');
         }
-        
+
         return Inertia::render('OralHealth/Create', [
             'student' => $student
         ]);
@@ -355,7 +428,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can store oral health examinations.');
         }
-        
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'grade_level' => 'required|string',
@@ -383,8 +456,8 @@ class PupilHealthController extends Controller
         OralHealthExamination::create($validated);
 
         // Extract grade number for redirect
-        $gradeNumber = $validated['original_grade'] ?: 
-                      (is_numeric($validated['grade_level']) ? $validated['grade_level'] : 
+        $gradeNumber = $validated['original_grade'] ?:
+                      (is_numeric($validated['grade_level']) ? $validated['grade_level'] :
                       (preg_match('/(\d+)/', $validated['grade_level'], $matches) ? $matches[1] : '6'));
 
         return redirect("/pupil-health/oral-health/{$validated['student_id']}?grade={$gradeNumber}")
@@ -400,17 +473,17 @@ class PupilHealthController extends Controller
             $oralHealthExamination = OralHealthExamination::where('student_id', $studentId)
                 ->where(function($query) use ($gradeLevel) {
                     $query->where('grade_level', $gradeLevel);
-                    
+
                     // If numeric grade level (e.g., "6"), also try "Grade 6" format
                     if (is_numeric($gradeLevel)) {
                         $query->orWhere('grade_level', "Grade {$gradeLevel}");
                     }
-                    
+
                     // If "Grade X" format, also try just the number
                     if (preg_match('/^Grade (\d+)$/', $gradeLevel, $matches)) {
                         $query->orWhere('grade_level', $matches[1]);
                     }
-                    
+
                     // Handle Kinder levels
                     if ($gradeLevel === 'K-2' || $gradeLevel === 'Kinder 2') {
                         $query->orWhere('grade_level', 'K-2')->orWhere('grade_level', 'Kinder 2');
@@ -422,7 +495,7 @@ class PupilHealthController extends Controller
             if ($oralHealthExamination) {
                 // Ensure tooth_symbols and conditions are properly formatted as objects/arrays
                 $response = $oralHealthExamination->toArray();
-                
+
                 // Convert JSON strings back to objects for frontend compatibility
                 if (isset($response['tooth_symbols']) && is_string($response['tooth_symbols'])) {
                     $response['tooth_symbols'] = json_decode($response['tooth_symbols'], true);
@@ -430,7 +503,7 @@ class PupilHealthController extends Controller
                 if (isset($response['conditions']) && is_string($response['conditions'])) {
                     $response['conditions'] = json_decode($response['conditions'], true);
                 }
-                
+
                 return response()->json($response);
             } else {
                 return response()->json(['message' => 'No record found'], 200);
@@ -448,7 +521,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can create oral health treatments.');
         }
-        
+
         return Inertia::render('OralHealthTreatment/Create', [
             'student' => $student
         ]);
@@ -460,7 +533,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can store oral health treatments.');
         }
-        
+
         try {
             $validated = $request->validate([
                 'student_id' => 'required|exists:students,id',
@@ -480,10 +553,10 @@ class PupilHealthController extends Controller
                 'student' => $validated['student_id'],
                 'grade' => $validated['grade_level']
             ])->with('success', 'Oral health treatment created successfully.');
-                
+
         } catch (\Exception $e) {
             Log::error('Error creating oral health treatment: ' . $e->getMessage());
-            
+
             return back()->withInput()->withErrors([
                 'error' => 'Failed to save oral health treatment. ' . $e->getMessage()
             ]);
@@ -495,14 +568,14 @@ class PupilHealthController extends Controller
         try {
             $grade = $request->query('grade');
             $schoolYear = $this->getSchoolYearForGrade($grade);
-            
+
             // Check if table exists first
             if (!Schema::hasTable('oral_health_treatments')) {
                 return response()->json([]);
             }
-            
+
             $query = OralHealthTreatment::where('student_id', $studentId);
-            
+
             // Only filter by grade if columns exist
             if (Schema::hasColumn('oral_health_treatments', 'grade_level')) {
                 $query->where(function($q) use ($grade) {
@@ -519,7 +592,7 @@ class PupilHealthController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     /**
      * Show the form for editing a health examination
      */
@@ -529,9 +602,9 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can edit health examinations.');
         }
-        
+
         $grade = $request->query('grade');
-        
+
         return Inertia::render('HealthExamination/Edit', [
             'healthExamination' => $healthExamination,
             'student' => $healthExamination->student,
@@ -548,7 +621,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can update health examinations.');
         }
-        
+
         $validated = $request->validate([
             'temperature' => 'required|numeric|min:35|max:42',
             'heart_rate' => 'required|integer|min:40|max:200',
@@ -614,42 +687,42 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can edit oral health examinations.');
         }
-        
+
         $grade = $request->query('grade');
-        
+
         Log::info('EditOralHealth - Looking for examination with ID:', ['id' => $id, 'grade' => $grade]);
-        
+
         // Find the oral health examination
         $oralHealthExamination = OralHealthExamination::with('student')->find($id);
-        
+
         if (!$oralHealthExamination) {
             Log::error('EditOralHealth - Examination not found:', ['id' => $id]);
             return redirect()->back()->with('error', 'Oral health examination not found.');
         }
-        
+
         Log::info('EditOralHealth - Examination found:', [
             'id' => $oralHealthExamination->id,
             'student_id' => $oralHealthExamination->student_id,
             'student_name' => $oralHealthExamination->student->full_name ?? 'Unknown'
         ]);
-        
+
         // Ensure conditions and tooth_symbols are properly formatted for frontend
         $examData = $oralHealthExamination->toArray();
-        
+
         // Handle conditions data format
         if (isset($examData['conditions'])) {
             if (is_string($examData['conditions'])) {
                 $examData['conditions'] = json_decode($examData['conditions'], true);
             }
         }
-        
-        // Handle tooth_symbols data format  
+
+        // Handle tooth_symbols data format
         if (isset($examData['tooth_symbols'])) {
             if (is_string($examData['tooth_symbols'])) {
                 $examData['tooth_symbols'] = json_decode($examData['tooth_symbols'], true);
             }
         }
-        
+
         return Inertia::render('OralHealth/Edit', [
             'oralHealthExamination' => $examData,
             'student' => $oralHealthExamination->student,
@@ -666,7 +739,7 @@ class PupilHealthController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can update oral health examinations.');
         }
-        
+
         $validated = $request->validate([
             'examination_date' => 'required|date',
             'permanent_index_dft' => 'required|numeric',
@@ -727,7 +800,7 @@ class PupilHealthController extends Controller
             'Grade 5' => '2019-2020',
             'Grade 6' => '2018-2019'
         ];
-        
+
         return $gradeToYear[$grade] ?? '2024-2025';
     }
 }

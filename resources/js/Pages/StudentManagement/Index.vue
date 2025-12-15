@@ -105,8 +105,17 @@
                     </div>
                 </div>
 
+                <!-- Skeleton Loader -->
+                <SkeletonLoader 
+                    v-if="isLoading" 
+                    type="table" 
+                    :rows="10" 
+                    :columns="6"
+                    class="m-6"
+                />
+
                 <!-- Students Table -->
-                <div class="overflow-x-auto">
+                <div v-else class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -376,11 +385,16 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import Button from 'primevue/button';
+import { useToastStore } from '@/Stores/toastStore';
+import SkeletonLoader from '@/Components/SkeletonLoader.vue';
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
+
+// Toast store
+const { showSuccess, showError } = useToastStore();
 
 const props = defineProps({
     students: Array,
@@ -533,13 +547,13 @@ const executePromotions = async () => {
         });
         
         if (response.data.success) {
-            alert(response.data.message);
+            showSuccess('Promotion Completed', response.data.message);
             // Refresh page to show updated data
             window.location.reload();
         }
     } catch (error) {
         console.error('Promotion failed:', error);
-        alert('Promotion failed: ' + (error.response?.data?.message || error.message));
+        showError('Promotion Failed', 'Promotion failed: ' + (error.response?.data?.message || error.message));
     } finally {
         promotionLoading.value = false;
     }
@@ -552,7 +566,7 @@ const bulkAssignTeacher = async () => {
     );
     
     if (studentsInGradeSection.length === 0) {
-        alert('No students found in the selected grade and section.');
+        showError('No Students Found', 'No students found in the selected grade and section.');
         return;
     }
     
@@ -566,12 +580,12 @@ const bulkAssignTeacher = async () => {
         });
         
         if (response.data.success) {
-            alert(response.data.message);
+            showSuccess('Assignment Completed', response.data.message);
             window.location.reload();
         }
     } catch (error) {
         console.error('Assignment failed:', error);
-        alert('Assignment failed: ' + (error.response?.data?.message || error.message));
+        showError('Assignment Failed', 'Assignment failed: ' + (error.response?.data?.message || error.message));
     }
 };
 

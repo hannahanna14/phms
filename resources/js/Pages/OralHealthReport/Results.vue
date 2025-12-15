@@ -22,7 +22,13 @@
                             label="Export PDF"
                             icon="pi pi-download"
                             class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
-                            @click="printReport"
+                            @click="downloadPdfFromServer"
+                        />
+                        <Button
+                            label="Download PDF (Client)"
+                            icon="pi pi-file-pdf"
+                            class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                            @click="downloadPdfClient"
                         />
                     </div>
                 </div>
@@ -129,32 +135,170 @@ import DataTable from 'primevue/datatable';
 import '../../../css/pages/shared/CrudForm.css';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
+import { useToastStore } from '@/Stores/toastStore';
 
-const props = defineProps({
-    reportData: Array,
-    grade_level: String,
-    section: String,
-    fields: Array,
-    oral_exam_fields: Array,
-    gender_filter: String,
-    min_age: Number,
-    max_age: Number,
-    sort_by: String,
-    minValues: Object,
-    maxValues: Object,
-    selected_students: Array
-});
+const downloadPdfFromServer = async () => {
+    // Helper to refresh CSRF token
+    const getFreshCSRFToken = async () => {
+        try {
+            const response = await window.axios.get('/');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(response.data, 'text/html');
+            const token = doc.querySelector('meta[name="csrf-token"]')?.content;
+            if (token) {
+                const currentMeta = document.head.querySelector('meta[name="csrf-token"]');
+                if (currentMeta) currentMeta.content = token;
+                return token;
+            }
+        } catch (err) {
+            console.error('Failed to refresh CSRF token:', err);
+        }
+        return null;
+    };
 
-// Check if a range was set for a field (not [0,0] or null)
-const hasRangeSet = (fieldKey) => {
-    if (!props.minValues && !props.maxValues) return false;
-    
-    const minVal = props.minValues?.[fieldKey];
-    const maxVal = props.maxValues?.[fieldKey];
-    
-    // Show column if either min or max is set and not zero
-    return (minVal !== null && minVal !== undefined && minVal > 0) || 
-           (maxVal !== null && maxVal !== undefined && maxVal > 0);
+    let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('meta[name="csrf-token"]')?.content || window.Laravel?.csrfToken || '';
+    if (!csrfToken && window.page?.props?.csrf_token) csrfToken = window.page.props.csrf_token;
+    if (!csrfToken) {
+        csrfToken = await getFreshCSRFToken();
+        if (!csrfToken) {
+            showError('CSRF Token Error', 'Unable to get CSRF token. Please refresh the page and try again.');
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('grade_level', props.grade_level ? props.grade_level.replace('Grade ', '') : '');
+    if (props.section) formData.append('section', props.section);
+    props.fields.forEach(f => formData.append('fields[]', f));
+
+    // Determine oral exam fields to include
+    let oralFieldsToInclude = props.oral_exam_fields || [];
+    if (oralFieldsToInclude.length === 0) {
+        const defaultFields = [
+            'permanent_teeth_decayed','permanent_teeth_filled','permanent_for_extraction','permanent_for_filling',
+            'temporary_teeth_decayed','temporary_teeth_filled','temporary_for_extraction','temporary_for_filling'
+        ];
+        defaultFields.forEach(field => {
+            if (hasRangeSet(field) || hasSelectedStudents()) oralFieldsToInclude.push(field);
+        });
+    }
+    if (oralFieldsToInclude.length > 0) oralFieldsToInclude.forEach(f => formData.append('oral_exam_fields[]', f));
+
+    if (props.gender_filter) formData.append('gender_filter', props.gender_filter);
+    if (props.min_age) formData.append('min_age', props.min_age);
+    if (props.max_age) formData.append('max_age', props.max_age);
+    if (props.sort_by) formData.append('sort_by', props.sort_by);
+
+    if (props.minValues) Object.keys(props.minValues).forEach(key => formData.append(`minValues[${key}]`, props.minValues[key]));
+    if (props.maxValues) Object.keys(props.maxValues).forEach(key => formData.append(`maxValues[${key}]`, props.maxValues[key]));
+
+    if (props.selected_students && props.selected_students.length > 0) {
+        props.selected_students.forEach(student => formData.append('selected_students[]', typeof student === 'object' ? student.id : student));
+    }
+
+    try {
+        let response;
+        try {
+            response = await window.axios.post('/oral-health-report/export-pdf', formData, {
+                responseType: 'blob',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/pdf'
+                }
+            });
+        } catch (error) {
+            if (error.response && error.response.status === 419) {
+                const fresh = await getFreshCSRFToken();
+                if (fresh) {
+                    response = await window.axios.post('/oral-health-report/export-pdf', formData, {
+                        responseType: 'blob',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': fresh,
+                            'Accept': 'application/pdf'
+                        }
+                    });
+                } else {
+                    throw new Error('Unable to refresh CSRF token');
+                }
+            } else if (error.response && error.response.data) {
+                try {
+                    const reader = new FileReader();
+                    const text = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsText(error.response.data);
+                    });
+                    const parsed = JSON.parse(text);
+                    showError('Export Failed', parsed.error || parsed.message || 'Export failed');
+                    return;
+                } catch (parseErr) {
+                    throw error;
+                }
+            } else {
+                throw error;
+            }
+        }
+
+        if (response && response.data) {
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `oral-health-report-${props.grade_level || 'selected'}-${new Date().toISOString().slice(0,10)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            showSuccess('Download Started', 'Oral Health Report PDF is downloading.');
+            return;
+        }
+
+        showSuccess('Export Started', 'Oral Health Report PDF generation started.');
+    } catch (error) {
+        console.error('Export failed:', error);
+        showError('Export Failed', 'Export failed. Please try again.');
+    }
+};
+
+const downloadPdfClient = async () => {
+    const maxClientPdf = 200;
+    if (props.reportData.length > maxClientPdf) {
+        showError('Too Many Records', `Client-side PDF generation is limited to ${maxClientPdf} students. Please use CSV or server batch export.`);
+        return;
+    }
+
+    // Determine oral exam fields as in printReport
+    let oralFieldsToInclude = props.oral_exam_fields || [];
+    if (oralFieldsToInclude.length === 0) {
+        const defaultFields = [
+            'permanent_teeth_decayed','permanent_teeth_filled','permanent_for_extraction','permanent_for_filling',
+            'temporary_teeth_decayed','temporary_teeth_filled','temporary_for_extraction','temporary_for_filling'
+        ];
+        defaultFields.forEach(field => {
+            if (hasRangeSet(field) || hasSelectedStudents()) {
+                oralFieldsToInclude.push(field);
+            }
+        });
+    }
+
+    const data = {
+        fields: props.fields,
+        reportData: props.reportData,
+        oral_exam_fields: oralFieldsToInclude,
+        grade_level: props.grade_level,
+        section: props.section
+    };
+
+    // Use existing generateBrowserPDF to create and download
+    try {
+        generateBrowserPDF(data);
+        showSuccess('Download Started', 'Client-side PDF generated and download started.');
+    } catch (err) {
+        console.error('Client-side PDF generation failed', err);
+        showError('PDF Generation Failed', 'Client-side PDF generation failed. Try server PDF or CSV export.');
+    }
 };
 
 // Check if specific students were selected
@@ -190,7 +334,7 @@ const printReport = async () => {
         };
 
         // Get CSRF token from multiple sources
-        let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || 
+        let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content ||
                        document.querySelector('meta[name="csrf-token"]')?.content ||
                        window.Laravel?.csrfToken || '';
 
@@ -203,7 +347,7 @@ const printReport = async () => {
             // Try to get a fresh token
             csrfToken = await getFreshCSRFToken();
             if (!csrfToken) {
-                alert('Unable to get CSRF token. Please refresh the page and try again.');
+                showError('CSRF Token Error', 'Unable to get CSRF token. Please refresh the page and try again.');
                 return;
             }
         }
@@ -223,12 +367,12 @@ const printReport = async () => {
 
         // Add oral exam fields array - if none specified, include all visible fields
         let oralFieldsToInclude = props.oral_exam_fields || [];
-        
+
         // If no specific oral exam fields are set, include all fields that are currently visible
         if (oralFieldsToInclude.length === 0) {
             const defaultFields = [
                 'permanent_teeth_decayed',
-                'permanent_teeth_filled', 
+                'permanent_teeth_filled',
                 'permanent_for_extraction',
                 'permanent_for_filling',
                 'temporary_teeth_decayed',
@@ -236,7 +380,7 @@ const printReport = async () => {
                 'temporary_for_extraction',
                 'temporary_for_filling'
             ];
-            
+
             // Include fields that have ranges set or if students are selected
             defaultFields.forEach(field => {
                 if (hasRangeSet(field) || hasSelectedStudents()) {
@@ -244,7 +388,7 @@ const printReport = async () => {
                 }
             });
         }
-        
+
         if (oralFieldsToInclude.length > 0) {
             oralFieldsToInclude.forEach(field => {
                 formData.append('oral_exam_fields[]', field);
@@ -321,7 +465,7 @@ const printReport = async () => {
             console.log('PDF Export Response:', response.data);
             console.log('Report Data:', response.data.data.reportData);
             console.log('Oral Exam Fields:', response.data.data.oral_exam_fields);
-            
+
             // Use browser's print functionality to generate PDF
             generateBrowserPDF(response.data.data);
         } else {
@@ -330,15 +474,15 @@ const printReport = async () => {
 
     } catch (error) {
         console.error('PDF export failed:', error);
-        
+
         if (error.response && error.response.status === 419) {
-            alert('Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
+            showError('Session Expired', 'Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
         } else if (error.response && error.response.status === 422) {
-            alert('Validation error. Please check your filters and try again.');
+            showError('Validation Error', 'Please check your filters and try again.');
         } else if (error.response && error.response.data && error.response.data.message) {
-            alert('Error: ' + error.response.data.message);
+            showError('Error', error.response.data.message);
         } else {
-            alert('Failed to generate PDF. Please try again.');
+            showError('PDF Generation Failed', 'Failed to generate PDF. Please try again.');
         }
     }
 };
@@ -373,10 +517,10 @@ const generateBrowserPDF = (data) => {
                             ${data.fields.includes('section') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Section</th>' : ''}
                             ${data.fields.includes('gender') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Gender</th>' : ''}
                             ${data.fields.includes('age') ? '<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">Age</th>' : ''}
-                            ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
-                                data.oral_exam_fields.map(field => 
+                            ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ?
+                                data.oral_exam_fields.map(field =>
                                     `<th style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0; font-weight: bold; width: 6%;">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Permanent', 'Perm.').replace('Temporary', 'Temp.')}</th>`
-                                ).join('') : 
+                                ).join('') :
                                 '<th colspan="8" style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 8px; background-color: #f0f0f0;">No oral health fields selected</th>'
                             }
                         </tr>
@@ -390,10 +534,10 @@ const generateBrowserPDF = (data) => {
                                 ${data.fields.includes('section') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.section || 'N/A'}</td>` : ''}
                                 ${data.fields.includes('gender') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.gender || 'N/A'}</td>` : ''}
                                 ${data.fields.includes('age') ? `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student.age || 'N/A'}</td>` : ''}
-                                ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ? 
-                                    data.oral_exam_fields.map(field => 
+                                ${(data.oral_exam_fields && data.oral_exam_fields.length > 0) ?
+                                    data.oral_exam_fields.map(field =>
                                         `<td style="border: 1px solid #000; padding: 4px 2px; font-size: 9px; text-align: center; word-wrap: break-word; overflow: hidden;">${student[field] !== undefined && student[field] !== null ? student[field] : '0'}</td>`
-                                    ).join('') : 
+                                    ).join('') :
                                     '<td colspan="8" style="border: 1px solid #000; padding: 4px 2px; text-align: center; font-size: 9px;">No data</td>'
                                 }
                             </tr>
@@ -416,13 +560,13 @@ const generateBrowserPDF = (data) => {
         console.log('Oral Exam Fields Type:', typeof data.oral_exam_fields);
         console.log('Oral Exam Fields Length:', data.oral_exam_fields ? data.oral_exam_fields.length : 'undefined');
         console.log('HTML Content Preview:', element.innerHTML.substring(0, 1000));
-        
+
         // Configure PDF options
         const options = {
             margin: [0.5, 0.5, 0.5, 0.5],
             filename: `oral-health-report-grade-${data.grade_level || 'selected'}${data.section ? '-section-' + data.section : ''}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
+            html2canvas: {
                 scale: 1,
                 useCORS: true,
                 letterRendering: true,
@@ -430,9 +574,9 @@ const generateBrowserPDF = (data) => {
                 scrollX: 0,
                 scrollY: 0
             },
-            jsPDF: { 
-                unit: 'in', 
-                format: 'a4', 
+            jsPDF: {
+                unit: 'in',
+                format: 'a4',
                 orientation: 'landscape',
                 compress: true
             }
@@ -445,19 +589,19 @@ const generateBrowserPDF = (data) => {
                 console.log('PDF generation completed successfully');
             }).catch((error) => {
                 console.error('PDF generation failed:', error);
-                alert('PDF generation failed. Please try again.');
+                showError('PDF Generation Failed', 'PDF generation failed. Please try again.');
             });
         } catch (error) {
             console.error('Error initializing PDF generation:', error);
-            alert('PDF generation library not loaded. Please refresh and try again.');
+            showError('PDF Library Error', 'PDF generation library not loaded. Please refresh and try again.');
         }
     };
-    
+
     script.onerror = () => {
         console.error('Failed to load html2pdf library');
-        alert('Failed to load PDF library. Please check your internet connection and try again.');
+        showError('PDF Library Error', 'Failed to load PDF library. Please check your internet connection and try again.');
     };
-    
+
     document.head.appendChild(script);
 };
 </script>

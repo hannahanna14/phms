@@ -98,23 +98,23 @@ const checkExpiredTimers = async () => {
 const addNotification = (notification, userId) => {
     // Create a unique key for this notification
     const notificationKey = `${notification.type}_${notification.message}`
-    
+
     // Skip if already dismissed by this user
     if (dismissedNotifications.value.has(notificationKey)) {
         return
     }
-    
+
     // Check for duplicate notifications
-    const isDuplicate = notifications.value.some(existing => 
+    const isDuplicate = notifications.value.some(existing =>
         existing.type === notification.type &&
         existing.message === notification.message &&
         !existing.dismissed
     )
-    
+
     if (isDuplicate) {
         return
     }
-    
+
     const newNotification = {
         id: Date.now(),
         notificationKey,
@@ -123,6 +123,7 @@ const addNotification = (notification, userId) => {
         created_at: new Date(),
         ...notification
     }
+
     notifications.value.unshift(newNotification)
 }
 

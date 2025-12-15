@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
     //Dashboard
     Route::get('/', [StudentController::class, 'dashboard'])->name('dashboard');
     Route::get('/api/dashboard-data', [StudentController::class, 'dashboard'])->name('dashboard.api');
+    Route::get('/api/dashboard/students-by-criteria', [StudentController::class, 'getStudentsByCriteria'])->name('dashboard.students-by-criteria');
 
     // Logout Route
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -117,6 +118,9 @@ Route::middleware(['auth'])->group(function () {
             ->name('health-report.generate');
         Route::match(['GET', 'POST'], '/health-report/export-pdf', [HealthReportController::class, 'exportPdf'])
             ->name('health-report.export-pdf');
+        Route::post('/health-report/export-pdf/queued', [HealthReportController::class, 'exportPdfQueued'])->name('health-report.export-pdf.queued');
+        Route::get('/health-report/export-pdf/status/{exportId}', [HealthReportController::class, 'exportPdfStatus'])->name('health-report.export-pdf.status');
+        Route::get('/health-report/export-pdf/download/{exportId}', [HealthReportController::class, 'exportPdfDownload'])->name('health-report.export-pdf.download');
         Route::get('/health-report/preview-pdf', [HealthReportController::class, 'previewPdf'])
             ->name('health-report.preview-pdf');
         Route::get('/api/health-report/students/search', [HealthReportController::class, 'searchStudents'])

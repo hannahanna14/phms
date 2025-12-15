@@ -28,8 +28,20 @@
                     <Button
                         label="Export PDF"
                         icon="pi pi-download"
-                        @click="printReport"
+                        @click="downloadPdfFromServer"
                         class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                    />
+                    <Button
+                        label="Download PDF (Client)"
+                        icon="pi pi-file-pdf"
+                        @click="downloadPdfClient"
+                        class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
+                    />
+                    <Button
+                        label="Queue Export (Large)"
+                        icon="pi pi-cloud-upload"
+                        @click="downloadPdfQueued"
+                        class="!bg-yellow-600 !border-yellow-600 hover:!bg-yellow-700"
                     />
                 </div>
             </div>
@@ -44,188 +56,33 @@
                     <div class="text-2xl font-bold text-green-600">
                         {{ selected_students.length > 0 ? 'Selected' : grade_level }}
                     </div>
-                    <div class="text-sm text-gray-600">
-                        {{ selected_students.length > 0 ? 'Pupils' : 'Grade Level' }}
-                    </div>
+                    <div class="text-sm text-gray-600">{{ selected_students.length > 0 ? 'Pupils' : 'Grade Level' }}</div>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow text-center">
-                    <div class="text-2xl font-bold text-purple-600">
-                        {{ selected_students.length > 0 ? 'Mixed' : (section || 'All') }}
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        {{ selected_students.length > 0 ? 'Grades' : 'Section' }}
-                    </div>
+                    <div class="text-2xl font-bold text-purple-600">{{ section || 'All' }}</div>
+                    <div class="text-sm text-gray-600">Section</div>
                 </div>
             </div>
 
-            <!-- Print Content (Hidden on screen, visible only when printing) -->
-            <div class="print-content" style="display: none;">
-                <!-- Print Header -->
-                <div class="print-header">
-                <div class="print-logo">
-                    <img :src="logoUrl" alt="School Logo" style="width: 60px; height: 60px; object-fit: contain;" />
-                </div>
-                    <div class="print-school-name">Naawan Central School</div>
-                    <div class="print-region">Region X - Northern Mindanao</div>
-                    <div class="print-title">Health Report - {{ grade_level }} {{ section ? '(Section ' + section + ')' : '' }}</div>
-                </div>
-
-                <!-- Print Table -->
-                <table class="print-table">
-                    <thead>
-                        <tr>
-                            <th v-if="fields.includes('name')">Name</th>
-                            <th v-if="fields.includes('lrn')">LRN</th>
-                            <th v-if="fields.includes('grade_level')">Grade</th>
-                            <th v-if="fields.includes('section')">Section</th>
-                            <th v-if="fields.includes('gender')">Gender</th>
-                            <th v-if="fields.includes('age')">Age</th>
-                            <th v-if="fields.includes('birthdate')">Birthdate</th>
-                            <th v-if="health_exam_fields.includes('height')">Height</th>
-                            <th v-if="health_exam_fields.includes('weight')">Weight</th>
-                            <th v-if="health_exam_fields.includes('nutritional_status_bmi')">Nutritional Status/BMI</th>
-                            <th v-if="health_exam_fields.includes('nutritional_status_height')">Nutritional Status/Height</th>
-                            <th v-if="health_exam_fields.includes('temperature')">Temperature</th>
-                            <th v-if="health_exam_fields.includes('heart_rate')">Heart Rate</th>
-                            <th v-if="health_exam_fields.includes('vision_screening')">Vision</th>
-                            <th v-if="health_exam_fields.includes('auditory_screening')">Hearing</th>
-                            <th v-if="health_exam_fields.includes('skin')">Skin</th>
-                            <th v-if="health_exam_fields.includes('scalp')">Scalp</th>
-                            <th v-if="health_exam_fields.includes('eye')">Eyes</th>
-                            <th v-if="health_exam_fields.includes('ear')">Ears</th>
-                            <th v-if="health_exam_fields.includes('nose')">Nose</th>
-                            <th v-if="health_exam_fields.includes('mouth')">Mouth</th>
-                            <th v-if="health_exam_fields.includes('throat')">Throat</th>
-                            <th v-if="health_exam_fields.includes('neck')">Neck</th>
-                            <th v-if="health_exam_fields.includes('lungs_heart')">Lungs/Heart</th>
-                            <th v-if="health_exam_fields.includes('abdomen')">Abdomen</th>
-                            <th v-if="health_exam_fields.includes('deformities')">Deformities</th>
-                            <th v-if="health_exam_fields.includes('deworming_status')">Deworming</th>
-                            <th v-if="health_exam_fields.includes('iron_supplementation')">Iron Supplementation</th>
-                            <th v-if="health_exam_fields.includes('sbfp_beneficiary')">SBFP Beneficiary</th>
-                            <th v-if="health_exam_fields.includes('four_ps_beneficiary')">4Ps Beneficiary</th>
-                            <th v-if="health_exam_fields.includes('immunization')">Immunization</th>
-                            <th v-if="health_exam_fields.includes('other_specify')">Other Specify</th>
-                            <th v-if="health_exam_fields.includes('remarks')">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="student in reportData" :key="student.id">
-                            <td v-if="fields.includes('name')">{{ student.full_name }}</td>
-                            <td v-if="fields.includes('lrn')">{{ student.lrn }}</td>
-                            <td v-if="fields.includes('grade_level')">{{ student.grade_level }}</td>
-                            <td v-if="fields.includes('section')">{{ student.section }}</td>
-                            <td v-if="fields.includes('gender')">{{ student.sex }}</td>
-                            <td v-if="fields.includes('age')">{{ student.age }}</td>
-                            <td v-if="fields.includes('birthdate')">{{ student.birthdate }}</td>
-                            <td v-if="health_exam_fields.includes('height')">{{ student.health_exam?.height || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('weight')">{{ student.health_exam?.weight || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('nutritional_status_bmi')">{{ student.health_exam?.nutritional_status_bmi || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('nutritional_status_height')">{{ student.health_exam?.nutritional_status_height || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('temperature')">{{ student.health_exam?.temperature || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('heart_rate')">{{ student.health_exam?.heart_rate || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('vision_screening')">{{ student.health_exam?.vision_screening || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('auditory_screening')">{{ student.health_exam?.auditory_screening || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('skin')">{{ student.health_exam?.skin || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('scalp')">{{ student.health_exam?.scalp || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('eye')">{{ student.health_exam?.eye || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('ear')">{{ student.health_exam?.ear || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('nose')">{{ student.health_exam?.nose || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('mouth')">{{ student.health_exam?.mouth || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('throat')">{{ student.health_exam?.throat || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('neck')">{{ student.health_exam?.neck || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('lungs_heart')">{{ student.health_exam?.lungs_heart || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('abdomen')">{{ student.health_exam?.abdomen || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('deformities')">{{ student.health_exam?.deformities || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('deworming_status')">{{ student.health_exam?.deworming_status || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('iron_supplementation')">{{ student.health_exam?.iron_supplementation || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('sbfp_beneficiary')">{{ student.health_exam?.sbfp_beneficiary ? 'Yes' : 'No' }}</td>
-                            <td v-if="health_exam_fields.includes('four_ps_beneficiary')">{{ student.health_exam?.four_ps_beneficiary ? 'Yes' : 'No' }}</td>
-                            <td v-if="health_exam_fields.includes('immunization')">{{ student.health_exam?.immunization || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('other_specify')">{{ student.health_exam?.other_specify || 'N/A' }}</td>
-                            <td v-if="health_exam_fields.includes('remarks')">{{ student.health_exam?.remarks || 'N/A' }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Print Footer -->
-                <div class="print-footer">
-                    <div>Printed by: Test User</div>
-                    <div>Date: {{ new Date().toLocaleDateString() }}</div>
-                </div>
-            </div>
-
-            <!-- Report Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <DataTable
-                    :value="reportData"
-                    :paginator="true"
-                    :rows="25"
-                    :rowsPerPageOptions="[10, 25, 50, 100]"
-                    stripedRows
-                    :scrollable="true"
-                    scrollHeight="600px"
-                    class="break-words-table"
-                    sortMode="single"
-                    :removableSort="false"
-                >
-                        <!-- Dynamic columns based on selected fields -->
-                        <Column v-if="fields.includes('name')" field="name" header="Name" sortable frozen />
-                        <Column v-if="fields.includes('lrn')" field="lrn" header="LRN" sortable />
-                        <Column v-if="fields.includes('grade_level')" field="grade_level" header="Grade" sortable />
-                        <Column v-if="fields.includes('section')" field="section" header="Section" sortable />
-                        <Column v-if="fields.includes('gender')" field="gender" header="Gender" sortable />
-                        <Column v-if="fields.includes('age')" field="age" header="Age" sortable />
-                        <Column v-if="fields.includes('birthdate')" field="birthdate" header="Birthdate" sortable />
+                <DataTable :value="reportData" :paginator="true" :rows="25" :rowsPerPageOptions="[10,25,50,100]" class="break-words-table" stripedRows scrollHeight="600px">
+                    <Column v-if="health_exam_fields.includes('nutritional_status_height')" header="Nutritional Status/Height">
+                        <template #body="{ data }">
+                            <span>{{ data.health_exam?.nutritional_status_height || 'N/A' }}</span>
+                        </template>
+                    </Column>
 
-                        <!-- Health examination field columns -->
-                        <Column v-if="health_exam_fields.includes('height')" header="Height">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.height || 'N/A' }}</span>
-                            </template>
-                        </Column>
+                    <Column v-if="health_exam_fields.includes('vision_screening')" header="Vision Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
+                        <template #body="{ data }">
+                            {{ data.health_exam?.vision_screening || 'N/A' }}
+                        </template>
+                    </Column>
 
-                        <Column v-if="health_exam_fields.includes('weight')" header="Weight">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.weight || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('temperature')" header="Temperature">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.temperature || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('heart_rate')" header="Heart Rate">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.heart_rate || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('nutritional_status_bmi')" header="Nutritional Status/BMI">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.nutritional_status_bmi || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('nutritional_status_height')" header="Nutritional Status/Height">
-                            <template #body="{ data }">
-                                <span>{{ data.health_exam?.nutritional_status_height || 'N/A' }}</span>
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('vision_screening')" header="Vision Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
-                            <template #body="{ data }">
-                                {{ data.health_exam?.vision_screening || 'N/A' }}
-                            </template>
-                        </Column>
-
-                        <Column v-if="health_exam_fields.includes('auditory_screening')" header="Auditory Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
-                            <template #body="{ data }">
-                                {{ data.health_exam?.auditory_screening || 'N/A' }}
-                            </template>
-                        </Column>
+                    <Column v-if="health_exam_fields.includes('auditory_screening')" header="Auditory Screening" :style="{ width: '180px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
+                        <template #body="{ data }">
+                            {{ data.health_exam?.auditory_screening || 'N/A' }}
+                        </template>
+                    </Column>
 
                         <Column v-if="health_exam_fields.includes('skin')" header="Skin" :style="{ width: '150px' }" :bodyStyle="{ 'word-break': 'break-all', 'white-space': 'normal', 'overflow-wrap': 'anywhere' }">
                             <template #body="{ data }">
@@ -345,10 +202,15 @@ import { Head, router } from '@inertiajs/vue3'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { useToastStore } from '@/Stores/toastStore'
+import html2pdf from 'html2pdf.js'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
 import '../../../css/pages/HealthReport/Results.css'
+
+// Toast store
+const { showError, showSuccess } = useToastStore();
 
 const props = defineProps({
     reportData: {
@@ -434,7 +296,7 @@ const printReport = async () => {
             // Try to get a fresh token
             csrfToken = await getFreshCSRFToken();
             if (!csrfToken) {
-                alert('Unable to get CSRF token. Please refresh the page and try again.');
+                showError('CSRF Token Error', 'Unable to get CSRF token. Please refresh the page and try again.');
                 return;
             }
         }
@@ -523,25 +385,21 @@ const printReport = async () => {
 
     } catch (error) {
         console.error('PDF export failed:', error);
-        
+
         if (error.response && error.response.status === 419) {
-            alert('Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
+            showError('Session Expired', 'Session expired. The system attempted to refresh your session but failed. Please refresh the page and try again.');
         } else if (error.response && error.response.status === 422) {
-            alert('Validation error. Please check your filters and try again.');
+            showError('Validation Error', 'Please check your filters and try again.');
         } else if (error.response && error.response.data && error.response.data.message) {
-            alert('Error: ' + error.response.data.message);
+            showError('Error', error.response.data.message);
         } else {
-            alert('Failed to generate PDF. Please try again.');
+            showError('PDF Generation Failed', 'Failed to generate PDF. Please try again.');
         }
     }
 };
 
 const generateBrowserPDF = (data) => {
-    // Load html2pdf.js library for better compatibility
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    script.onload = () => {
-        // Create HTML content for PDF
+    try {
         const element = document.createElement('div');
         element.innerHTML = `
             <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4;">
@@ -595,26 +453,255 @@ const generateBrowserPDF = (data) => {
             </div>
         `;
 
-        // Configure PDF options
         const opt = {
             margin: 10,
-            filename: `health-report-${data.grade_level.toLowerCase().replace(' ', '-')}-${data.school_year}.pdf`,
+            filename: `health-report-${(data.grade_level || 'selected').toString().toLowerCase().replace(/\s+/g, '-')}-${data.school_year || ''}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         };
 
-        // Generate and download PDF
         html2pdf().set(opt).from(element).save();
-    };
-    
-    script.onerror = () => {
-        console.error('Failed to load html2pdf library');
-        alert('Failed to load PDF library. Please try again.');
-    };
-    
-    document.head.appendChild(script);
+    } catch (err) {
+        console.error('PDF generation failed', err);
+        showError('PDF Generation Failed', 'Failed to generate PDF.');
+    }
 };
+
+const downloadPdfFromServer = async () => {
+    // Get CSRF token helper
+    const getFreshCSRFToken = async () => {
+        try {
+            const response = await window.axios.get('/');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(response.data, 'text/html');
+            const token = doc.querySelector('meta[name="csrf-token"]')?.content;
+            if (token) {
+                const currentMeta = document.head.querySelector('meta[name="csrf-token"]');
+                if (currentMeta) currentMeta.content = token;
+                return token;
+            }
+        } catch (error) {
+            console.error('Failed to refresh CSRF token:', error);
+        }
+        return null;
+    };
+
+    let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
+    if (!csrfToken) {
+        csrfToken = await getFreshCSRFToken();
+        if (!csrfToken) {
+            showError('CSRF Token Error', 'Unable to get CSRF token. Please refresh the page and try again.');
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('grade_level', props.grade_level.replace('Grade ', ''));
+    formData.append('school_year', props.school_year);
+    if (props.section) formData.append('section', props.section);
+    props.fields.forEach(f => formData.append('fields[]', f));
+    if (props.health_exam_fields) props.health_exam_fields.forEach(f => formData.append('health_exam_fields[]', f));
+    if (props.gender_filter) formData.append('gender_filter', props.gender_filter);
+    if (props.min_age) formData.append('min_age', props.min_age);
+    if (props.max_age) formData.append('max_age', props.max_age);
+    if (props.sort_by) formData.append('sort_by', props.sort_by);
+    if (props.selected_students) props.selected_students.forEach(s => formData.append('selected_students[]', typeof s === 'object' ? s.id : s));
+
+    try {
+        let response;
+        try {
+            response = await window.axios.post('/health-report/export-pdf', formData, {
+                responseType: 'blob',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/pdf'
+                }
+            });
+        } catch (error) {
+            if (error.response && error.response.status === 419) {
+                const fresh = await getFreshCSRFToken();
+                if (fresh) {
+                    response = await window.axios.post('/health-report/export-pdf', formData, {
+                        responseType: 'blob',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': fresh,
+                            'Accept': 'application/pdf'
+                        }
+                    });
+                } else {
+                    throw new Error('Unable to refresh CSRF token');
+                }
+            } else if (error.response && error.response.data) {
+                try {
+                    const reader = new FileReader();
+                    const text = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsText(error.response.data);
+                    });
+                    const parsed = JSON.parse(text);
+                    showError('Export Failed', parsed.error || parsed.message || 'Export failed');
+                    return;
+                } catch (parseErr) {
+                    throw error;
+                }
+            } else {
+                throw error;
+            }
+        }
+
+        if (response && response.data) {
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `health-report-${props.grade_level || 'selected'}-${new Date().toISOString().slice(0,10)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            showSuccess('Download Started', 'Health Report PDF is downloading.');
+            return;
+        }
+
+        showSuccess('Export Started', 'Health Report PDF generation started.');
+    } catch (error) {
+        console.error('Export failed:', error);
+        showError('Export Failed', 'Export failed. Please try again.');
+    }
+};
+
+const downloadPdfClient = async () => {
+    const maxClientPdf = 200;
+    if (props.reportData.length > maxClientPdf) {
+        showError('Too Many Records', `Client-side PDF generation is limited to ${maxClientPdf} students. Please use CSV or server batch export.`);
+        return;
+    }
+
+    const printEl = document.querySelector('.print-content');
+    if (!printEl) {
+        showError('Print Error', 'Printable content not found.');
+        return;
+    }
+
+    const clone = printEl.cloneNode(true);
+    clone.style.display = 'block';
+    clone.style.position = 'fixed';
+    clone.style.top = '-9999px';
+    document.body.appendChild(clone);
+
+    try {
+        const opt = {
+            margin:       0.5,
+            filename:     `health-report-${props.grade_level || 'selected'}-${new Date().toISOString().slice(0,10)}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+        };
+
+        await html2pdf().set(opt).from(clone).save();
+        showSuccess('Download Started', 'Client-side PDF generated and downloaded.');
+    } catch (err) {
+        console.error('Client PDF generation failed', err);
+        showError('PDF Generation Failed', 'Client-side PDF generation failed. Try server PDF or CSV export.');
+    } finally {
+        clone.remove();
+    }
+}
+
+const downloadPdfQueued = async () => {
+    // helper to get fresh CSRF if needed
+    const getFreshCSRFToken = async () => {
+        try {
+            const response = await window.axios.get('/');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(response.data, 'text/html');
+            const token = doc.querySelector('meta[name="csrf-token"]')?.content;
+            if (token) {
+                const currentMeta = document.head.querySelector('meta[name="csrf-token"]');
+                if (currentMeta) currentMeta.content = token;
+                return token;
+            }
+        } catch (e) {
+            console.error('Failed to refresh CSRF token', e);
+        }
+        return null;
+    };
+
+    let csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
+    if (!csrfToken) {
+        csrfToken = await getFreshCSRFToken();
+        if (!csrfToken) {
+            showError('CSRF Token Error', 'Unable to get CSRF token. Please refresh the page and try again.');
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('grade_level', props.grade_level.replace('Grade ', ''));
+    formData.append('school_year', props.school_year);
+    if (props.section) formData.append('section', props.section);
+    props.fields.forEach(f => formData.append('fields[]', f));
+    if (props.health_exam_fields) props.health_exam_fields.forEach(f => formData.append('health_exam_fields[]', f));
+    if (props.gender_filter) formData.append('gender_filter', props.gender_filter);
+    if (props.min_age) formData.append('min_age', props.min_age);
+    if (props.max_age) formData.append('max_age', props.max_age);
+    if (props.sort_by) formData.append('sort_by', props.sort_by);
+    if (props.selected_students) props.selected_students.forEach(s => formData.append('selected_students[]', typeof s === 'object' ? s.id : s));
+
+    try {
+        const resp = await window.axios.post('/health-report/export-pdf/queued', formData, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (resp.data && resp.data.id) {
+            const exportId = resp.data.id;
+            showSuccess('Export Queued', 'Export is queued. Waiting for completion...');
+
+            // Poll for status
+            const poll = setInterval(async () => {
+                try {
+                    const status = await window.axios.get(`/health-report/export-pdf/status/${exportId}`);
+                    if (status.data && status.data.ready) {
+                        clearInterval(poll);
+                        // Download
+                        const downloadResp = await window.axios.get(`/health-report/export-pdf/download/${exportId}`, { responseType: 'blob' });
+                        const blob = new Blob([downloadResp.data]);
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `health-report-${exportId}.zip`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        showSuccess('Download Ready', 'Export ready and downloaded.');
+                    } else if (status.data && status.data.failed) {
+                        clearInterval(poll);
+                        showError('Export Failed', status.data.message || 'Export failed during processing.');
+                    }
+                } catch (err) {
+                    // ignore transient errors but log
+                    console.error('Polling error', err);
+                }
+            }, 3000);
+
+            return;
+        }
+
+        showError('Queue Failed', 'Failed to queue export');
+    } catch (err) {
+        console.error('Queue request failed', err);
+        showError('Queue Failed', 'Failed to queue export.');
+    }
+}
 </script>
 
 <style scoped>

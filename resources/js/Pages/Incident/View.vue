@@ -11,17 +11,6 @@
             <!-- Incident Details -->
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Student Info -->
-                    <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-700 mb-2">Student Information</h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div><strong>Name:</strong> {{ student.full_name }}</div>
-                            <div><strong>LRN:</strong> {{ student.lrn }}</div>
-                            <div><strong>Grade:</strong> {{ incident.grade_level }}</div>
-                            <div><strong>Date:</strong> {{ new Date(incident.date).toLocaleDateString() }}</div>
-                        </div>
-                    </div>
-
                     <!-- Incident Details -->
                     <div class="md:col-span-2">
                         <h3 class="font-semibold text-gray-700 mb-4">Incident Details</h3>

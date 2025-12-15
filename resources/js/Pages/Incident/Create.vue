@@ -1,10 +1,39 @@
 <template>
-    <div class="p-6 bg-gray-50 min-h-screen">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
         <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Incident Report</h1>
-                <p class="text-gray-600">Naawan Central School</p>
+            <!-- Enhanced Header -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 mb-8 backdrop-blur-sm">
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="pi pi-plus text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">Create Incident Report</h1>
+                            <p class="text-slate-600 font-medium">Document safety incident for {{ student.full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-slate-600 font-semibold">Student:</span>
+                                <div class="font-bold text-slate-900">{{ student.full_name }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Grade:</span>
+                                <div class="font-bold text-slate-900">{{ student.grade_level }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">LRN:</span>
+                                <div class="font-mono font-bold text-slate-900">{{ student.lrn || 'Not Available' }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Section:</span>
+                                <div class="font-bold text-slate-900">{{ student.section || 'Not Assigned' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Draft Restored Notification -->
@@ -19,22 +48,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Student Info -->
-            <Card class="mb-6">
-                <template #content>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p><strong>Student:</strong> {{ student.full_name }}</p>
-                            <p><strong>LRN:</strong> {{ student.lrn }}</p>
-                        </div>
-                        <div>
-                            <p><strong>Grade Level:</strong> {{ student.grade_level }}</p>
-                            <p><strong>Section:</strong> {{ student.section || 'Not Assigned' }}</p>
-                        </div>
-                    </div>
-                </template>
-            </Card>
 
             <!-- Incident Form -->
             <Card>
@@ -109,6 +122,9 @@
             </Card>
         </div>
     </div>
+
+    <!-- Confirmation Dialog -->
+    <ConfirmDialog />
 </template>
 
 <script setup>
@@ -118,7 +134,10 @@ import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import DatePicker from 'primevue/datepicker';
 import Card from 'primevue/card';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useConfirm } from 'primevue/useconfirm';
 import { useFormPersistence } from '@/composables/useFormPersistence';
+import { useToastStore } from '@/Stores/toastStore';
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css';
 // Import page-specific styles
@@ -133,6 +152,10 @@ const form = useForm({
     complaint: '',
     actions_taken: ''
 });
+
+// Initialize composables
+const confirm = useConfirm();
+const { showSuccess, showError } = useToastStore();
 
 // Set up form persistence
 const {
@@ -156,6 +179,28 @@ onMounted(() => {
 });
 
 const submit = () => {
+    // Show confirmation dialog
+    confirm.require({
+        message: 'Are you sure you want to create this incident report?',
+        header: 'Confirm Creation',
+        icon: 'pi pi-exclamation-triangle',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Create Report',
+            severity: 'success'
+        },
+        accept: () => {
+            // Proceed with form submission
+            submitForm()
+        }
+    })
+}
+
+const submitForm = () => {
     // Format date to YYYY-MM-DD to avoid timezone issues
     if (form.date instanceof Date) {
         const year = form.date.getFullYear();
@@ -163,9 +208,10 @@ const submit = () => {
         const day = String(form.date.getDate()).padStart(2, '0');
         form.date = `${year}-${month}-${day}`;
     }
-    
+
     form.post(route('incident.store'), {
         onSuccess: (response) => {
+            showSuccess('Success', 'Incident report created successfully!');
             // Clear saved form data on successful submission
             onSubmitSuccess();
             // Backend handles the redirect automatically
@@ -174,9 +220,10 @@ const submit = () => {
             // Keep saved data if there's an error
             console.log('Form submission failed, keeping saved data');
             console.log('Validation errors:', errors);
+            showError('Submission Error', 'Failed to create incident report. Please try again.');
         }
     });
-};
+}
 
 const cancel = () => {
     // Check if there are unsaved changes

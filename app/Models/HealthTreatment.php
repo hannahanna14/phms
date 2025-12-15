@@ -48,7 +48,7 @@ class HealthTreatment extends Model
         $this->is_expired = false;
         $this->timer_status = 'active';
         $this->status = 'in_progress';
-        $this->save();
+        return $this->save();
     }
 
     /**

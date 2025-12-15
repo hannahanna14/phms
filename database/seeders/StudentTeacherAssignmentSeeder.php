@@ -27,15 +27,65 @@ class StudentTeacherAssignmentSeeder extends Seeder
         }
 
         // Define grade level and section mapping for teachers
-        // Each teacher handles ONE grade level and ONE section
+        // Teachers can handle multiple sections across different grade levels
         $gradeTeacherMapping = [
-            ['grade' => 'Kinder 2', 'section' => 'A', 'username' => 'mariasantos'],
-            ['grade' => 'Grade 1', 'section' => 'A', 'username' => 'josemiguel'],
-            ['grade' => 'Grade 2', 'section' => 'B', 'username' => 'analuz'],
-            ['grade' => 'Grade 3', 'section' => 'A', 'username' => 'robertocarlos'],
-            ['grade' => 'Grade 4', 'section' => 'B', 'username' => 'carmenrosa'],
-            ['grade' => 'Grade 5', 'section' => 'C', 'username' => 'eduardoramos'],
-            ['grade' => 'Grade 6', 'section' => 'A', 'username' => 'luzmarina']
+            // Kinder 2 teachers
+            ['grade' => 'Kinder 2', 'section' => 'Generous AM', 'username' => 'mariasantos'],
+            ['grade' => 'Kinder 2', 'section' => 'Generous PM', 'username' => 'josemiguel'],
+            ['grade' => 'Kinder 2', 'section' => 'Good AM', 'username' => 'analuz'],
+            ['grade' => 'Kinder 2', 'section' => 'Good PM', 'username' => 'robertocarlos'],
+            ['grade' => 'Kinder 2', 'section' => 'SNED – Kindergarten (DHH) (SPED)', 'username' => 'carmenrosa'],
+
+            // Grade 1 teachers
+            ['grade' => 'Grade 1', 'section' => 'Admirable', 'username' => 'eduardoramos'],
+            ['grade' => 'Grade 1', 'section' => 'Adorable', 'username' => 'luzmarina'],
+            ['grade' => 'Grade 1', 'section' => 'Affectionate', 'username' => 'mariasantos'],
+            ['grade' => 'Grade 1', 'section' => 'Alert', 'username' => 'josemiguel'],
+            ['grade' => 'Grade 1', 'section' => 'Amazing', 'username' => 'analuz'],
+
+            // Grade 2 teachers
+            ['grade' => 'Grade 2', 'section' => 'Beloved', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 2', 'section' => 'Beneficent', 'username' => 'carmenrosa'],
+            ['grade' => 'Grade 2', 'section' => 'Benevolent', 'username' => 'eduardoramos'],
+            ['grade' => 'Grade 2', 'section' => 'Blessed', 'username' => 'luzmarina'],
+            ['grade' => 'Grade 2', 'section' => 'Blissful', 'username' => 'mariasantos'],
+            ['grade' => 'Grade 2', 'section' => 'Blossom', 'username' => 'josemiguel'],
+            ['grade' => 'Grade 2', 'section' => 'SNED – Grade 2 (DHH) (SPED)', 'username' => 'analuz'],
+
+            // Grade 3 teachers
+            ['grade' => 'Grade 3', 'section' => 'Calm', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 3', 'section' => 'Candor', 'username' => 'carmenrosa'],
+            ['grade' => 'Grade 3', 'section' => 'Charitable', 'username' => 'eduardoramos'],
+            ['grade' => 'Grade 3', 'section' => 'Cheerful', 'username' => 'luzmarina'],
+            ['grade' => 'Grade 3', 'section' => 'Clever', 'username' => 'mariasantos'],
+            ['grade' => 'Grade 3', 'section' => 'Curious', 'username' => 'josemiguel'],
+
+            // Grade 4 teachers
+            ['grade' => 'Grade 4', 'section' => 'Dainty', 'username' => 'analuz'],
+            ['grade' => 'Grade 4', 'section' => 'Dedicated', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 4', 'section' => 'Demure', 'username' => 'carmenrosa'],
+            ['grade' => 'Grade 4', 'section' => 'Devoted', 'username' => 'eduardoramos'],
+            ['grade' => 'Grade 4', 'section' => 'Dynamic', 'username' => 'luzmarina'],
+            ['grade' => 'Grade 4', 'section' => 'SNED (Graded) (SPED)', 'username' => 'mariasantos'],
+
+            // Grade 5 teachers
+            ['grade' => 'Grade 5', 'section' => 'Effective', 'username' => 'josemiguel'],
+            ['grade' => 'Grade 5', 'section' => 'Efficient', 'username' => 'analuz'],
+            ['grade' => 'Grade 5', 'section' => 'Endurance', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 5', 'section' => 'Energetic', 'username' => 'carmenrosa'],
+            ['grade' => 'Grade 5', 'section' => 'Everlasting', 'username' => 'eduardoramos'],
+
+            // Grade 6 teachers
+            ['grade' => 'Grade 6', 'section' => 'Fair', 'username' => 'luzmarina'],
+            ['grade' => 'Grade 6', 'section' => 'Faithful', 'username' => 'mariasantos'],
+            ['grade' => 'Grade 6', 'section' => 'Flexible', 'username' => 'josemiguel'],
+            ['grade' => 'Grade 6', 'section' => 'Forbearance', 'username' => 'analuz'],
+            ['grade' => 'Grade 6', 'section' => 'Fortitude', 'username' => 'robertocarlos'],
+            ['grade' => 'Grade 6', 'section' => 'Friendly', 'username' => 'carmenrosa'],
+
+            // Non-Graded teachers
+            ['grade' => 'Non-Graded', 'section' => 'Gracious (SPED)', 'username' => 'eduardoramos'],
+            ['grade' => 'Non-Graded', 'section' => 'Grateful (SPED)', 'username' => 'luzmarina']
         ];
 
         $totalAssignments = 0;

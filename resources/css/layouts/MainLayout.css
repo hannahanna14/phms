@@ -1,11 +1,11 @@
 /* MainLayout Component Styles */
 
 .main-container {
-    @apply bg-gray-100 h-screen;
+    @apply bg-gray-100 min-h-screen;
 }
 
 .layout-wrapper {
-    @apply flex flex-col md:flex-row h-full;
+    @apply flex flex-col md:flex-row min-h-screen;
 }
 
 /* Sidebar Styles */
@@ -21,27 +21,29 @@
     @apply w-0 overflow-hidden;
 }
 
-/* Mobile: Sidebar overlay */
+/* Mobile Overlay */
+.mobile-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-[1099] md:hidden;
+}
+
+/* Responsive Sidebar Variants */
+.sidebar-mobile {
+    @apply md:hidden;
+}
+
+.sidebar-desktop {
+    @apply hidden md:block;
+}
+
+/* Mobile: Enhanced responsive behavior */
 @media (max-width: 768px) {
     .sidebar-open {
         @apply w-64;
     }
-    
+
+    /* Remove the old overlay since we have a dedicated mobile-overlay */
     .sidebar::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    
-    .sidebar-open::before {
-        opacity: 1;
+        display: none;
     }
 }
 
@@ -126,7 +128,7 @@
 
 /* Header End Section */
 .header-end-container {
-    @apply flex items-center space-x-3;
+    @apply relative flex items-center space-x-3;
 }
 
 .viewer-badge-container {
@@ -167,21 +169,51 @@
     .main-content-shifted {
         @apply ml-0;
     }
-    
+
     .main-header {
         @apply z-[1200];
     }
-    
+
     .header-end-container {
         @apply space-x-1;
     }
-    
+
     .user-name,
     .user-role {
         @apply hidden sm:block;
     }
-    
+
     .viewer-badge {
         @apply text-xs px-2 py-0.5;
+    }
+
+    /* Improve mobile content spacing */
+    .content-wrapper {
+        @apply p-3 mt-14;
+    }
+
+    /* Better mobile sidebar positioning */
+    .sidebar {
+        @apply z-[1200];
+    }
+
+    /* Improve mobile menu button */
+    .sidebar-toggle-btn {
+        @apply p-2 mr-1;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar-open {
+        @apply w-52;
+    }
+
+    .main-content-shifted {
+        @apply md:ml-52;
+    }
+
+    .content-wrapper {
+        @apply p-4;
     }
 }

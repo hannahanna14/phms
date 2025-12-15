@@ -66,14 +66,12 @@ export const useTimerNotifications = (treatmentType = 'health') => {
 
                 // Trigger 30-minute warning (when between 29 and 31 minutes)
                 if (currentRemainingMinutes <= 30 && currentRemainingMinutes > 29 && !notificationsTriggered.value.thirtyMin) {
-                    console.log('Triggering 30-minute warning notification')
                     integration.handleTimerCheck(30, student, treatment)
                     notificationsTriggered.value.thirtyMin = true
                 }
 
                 // Trigger 15-minute warning (when between 14 and 16 minutes)
                 if (currentRemainingMinutes <= 15 && currentRemainingMinutes > 14 && !notificationsTriggered.value.fifteenMin) {
-                    console.log('Triggering 15-minute warning notification')
                     integration.handleTimerCheck(15, student, treatment)
                     notificationsTriggered.value.fifteenMin = true
                 }

@@ -64,3 +64,13 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Queued PDF Exports
+
+Large report exports are handled by a queued worker to avoid exhausting PHP memory and request timeouts. To enable queued exports in production, run a worker process:
+
+```bash
+php artisan queue:work --queue=exports
+```
+
+When a large export is queued from the UI, the job will generate chunked PDFs, bundle them into a ZIP file at `storage/app/exports/{uuid}.zip`, and the UI will poll `/health-report/export-pdf/status/{uuid}` to download the result when ready.

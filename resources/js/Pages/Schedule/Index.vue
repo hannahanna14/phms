@@ -429,13 +429,18 @@
                 </div>
             </template>
         </Dialog>
+
+        <!-- Confirmation Dialog -->
+        <ConfirmDialog></ConfirmDialog>
     </div>
 </template>
 
 <script setup>
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm, usePage } from '@inertiajs/vue3'
 import { ref, onMounted, computed, nextTick } from 'vue'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from 'primevue/useconfirm'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 import '../../../css/pages/Schedule/Index.css'
@@ -449,6 +454,7 @@ import { Calendar as FullCalendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import { useToastStore } from '@/Stores/toastStore'
 
 const props = defineProps({
     schedules: Array,
@@ -457,6 +463,11 @@ const props = defineProps({
     filters: Object,
     currentDate: String
 })
+
+// Toast store and confirm dialog
+const { showSuccess, showError } = useToastStore()
+const confirm = useConfirm()
+const page = usePage()
 
 // Calendar instance
 let calendar = null
@@ -820,26 +831,26 @@ const closeFormModal = () => {
 
 // Submit form
 const submitForm = () => {
-    // Validate
+    // Validate first
     const errors = {}
     const now = new Date()
-    
+
     if (!form.title) errors.title = 'Title is required'
     if (!form.start_datetime) errors.start_datetime = 'Start date is required'
     if (!form.end_datetime) errors.end_datetime = 'End date is required'
-    
+
     // Check if start datetime is in the past (only for new schedules, not edits)
     if (!isEditMode.value && form.start_datetime && new Date(form.start_datetime) < now) {
         errors.start_datetime = 'Start time cannot be in the past'
     }
-    
+
     if (form.start_datetime && form.end_datetime && form.start_datetime >= form.end_datetime) {
         errors.end_datetime = 'End time must be after start time'
     }
-    
+
     if (Object.keys(errors).length > 0) {
         formErrors.value = errors
-        
+
         // Scroll to first error field
         nextTick(() => {
             if (errors.title && titleField.value) {
@@ -850,21 +861,38 @@ const submitForm = () => {
                 endDateField.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }
         })
-        
+
         return
     }
-    
+
+    // Show confirmation dialog
+    const action = isEditMode.value ? 'update' : 'create'
+    confirm.require({
+        message: `Are you sure you want to ${action} this schedule?`,
+        header: `Confirm ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+        icon: 'pi pi-exclamation-triangle',
+        rejectClass: 'p-button-text p-button-secondary',
+        acceptClass: 'p-button-primary',
+        acceptLabel: `Yes, ${action.charAt(0).toUpperCase() + action.slice(1)}`,
+        rejectLabel: 'Cancel',
+        accept: () => {
+            performSubmit()
+        }
+    })
+}
+
+const performSubmit = () => {
     // Clean up attendees - filter out empty strings
     form.attendees = form.attendees.filter(a => a && a.trim() !== '')
-    
+
     // Ensure attendees is an array (even if empty)
     if (!Array.isArray(form.attendees)) {
         form.attendees = []
     }
-    
+
     // Set selected users
     form.selected_users = selectedUsers.value || []
-    
+
     console.log('Submitting schedule:', {
         title: form.title,
         description: form.description,
@@ -873,19 +901,19 @@ const submitForm = () => {
         start_datetime: form.start_datetime,
         end_datetime: form.end_datetime
     })
-    
+
     if (isEditMode.value) {
         // Update
         form.put(route('schedule-calendar.update', selectedSchedule.value.id), {
             onSuccess: () => {
                 showFormModal.value = false
                 if (calendar) calendar.refetchEvents()
-                alert('Schedule updated successfully!')
+                showSuccess('Schedule Updated', 'Schedule has been updated successfully!')
             },
             onError: (errors) => {
                 console.error('Schedule update error:', errors)
                 formErrors.value = errors
-                alert('Failed to update schedule. Please check the form and try again.')
+                showError('Update Failed', 'Failed to update schedule. Please check the form and try again.')
             }
         })
     } else {
@@ -894,25 +922,52 @@ const submitForm = () => {
             onSuccess: () => {
                 showFormModal.value = false
                 if (calendar) calendar.refetchEvents()
-                alert('Schedule created successfully!')
+                showSuccess('Schedule Created', 'New schedule has been created successfully!')
             },
             onError: (errors) => {
                 console.error('Schedule creation error:', errors)
                 formErrors.value = errors
-                alert('Failed to create schedule. Please check the form and try again.')
+                showError('Creation Failed', 'Failed to create schedule. Please check the form and try again.')
             }
         })
     }
 }
 
 const deleteSchedule = () => {
-    if (selectedSchedule.value && confirm('Are you sure you want to delete this schedule?')) {
-        router.delete(route('schedule-calendar.destroy', selectedSchedule.value.id), {
-            onSuccess: () => {
-                showScheduleDialog.value = false
-                if (calendar) calendar.refetchEvents()
-            }
-        })
+    console.log('deleteSchedule called')
+    console.log('selectedSchedule:', selectedSchedule.value)
+    console.log('user role:', page.props.auth.user.role)
+
+    if (!selectedSchedule.value) {
+        console.log('No schedule selected')
+        return
     }
+
+    confirm.require({
+        message: 'Are you sure you want to delete this schedule?',
+        header: 'Confirm Deletion',
+        icon: 'pi pi-exclamation-triangle',
+        acceptClass: 'p-button-danger',
+        acceptLabel: 'Delete',
+        rejectLabel: 'Cancel',
+        accept: () => {
+            console.log('Making delete request to:', route('schedule-calendar.destroy', selectedSchedule.value.id))
+            router.delete(route('schedule-calendar.destroy', selectedSchedule.value.id), {
+                onSuccess: () => {
+                    console.log('Delete successful')
+                    showScheduleDialog.value = false
+                    showSuccess('Schedule deleted successfully')
+                    if (calendar) calendar.refetchEvents()
+                },
+                onError: (error) => {
+                    console.error('Delete failed:', error)
+                    showError('Failed to delete schedule')
+                }
+            })
+        },
+        reject: () => {
+            console.log('Delete cancelled by user')
+        }
+    })
 }
 </script>

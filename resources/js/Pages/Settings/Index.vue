@@ -22,11 +22,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Basic Information</h3>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">School Name</label>
-                                <InputText 
-                                    v-model="form.school_name" 
+                                <InputText
+                                    v-model="form.school_name"
                                     placeholder="Enter school name"
                                     class="w-full"
                                 />
@@ -34,8 +34,8 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">School ID</label>
-                                <InputText 
-                                    v-model="form.school_id" 
+                                <InputText
+                                    v-model="form.school_id"
                                     placeholder="Enter school ID"
                                     class="w-full"
                                 />
@@ -43,8 +43,8 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Region</label>
-                                <InputText 
-                                    v-model="form.region" 
+                                <InputText
+                                    v-model="form.region"
                                     placeholder="Enter region"
                                     class="w-full"
                                 />
@@ -52,26 +52,18 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Division</label>
-                                <InputText 
-                                    v-model="form.division" 
+                                <InputText
+                                    v-model="form.division"
                                     placeholder="Enter division"
                                     class="w-full"
                                 />
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Telephone No</label>
-                                <InputText 
-                                    v-model="form.telephone_no" 
-                                    placeholder="Enter telephone number"
-                                    class="w-full"
-                                />
-                            </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">School Address</label>
-                                <Textarea 
-                                    v-model="form.school_address" 
+                                <Textarea
+                                    v-model="form.school_address"
                                     placeholder="Enter complete school address"
                                     rows="3"
                                     class="w-full"
@@ -80,8 +72,8 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                <InputText 
-                                    v-model="form.school_phone" 
+                                <InputText
+                                    v-model="form.school_phone"
                                     placeholder="Enter phone number"
                                     class="w-full"
                                 />
@@ -89,8 +81,8 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                                <InputText 
-                                    v-model="form.school_email" 
+                                <InputText
+                                    v-model="form.school_email"
                                     type="email"
                                     placeholder="Enter email address"
                                     class="w-full"
@@ -100,11 +92,11 @@
 
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Personnel & Branding</h3>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Principal Name</label>
-                                <InputText 
-                                    v-model="form.principal_name" 
+                                <InputText
+                                    v-model="form.principal_name"
                                     placeholder="Enter principal's name"
                                     class="w-full"
                                 />
@@ -117,8 +109,8 @@
                                         <img :src="currentLogo" alt="Current Logo" class="w-16 h-16 object-contain border rounded" />
                                         <span class="text-sm text-gray-600">Current logo</span>
                                     </div>
-                                    <input 
-                                        type="file" 
+                                    <input
+                                        type="file"
                                         ref="logoInput"
                                         @change="handleLogoUpload"
                                         accept="image/*"
@@ -133,17 +125,17 @@
 
                     <!-- Action Buttons -->
                     <div class="flex justify-end gap-3 pt-6 border-t">
-                        <Button 
+                        <Button
                             type="button"
-                            label="Reset to Defaults" 
+                            label="Reset to Defaults"
                             icon="pi pi-refresh"
-                            outlined 
+                            outlined
                             severity="secondary"
                             @click="resetToDefaults"
                         />
-                        <Button 
+                        <Button
                             type="submit"
-                            label="Save Settings" 
+                            label="Save Settings"
                             icon="pi pi-save"
                             :loading="loading"
                             class="!bg-blue-600 !border-blue-600 hover:!bg-blue-700"
@@ -180,7 +172,6 @@ const form = useForm({
     school_id: props.settings?.school_id || '',
     region: props.settings?.region || '',
     division: props.settings?.division || '',
-    telephone_no: props.settings?.telephone_no || '',
     school_address: props.settings?.school_address || '',
     school_phone: props.settings?.school_phone || '',
     school_email: props.settings?.school_email || '',
@@ -192,7 +183,7 @@ const handleLogoUpload = (event) => {
     const file = event.target.files[0]
     if (file) {
         form.school_logo = file
-        
+
         // Create preview URL
         const reader = new FileReader()
         reader.onload = (e) => {
@@ -204,7 +195,7 @@ const handleLogoUpload = (event) => {
 
 const updateSettings = () => {
     loading.value = true
-    
+
     // Use POST route for file uploads
     if (form.school_logo) {
         // Has file upload, use POST route

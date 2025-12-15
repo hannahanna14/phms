@@ -23,7 +23,7 @@ export default defineConfig({
         strictPort: true,
         hmr: {
             protocol: 'ws',
-            host: '192.168.254.105',
+            host: 'localhost',
         },
     },
     assetsInclude: ['**/*.png', '**/*.jpg', '**/*.svg'],

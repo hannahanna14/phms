@@ -72,4 +72,25 @@ class Student extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    /**
+     * Accessor to determine if student is active for the current school year
+     */
+    public function getIsCurrentlyActiveAttribute()
+    {
+        // If no school_year is set, fall back to is_active flag
+        if (empty($this->school_year)) {
+            return (bool) $this->is_active;
+        }
+
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        if ($currentMonth >= 6) {
+            $currentSchoolYear = $currentYear . '-' . ($currentYear + 1);
+        } else {
+            $currentSchoolYear = ($currentYear - 1) . '-' . $currentYear;
+        }
+
+        return (bool) ($this->is_active && $this->school_year === $currentSchoolYear);
+    }
 }

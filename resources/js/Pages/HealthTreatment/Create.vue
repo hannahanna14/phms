@@ -6,12 +6,19 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToastStore } from '@/Stores/toastStore';
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css';
 // Import page-specific styles
 import '../../../css/pages/HealthTreatment/Create.css';
 
 const { student } = usePage().props;
+
+// Toast store and confirm dialog
+const { showError, showSuccess } = useToastStore();
+const confirm = useConfirm();
 
 // Get grade context from sessionStorage or URL
 const getGradeContext = () => {
@@ -83,18 +90,38 @@ const submit = () => {
     // Get the current grade from sessionStorage to ensure we have the latest value
     const currentGrade = sessionStorage.getItem(`currentGrade_${student.id}`) || selectedGrade.value;
     const gradeLevel = currentGrade.replace('Grade ', '');
-    
+
     // Ensure grade_level is not empty or null
     if (!gradeLevel || gradeLevel === 'undefined' || gradeLevel === 'null' || gradeLevel.trim() === '') {
         console.error('Grade level is invalid:', gradeLevel);
         console.error('Current grade from session:', currentGrade);
         console.error('Selected grade ref:', selectedGrade.value);
-        alert('Error: Invalid grade level. Please refresh and try again.');
+        showError('Invalid Grade Level', 'Invalid grade level. Please refresh and try again.');
         return;
     }
-    
+
+    // Show confirmation dialog
+    confirm.require({
+        message: 'Are you sure you want to create this health treatment record?',
+        header: 'Confirm Creation',
+        icon: 'pi pi-exclamation-triangle',
+        rejectClass: 'p-button-text p-button-secondary',
+        acceptClass: 'p-button-primary',
+        acceptLabel: 'Yes, Create',
+        rejectLabel: 'Cancel',
+        accept: () => {
+            performCreate()
+        }
+    });
+}
+
+const performCreate = () => {
+    // Get the current grade from sessionStorage to ensure we have the latest value
+    const currentGrade = sessionStorage.getItem(`currentGrade_${student.id}`) || selectedGrade.value;
+    const gradeLevel = currentGrade.replace('Grade ', '');
+
     form.grade_level = gradeLevel;
-    
+
     // Format date to YYYY-MM-DD to avoid timezone issues
     if (form.date instanceof Date) {
         const year = form.date.getFullYear();
@@ -102,7 +129,7 @@ const submit = () => {
         const day = String(form.date.getDate()).padStart(2, '0');
         form.date = `${year}-${month}-${day}`;
     }
-    
+
     console.log('=== TREATMENT FORM SUBMISSION DEBUG ===');
     console.log('Current Grade from session:', currentGrade);
     console.log('Selected Grade ref:', selectedGrade.value);
@@ -115,6 +142,7 @@ const submit = () => {
     form.post(route('health-treatment.store'), {
         onSuccess: () => {
             console.log('Health treatment created successfully');
+            showSuccess('Health Treatment Created', 'The health treatment record has been created successfully!');
             // Use Inertia redirect instead of window.location to prevent full page reload
             // The backend redirect will handle this properly
         },
@@ -132,29 +160,42 @@ const cancel = () => {
 </script>
 
 <template>
-    <div class="p-6 bg-gray-50 min-h-screen">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
         <div class="max-w-4xl mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Health Treatment</h1>
-                <p class="text-gray-600">Naawan Central School</p>
-            </div>
-
-            <!-- Student Info -->
-            <Card class="mb-6">
-                <template #content>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p><strong>Student:</strong> {{ student.full_name }}</p>
-                            <p><strong>LRN:</strong> {{ student.lrn }}</p>
+            <!-- Enhanced Header -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 mb-8 backdrop-blur-sm">
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="pi pi-plus text-white text-2xl"></i>
                         </div>
                         <div>
-                            <p><strong>Grade Level:</strong> {{ student.grade_level }}</p>
-                            <p><strong>Section:</strong> {{ student.section || 'Not Assigned' }}</p>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">Create Health Treatment</h1>
+                            <p class="text-slate-600 font-medium">Add new medical treatment for {{ student.full_name }}</p>
                         </div>
                     </div>
-                </template>
-            </Card>
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-slate-600 font-semibold">Student:</span>
+                                <div class="font-bold text-slate-900">{{ student.full_name }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Grade:</span>
+                                <div class="font-bold text-slate-900">{{ student.grade_level }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">LRN:</span>
+                                <div class="font-mono font-bold text-slate-900">{{ student.lrn || 'Not Available' }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Section:</span>
+                                <div class="font-bold text-slate-900">{{ student.section || 'Not Assigned' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Treatment Form -->
             <Card>
@@ -280,6 +321,9 @@ const cancel = () => {
             </Card>
         </div>
     </div>
+
+    <!-- Confirmation Dialog -->
+    <ConfirmDialog></ConfirmDialog>
 </template>
 
 <style scoped>

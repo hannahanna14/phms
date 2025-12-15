@@ -1,29 +1,44 @@
 <template>
     <Head title="Edit Health Examination" />
-    <div class="health-examination-form">
-        <div class="white-container">
-            <!-- Student Information Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Health Examination</h1>
-                <p class="text-gray-600">Naawan Central School</p>
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Enhanced Header -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 mb-8 backdrop-blur-sm">
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="pi pi-pencil text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">Edit Health Examination</h1>
+                            <p class="text-slate-600 font-medium">Update medical assessment for {{ student.full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-slate-600 font-semibold">Student:</span>
+                                <div class="font-bold text-slate-900">{{ student.full_name }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Grade:</span>
+                                <div class="font-bold text-slate-900">{{ student.grade_level }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">LRN:</span>
+                                <div class="font-mono font-bold text-slate-900">{{ student.lrn || 'Not Available' }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Section:</span>
+                                <div class="font-bold text-slate-900">{{ student.section || 'Not Assigned' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <!-- Student Details -->
-            <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4">
-                <div>
-                    <span class="font-semibold text-gray-700">Student:</span> {{ student.full_name }}
-                </div>
-                <div>
-                    <span class="font-semibold text-gray-700">Grade Level:</span> {{ student.grade_level }}
-                </div>
-                <div>
-                    <span class="font-semibold text-gray-700">LRN:</span> {{ student.lrn || '10000000001' }}
-                </div>
-                <div>
-                    <span class="font-semibold text-gray-700">Section:</span> {{ student.section || 'Not Assigned' }}
-                </div>
-            </div>
-            
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 backdrop-blur-sm">
+
             <h2 class="text-lg font-semibold mb-4">Edit Student Health Examination</h2>
             
             <form @submit.prevent="submit" class="space-y-6">
@@ -90,12 +105,43 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
                         <label>Nutritional Status(BMI) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_bmi" :options="bmiOptions" class="w-full" required />
+                        <div class="mb-2">
+                            <div class="text-sm text-gray-600">
+                                Calculated BMI:
+                                <span class="font-semibold text-blue-600">{{ calculatedBMI || 'Enter height & weight' }}</span>
+                                <span v-if="calculatedBMI" class="text-xs text-gray-500">kg/m²</span>
+                            </div>
+                        </div>
+                        <Select
+                            v-model="form.nutritional_status_bmi"
+                            :options="bmiOptions"
+                            class="w-full"
+                            placeholder="Auto-calculated from height & weight"
+                            :disabled="true"
+                            readonly
+                            required
+                        />
+                        <small class="text-gray-500 text-xs">Automatically calculated when height and weight are entered</small>
                         <small class="text-red-500" v-if="errors.nutritional_status_bmi">{{ errors.nutritional_status_bmi }}</small>
                     </div>
                     <div class="form-group">
                         <label>Nutritional Status(Height for Age) <span class="text-red-500">*</span></label>
-                        <Select v-model="form.nutritional_status_height" :options="heightOptions" class="w-full" required />
+                        <div class="mb-2">
+                            <div class="text-sm text-gray-600">
+                                Height Assessment:
+                                <span class="font-semibold text-green-600">{{ calculatedHeightStatus || 'Enter height' }}</span>
+                            </div>
+                        </div>
+                        <Select
+                            v-model="form.nutritional_status_height"
+                            :options="heightOptions"
+                            class="w-full"
+                            placeholder="Auto-calculated from height & grade"
+                            :disabled="true"
+                            readonly
+                            required
+                        />
+                        <small class="text-gray-500 text-xs">Automatically calculated based on height and grade level</small>
                         <small class="text-red-500" v-if="errors.nutritional_status_height">{{ errors.nutritional_status_height }}</small>
                     </div>
                 </div>
@@ -375,17 +421,24 @@
                     <Button type="submit" label="Update" :loading="form.processing" />
                 </div>
             </form>
+            </div>
         </div>
     </div>
+
+    <!-- Confirmation Dialog -->
+    <ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToastStore } from '@/Stores/toastStore'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
@@ -409,6 +462,10 @@ const props = defineProps({
         default: () => ({})
     }
 })
+
+// Toast store and confirm dialog
+const { showSuccess } = useToastStore()
+const confirm = useConfirm()
 
 const bmiOptions = [
     'Severely Wasted',
@@ -490,6 +547,82 @@ const form = useForm({
     school_year: props.healthExamination.school_year
 })
 
+// Computed BMI calculation
+const calculatedBMI = computed(() => {
+    const height = parseFloat(form.height);
+    const weight = parseFloat(form.weight);
+
+    if (height > 0 && weight > 0) {
+        const bmi = weight / Math.pow(height / 100, 2);
+        return bmi.toFixed(1);
+    }
+    return null;
+});
+
+// Computed BMI status based on WHO standards for school-aged children
+const calculatedBMIStatus = computed(() => {
+    const bmi = parseFloat(calculatedBMI.value);
+
+    if (!bmi || isNaN(bmi)) return null;
+
+    // WHO BMI-for-age classifications for 5-19 years
+    if (bmi < 18.5) {
+        return bmi < 16 ? 'Severely Wasted' : 'Wasted';
+    } else if (bmi >= 18.5 && bmi < 25) {
+        return 'Normal';
+    } else if (bmi >= 25 && bmi < 30) {
+        return 'Overweight';
+    } else {
+        return 'Obese';
+    }
+});
+
+// Computed height-for-age status (simplified - would need actual growth charts for precision)
+const calculatedHeightStatus = computed(() => {
+    const height = parseFloat(form.height);
+    const gradeLevel = props.selectedGrade || props.healthExamination.grade_level || props.student.grade_level;
+
+    if (!height || !gradeLevel) return null;
+
+    // Simplified height expectations by grade level (in cm)
+    // These are approximate values - in a real system, you'd use WHO growth charts
+    const heightExpectations = {
+        'Kinder 2': 110,
+        'Grade 1': 115,
+        'Grade 2': 120,
+        'Grade 3': 125,
+        'Grade 4': 130,
+        'Grade 5': 135,
+        'Grade 6': 140
+    };
+
+    const expectedHeight = heightExpectations[gradeLevel];
+    if (!expectedHeight) return 'Normal (≥-2 SD)'; // Default if grade not found
+
+    const difference = height - expectedHeight;
+
+    if (difference >= -2) {
+        return 'Normal (≥-2 SD)';
+    } else if (difference >= -3) {
+        return 'Mild Stunting (-2 to -3 SD)';
+    } else {
+        return 'Severe Stunting (<-3 SD)';
+    }
+});
+
+// Auto-update nutritional status fields when height/weight change
+watch([() => form.height, () => form.weight], () => {
+    if (calculatedBMIStatus.value) {
+        form.nutritional_status_bmi = calculatedBMIStatus.value;
+    }
+});
+
+watch(() => form.height, () => {
+    if (calculatedHeightStatus.value) {
+        form.nutritional_status_height = calculatedHeightStatus.value;
+    }
+});
+
 // Validation rules
 const validateForm = () => {
     const errors = {}
@@ -560,15 +693,15 @@ const validateForm = () => {
 const errors = ref({})
 
 const submit = () => {
-    // Validate form
+    // Validate form first
     const validationErrors = validateForm()
     errors.value = validationErrors
-    
+
     if (Object.keys(validationErrors).length > 0) {
         console.log('Form validation failed:', validationErrors)
         // Scroll to the first error field
         const firstErrorField = Object.keys(validationErrors)[0]
-        const errorElement = document.querySelector(`[name="${firstErrorField}"]`) || 
+        const errorElement = document.querySelector(`[name="${firstErrorField}"]`) ||
                             document.querySelector(`input[type="number"]`) ||
                             document.querySelector('.text-red-500')
         if (errorElement) {
@@ -576,14 +709,31 @@ const submit = () => {
         }
         return
     }
-    
+
+    // Show confirmation dialog
+    confirm.require({
+        message: 'Are you sure you want to update this health examination record?',
+        header: 'Confirm Update',
+        icon: 'pi pi-exclamation-triangle',
+        rejectClass: 'p-button-text p-button-secondary',
+        acceptClass: 'p-button-primary',
+        acceptLabel: 'Yes, Update',
+        rejectLabel: 'Cancel',
+        accept: () => {
+            performUpdate()
+        }
+    })
+}
+
+const performUpdate = () => {
     // Convert checkbox values to backend format
     form.iron_supplementation = form.iron_supplementation_check ? 'Yes' : 'No'
     form.deworming_status = form.deworming_check ? 'dewormed' : 'not_dewormed'
-    
+
     form.put(route('health-examination.update', props.healthExamination.id), {
         onSuccess: () => {
             errors.value = {} // Clear validation errors on success
+            showSuccess('Health Examination Updated', 'The health examination record has been updated successfully!')
         },
         onError: (serverErrors) => {
             // Merge server errors with client validation errors

@@ -161,7 +161,16 @@
 
             <!-- Activity Logs Table -->
             <div v-if="logType === 'activity'" class="bg-white rounded-lg shadow-md">
-                <div class="overflow-x-auto">
+                <!-- Skeleton Loader -->
+                <SkeletonLoader 
+                    v-if="isLoading" 
+                    type="table" 
+                    :rows="10" 
+                    :columns="5"
+                    class="m-6"
+                />
+
+                <div v-else class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -373,10 +382,15 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Calendar from 'primevue/calendar'
+import { useToastStore } from '@/Stores/toastStore'
+import SkeletonLoader from '@/Components/SkeletonLoader.vue'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
 import '../../../css/pages/ErrorLogs/Index.css'
+
+// Toast store
+const { showSuccess, showError } = useToastStore()
 
 const props = defineProps({
     logs: Object,
@@ -385,6 +399,7 @@ const props = defineProps({
 })
 
 // Reactive data
+const isLoading = ref(true)
 const loading = ref(false)
 const downloading = ref(false)
 const clearing = ref(false)
@@ -392,6 +407,12 @@ const showLogDetails = ref(false)
 const showClearConfirm = ref(false)
 const selectedLog = ref(null)
 const perPage = ref(50)
+
+onMounted(() => {
+    setTimeout(() => {
+        isLoading.value = false;
+    }, 500);
+});
 
 // Initialize logs data
 const logs = ref(props.logs || { data: [], total: 0, per_page: 50, current_page: 1, last_page: 1 })
@@ -512,7 +533,7 @@ const downloadLogs = async () => {
         window.location.href = `/error-logs/download?${params.toString()}`
     } catch (error) {
         console.error('Download failed:', error)
-        alert('❌ Failed to download logs. Please try again.')
+        showError('Download Failed', 'Failed to download logs. Please try again.')
     } finally {
         setTimeout(() => {
             downloading.value = false
@@ -544,11 +565,11 @@ const clearLogs = async () => {
         console.log('Clear logs result:', result)
         
         showClearConfirm.value = false
-        alert('✅ Logs cleared successfully!')
+        showSuccess('Logs Cleared', 'Logs cleared successfully!')
         refreshLogs() // Refresh logs
     } catch (error) {
         console.error('Clear failed:', error)
-        alert('❌ Failed to clear logs. Please try again.')
+        showError('Clear Failed', 'Failed to clear logs. Please try again.')
     } finally {
         clearing.value = false
     }

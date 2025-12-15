@@ -40,14 +40,12 @@ class HealthExaminationSeeder extends Seeder
         $currentYear = date('Y');
         
         foreach ($students as $student) {
-            // Create health examinations for each grade level (complete school journey)
-            foreach ($allGradeLevels as $gradeIndex => $gradeLevel) {
-                // Calculate school year for this grade (going backwards from current)
-                $yearsBack = count($allGradeLevels) - 1 - $gradeIndex;
-                $schoolYearStart = $currentYear - 1 - $yearsBack;
-                $schoolYear = $schoolYearStart . '-' . ($schoolYearStart + 1);
-                
-                // Create 1 examination per grade level
+            // Create health examination for this student's current grade level and school year
+            $gradeLevel = $student->grade_level;
+            $schoolYear = $student->school_year;
+
+            // Only create examination if this is an active student (not historical)
+            if ($student->is_active) {
                 $numExaminations = 1;
                 
                 for ($i = 0; $i < $numExaminations; $i++) {
@@ -64,10 +62,12 @@ class HealthExaminationSeeder extends Seeder
                     $bmi = $weightInKg / ($heightInMeters * $heightInMeters);
                     $bmiStatus = $this->getBMIStatus($bmi);
                     
-                    // Generate examination date within the school year
-                    $schoolYearStartDate = Carbon::createFromDate($schoolYearStart, 6, 1); // June start
-                    $schoolYearEndDate = Carbon::createFromDate($schoolYearStart + 1, 5, 31); // May end
-                    $examDate = Carbon::createFromTimestamp(rand($schoolYearStartDate->timestamp, $schoolYearEndDate->timestamp));
+                    // Generate examination date within the student's school year
+                    $schoolYearParts = explode('-', $schoolYear);
+                    $schoolYearStartYear = (int) $schoolYearParts[0];
+                    $schoolYearStartDate = Carbon::createFromDate($schoolYearStartYear, 6, 1); // June start
+                    $schoolYearEndDate = Carbon::createFromDate($schoolYearStartYear + 1, 3, 31); // March end (earlier to avoid future dates)
+                    $examDate = Carbon::createFromTimestamp(rand($schoolYearStartDate->timestamp, min($schoolYearEndDate->timestamp, Carbon::now()->timestamp)));
                     
                     // Randomly assign some health issues (85% normal, 15% minor issues for younger grades)
                     $issueChance = $baseAge <= 7 ? 10 : 20; // Younger kids have fewer issues
@@ -110,8 +110,9 @@ class HealthExaminationSeeder extends Seeder
                 }
             }
         }
-        
-        $this->command->info('Created comprehensive health examination records for all 100 students across all grade levels');
+
+        $totalExaminations = HealthExamination::count();
+        $this->command->info("Created {$totalExaminations} health examination records for active students");
     }
     
     private function getBaseAge($gradeLevel)

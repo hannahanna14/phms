@@ -23,7 +23,7 @@
 
 /* Dropdown Menu */
 .notification-dropdown {
-    @apply absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50;
+    @apply absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999];
 }
 
 /* Dropdown Header */
@@ -172,5 +172,5 @@
 
 /* Backdrop */
 .notification-backdrop {
-    @apply fixed inset-0 z-40;
+    @apply fixed inset-0 z-[1299];
 }

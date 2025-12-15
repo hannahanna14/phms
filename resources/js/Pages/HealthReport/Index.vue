@@ -11,7 +11,7 @@
                     </h1>
                     <p class="text-gray-600">Generate comprehensive health reports for students</p>
                 </div>
-                
+
                 <!-- Step-by-step Guide -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                     <h3 class="font-semibold text-blue-900 mb-2 flex items-center">
@@ -51,12 +51,12 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Option A: Search Specific Students -->
-                    <div class="border-2 rounded-lg p-4" :class="selectedStudents.length > 0 ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'">
+                    <div class="border-2 rounded-lg p-4" :class="formData.selectedStudents.length > 0 ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'">
                         <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
                             <i class="pi pi-search mr-2 text-blue-600"></i>
                             Option A: Search Specific Pupils
                         </h3>
-                        
+
                         <InputText
                             v-model="searchQuery"
                             placeholder="Type name or LRN to search..."
@@ -78,11 +78,11 @@
                         </div>
 
                         <!-- Selected Students -->
-                        <div v-if="selectedStudents && selectedStudents.length > 0" class="mt-3">
+                        <div v-if="formData.selectedStudents && formData.selectedStudents.length > 0" class="mt-3">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-green-700">
                                     <i class="pi pi-check-circle mr-1"></i>
-                                    {{ selectedStudents.length }} pupils selected
+                                    {{ formData.selectedStudents.length }} pupils selected
                                 </span>
                                 <Button
                                     label="Clear"
@@ -95,7 +95,7 @@
                             </div>
                             <div class="space-y-1 max-h-32 overflow-y-auto">
                                 <div
-                                    v-for="student in selectedStudents"
+                                    v-for="student in formData.selectedStudents"
                                     :key="student.id"
                                     class="bg-white border border-green-200 rounded p-2 flex items-center text-sm"
                                 >
@@ -115,7 +115,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <small class="text-blue-600 mt-2 block text-xs">
                             <i class="pi pi-info-circle mr-1"></i>
                             Search and click to add pupils individually
@@ -123,32 +123,32 @@
                     </div>
 
                     <!-- Option B: Filter by Grade/Section -->
-                    <div class="border-2 border-gray-200 rounded-lg p-4" :class="selectedGrade && selectedGrade !== 'All' ? 'bg-gray-50' : 'bg-white'">
+                    <div class="border-2 border-gray-200 rounded-lg p-4" :class="formData.selectedGrade && formData.selectedGrade !== 'All' ? 'bg-gray-50' : 'bg-white'">
                         <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
                             <i class="pi pi-filter mr-2 text-gray-600"></i>
                             Option B: Filter by Grade/Section
                         </h3>
-                        
+
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
                                 <Select
-                                    v-model="selectedGrade"
+                                    v-model="formData.selectedGrade"
                                     :options="gradeLevels"
                                     placeholder="Select grade level"
                                     class="w-full"
-                                    :disabled="selectedStudents.length > 0"
+                                    :disabled="formData.selectedStudents.length > 0"
                                 />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Section (Optional)</label>
                                 <Select
-                                    v-model="section"
-                                    :options="sectionOptions"
+                                    v-model="formData.section"
+                                    :options="availableSections"
                                     placeholder="All sections"
+                                    :disabled="formData.selectedGrade === 'All' || formData.selectedStudents.length > 0"
                                     class="w-full"
-                                    :disabled="selectedStudents.length > 0"
                                 />
                             </div>
 
@@ -159,11 +159,11 @@
                                     :options="genderOptions"
                                     placeholder="All genders"
                                     class="w-full"
-                                    :disabled="selectedStudents.length > 0"
+                                    :disabled="formData.selectedStudents.length > 0"
                                 />
                             </div>
                         </div>
-                        
+
                         <small class="text-gray-600 mt-2 block text-xs">
                             <i class="pi pi-info-circle mr-1"></i>
                             Report will include all pupils matching these filters
@@ -197,8 +197,8 @@
                             <i class="pi pi-users mr-1"></i>
                             <strong>Teacher:</strong> Generate report for all your assigned pupils
                         </span>
-                        <Button 
-                            label="Select All My Pupils" 
+                        <Button
+                            label="Select All My Pupils"
                             icon="pi pi-check"
                             size="small"
                             @click="selectAllAssignedStudents"
@@ -258,7 +258,7 @@
                             ]"
                         />
                     </div>
-                    
+
                     <!-- Field Count Recommendations -->
                     <div class="mt-4">
                         <!-- At Limit -->
@@ -266,19 +266,19 @@
                             <i class="pi pi-check-circle"></i>
                             <span><strong>Maximum Reached!</strong> 6 fields selected - Perfect for PDF layout</span>
                         </div>
-                        
+
                         <!-- Good Range -->
                         <div v-else-if="selectedHealthFields.length >= 4 && selectedHealthFields.length < 6" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
                             <i class="pi pi-info-circle"></i>
                             <span>{{ selectedHealthFields.length }} fields selected - You can add {{ 6 - selectedHealthFields.length }} more</span>
                         </div>
-                        
+
                         <!-- Few Fields -->
                         <div v-else-if="selectedHealthFields.length > 0 && selectedHealthFields.length < 4" class="flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md">
                             <i class="pi pi-exclamation-triangle"></i>
                             <span>{{ selectedHealthFields.length }} fields selected - Consider adding more for a comprehensive report</span>
                         </div>
-                        
+
                         <!-- No Fields -->
                         <div v-else-if="selectedHealthFields.length === 0" class="text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
                             <i class="pi pi-info-circle mr-1"></i>
@@ -325,7 +325,7 @@
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <div class="text-xs text-blue-600 font-medium mb-1">Pupils</div>
                         <div class="text-lg font-bold text-blue-900">
-                            {{ selectedStudents.length > 0 ? selectedStudents.filter(s => s.checked).length + ' selected' : (selectedGrade ? 'Grade ' + selectedGrade : 'Not selected') }}
+                            {{ formData.selectedStudents.length > 0 ? formData.selectedStudents.filter(s => s.checked).length + ' selected' : (formData.selectedGrade ? 'Grade ' + formData.selectedGrade : 'Not selected') }}
                         </div>
                     </div>
                     <div class="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -345,8 +345,8 @@
                     <div class="flex items-center text-sm text-yellow-800">
                         <i class="pi pi-exclamation-triangle mr-2"></i>
                         <span>
-                            <strong>Action Required:</strong> 
-                            {{ selectedStudents.length === 0 && !selectedGrade ? 'Please select pupils or choose a grade level' : 'Please check at least one pupil from your selection' }}
+                            <strong>Action Required:</strong>
+                            {{ formData.selectedStudents.length === 0 && !formData.selectedGrade ? 'Please select pupils or choose a grade level' : 'Please check at least one pupil from your selection' }}
                         </span>
                     </div>
                 </div>
@@ -357,7 +357,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { Head, Link, router } from '@inertiajs/vue3';
 import Button from 'primevue/button'
 import Select from 'primevue/select'
@@ -365,11 +366,15 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
 import { useFormPersistence } from '@/composables/useFormPersistence'
+import { useToastStore } from '@/Stores/toastStore'
 import axios from 'axios'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
 import '../../../css/pages/HealthReport/Index.css'
+
+// Toast store
+const { showError, showWarning } = useToastStore();
 
 const props = defineProps({
     gradeLevels: {
@@ -386,13 +391,14 @@ const props = defineProps({
 const gradeLevels = computed(() => {
     const standardGrades = [
         'All',
-        'Kinder 2', 
+        'Kinder 2',
         'Grade 1',
         'Grade 2',
         'Grade 3',
         'Grade 4',
         'Grade 5',
-        'Grade 6'
+        'Grade 6',
+        'Non-Graded'
     ];
     return standardGrades;
 });
@@ -421,7 +427,84 @@ const searchLoading = ref(false);
 const searchQuery = ref('');
 
 // Options
-const sectionOptions = ['All', 'A', 'B', 'C', 'D', 'E', 'F'];
+// Sections organized by grade level
+const sectionsByGrade = ref({
+    'All': ['All'],
+    'Kinder 2': [
+        'Generous AM',
+        'Generous PM',
+        'Good AM',
+        'Good PM',
+        'SNED – Kindergarten (DHH) (SPED)'
+    ],
+    'Grade 1': [
+        'Admirable',
+        'Adorable',
+        'Affectionate',
+        'Alert',
+        'Amazing'
+    ],
+    'Grade 2': [
+        'Beloved',
+        'Beneficent',
+        'Benevolent',
+        'Blessed',
+        'Blissful',
+        'Blossom',
+        'SNED – Grade 2 (DHH) (SPED)'
+    ],
+    'Grade 3': [
+        'Calm',
+        'Candor',
+        'Charitable',
+        'Cheerful',
+        'Clever',
+        'Curious'
+    ],
+    'Grade 4': [
+        'Dainty',
+        'Dedicated',
+        'Demure',
+        'Devoted',
+        'Dynamic',
+        'SNED (Graded) (SPED)'
+    ],
+    'Grade 5': [
+        'Effective',
+        'Efficient',
+        'Endurance',
+        'Energetic',
+        'Everlasting'
+    ],
+    'Grade 6': [
+        'Fair',
+        'Faithful',
+        'Flexible',
+        'Forbearance',
+        'Fortitude',
+        'Friendly'
+    ],
+    'Non-Graded': [
+        'Gracious (SPED)',
+        'Grateful (SPED)'
+    ]
+});
+
+// Available sections based on selected grade
+const availableSections = computed(() => {
+    if (formData.value.selectedGrade === 'All') {
+        return ['All'];
+    }
+    const gradeSections = sectionsByGrade.value[formData.value.selectedGrade] || [];
+    return ['All', ...gradeSections];
+});
+
+// Update section when grade changes
+watch(() => formData.value.selectedGrade, (newGrade) => {
+    if (newGrade !== formData.value.section) {
+        formData.value.section = 'All';
+    }
+});
 const genderOptions = ['All', 'Male', 'Female'];
 const sortOptions = [
     'Name (A-Z)',
@@ -435,20 +518,20 @@ const sortOptions = [
 // Computed property for button disabled state
 const isGenerateDisabled = computed(() => {
     if (loading.value) return true;
-    
+
     // If students are selected, check if any are checked
-    if (selectedStudents.value && selectedStudents.value.length > 0) {
-        const checkedStudents = selectedStudents.value.filter(s => s && s.checked === true);
-        console.log('Health Report - Selected students:', selectedStudents.value);
+    if (formData.value.selectedStudents && formData.value.selectedStudents.length > 0) {
+        const checkedStudents = formData.value.selectedStudents.filter(s => s && s.checked === true);
+        console.log('Health Report - Selected students:', formData.value.selectedStudents);
         console.log('Health Report - Checked students:', checkedStudents);
         console.log('Health Report - Button should be enabled:', checkedStudents.length > 0);
         return checkedStudents.length === 0;
     }
-    
+
     // If no students selected, require grade level
-    console.log('Health Report - No students selected, grade level:', selectedGrade.value);
-    console.log('Health Report - Button should be enabled:', !!selectedGrade.value);
-    return !selectedGrade.value;
+    console.log('Health Report - No students selected, grade level:', formData.value.selectedGrade);
+    console.log('Health Report - Button should be enabled:', !!selectedGrade);
+    return !selectedGrade;
 });
 
 // Set up form persistence
@@ -470,10 +553,6 @@ const selectedGrade = computed({
     set: (value) => formData.value.selectedGrade = value
 });
 
-const section = computed({
-    get: () => formData.value.section,
-    set: (value) => formData.value.section = value
-});
 
 const genderFilter = computed({
     get: () => formData.value.genderFilter,
@@ -589,7 +668,7 @@ const toggleHealthField = (fieldValue) => {
     } else {
         // Check if limit reached
         if (selectedHealthFields.value.length >= 6) {
-            alert('Maximum 6 health fields allowed for optimal PDF layout');
+            showWarning('Field Limit Reached', 'Maximum 6 health fields allowed for optimal PDF layout');
             return;
         }
         selectedHealthFields.value.push(fieldValue);
@@ -605,7 +684,7 @@ const clearAllHealthFields = () => {
 // Select essential fields (optimal for PDF)
 const selectEssentialFields = () => {
     selectedHealthFields.value = [
-        'height', 'weight', 'nutritional_status_bmi', 
+        'height', 'weight', 'nutritional_status_bmi',
         'vision_screening', 'temperature', 'heart_rate'
     ];
 };
@@ -652,17 +731,25 @@ const onStudentSearch = () => {
 
 // Add student to selection
 const addStudent = (student) => {
+    const page = usePage();
+    const currentSchoolYear = page.props.currentSchoolYear;
+
+    // If search returned a student from a different school year, warn and do not add
+    if (student.school_year && currentSchoolYear && student.school_year !== currentSchoolYear) {
+        showWarning('Inactive Student', 'This pupil is not in the current school year and will not be included in the report.');
+        return;
+    }
     // Check if student is already selected
-    const exists = selectedStudents.value.find(s => s.id === student.id);
+    const exists = formData.value.selectedStudents.find(s => s.id === student.id);
     if (!exists) {
         const newStudent = {
             ...student,
             checked: true
         };
-        selectedStudents.value.push(newStudent);
+        formData.value.selectedStudents.push(newStudent);
         console.log('Health Report - Added student:', newStudent);
-        console.log('Health Report - All selected students:', selectedStudents.value);
-        
+        console.log('Health Report - All selected students:', formData.value.selectedStudents);
+
         // Clear search after adding
         searchQuery.value = '';
         studentOptions.value = [];
@@ -679,13 +766,13 @@ const toggleStudent = (student) => {
 // Remove student from selection
 const removeStudent = (student) => {
     const studentId = typeof student === 'object' ? student.id : student;
-    selectedStudents.value = selectedStudents.value.filter(s => s.id !== studentId);
+    formData.value.selectedStudents = formData.value.selectedStudents.filter(s => s.id !== studentId);
 };
 
 // Function to select all assigned students for teachers
 const selectAllAssignedStudents = async () => {
     if (props.userRole !== 'teacher') return;
-    
+
     try {
         // Get all assigned students by searching with empty query
         const response = await axios.get('/api/health-report/students/search', {
@@ -701,42 +788,42 @@ const selectAllAssignedStudents = async () => {
             ...student,
             checked: true
         }));
-        
-        selectedStudents.value = assignedStudents;
-        
+
+        formData.value.selectedStudents = assignedStudents;
+
         // Clear search
         searchQuery.value = '';
         studentOptions.value = [];
-        
+
         console.log('Selected all assigned students:', assignedStudents.length);
     } catch (error) {
         console.error('Error loading assigned students:', error);
-        alert('Failed to load assigned students.');
+        showError('Loading Failed', 'Failed to load assigned students.');
     }
 };
 
 // Select all students
 const selectAllStudents = () => {
-    selectedStudents.value.forEach(student => {
+    formData.value.selectedStudents.forEach(student => {
         student.checked = true;
     });
 };
 
 // Clear all student selections
 const clearAllStudents = () => {
-    selectedStudents.value = [];
+    formData.value.selectedStudents = [];
 };
 
 const previewReport = async () => {
     // Get only checked students
-    const checkedStudents = selectedStudents.value ? selectedStudents.value.filter(student => student && student.checked) : [];
+    const checkedStudents = formData.value.selectedStudents ? formData.value.selectedStudents.filter(student => student && student.checked) : [];
 
-    console.log('Selected students:', selectedStudents.value);
+    console.log('Selected students:', formData.value.selectedStudents);
     console.log('Checked students:', checkedStudents);
-    console.log('Selected grade:', selectedGrade.value);
+    console.log('Selected grade:', selectedGrade);
 
-    if (!selectedGrade.value && checkedStudents.length === 0) {
-        alert('Please select a grade level or check at least one student');
+    if (!selectedGrade && checkedStudents.length === 0) {
+        showError('Selection Required', 'Please select a grade level or check at least one student');
         return;
     }
 
@@ -744,9 +831,9 @@ const previewReport = async () => {
 
     try {
         const reportData = {
-            grade_level: checkedStudents.length > 0 ? 'All' : selectedGrade.value.replace('Grade ', ''),
-            school_year: checkedStudents.length > 0 ? '2024-2025' : getSchoolYearForGrade(selectedGrade.value),
-            section: section.value,
+            grade_level: checkedStudents.length > 0 ? 'All' : (selectedGrade && typeof selectedGrade === 'string' ? selectedGrade.replace('Grade ', '') : 'All'),
+            school_year: checkedStudents.length > 0 ? '2024-2025' : (selectedGrade && typeof selectedGrade === 'string' ? getSchoolYearForGrade(selectedGrade) : '2024-2025'),
+            section: formData.value.section,
             fields: selectedFields,
             health_exam_fields: selectedHealthFields.value,
             gender_filter: genderFilter.value,
@@ -768,7 +855,7 @@ const previewReport = async () => {
         await router.post('/api/health-report/generate', reportData);
     } catch (error) {
         console.error('Error generating report:', error);
-        alert('Error generating report. Please try again.');
+        showError('Report Generation Failed', 'Error generating report. Please try again.');
     } finally {
         loading.value = false;
     }
@@ -776,55 +863,57 @@ const previewReport = async () => {
 
 const generateReport = async () => {
     // Get only checked students
-    const checkedStudents = selectedStudents.value ? selectedStudents.value.filter(student => student && student.checked) : [];
+    const checkedStudents = formData.value.selectedStudents ? formData.value.selectedStudents.filter(student => student && student.checked) : [];
 
-    console.log('Selected students:', selectedStudents.value);
+    console.log('Selected students:', formData.value.selectedStudents);
     console.log('Checked students:', checkedStudents);
-    console.log('Selected grade:', selectedGrade.value);
+    console.log('Selected grade:', selectedGrade, 'Type:', typeof selectedGrade);
 
-    if (!selectedGrade.value && checkedStudents.length === 0) {
-        alert('Please select a grade level or check at least one student');
+    if (!selectedGrade && checkedStudents.length === 0) {
+        showError('Selection Required', 'Please select a grade level or check at least one student');
         return;
     }
 
     // Build URL parameters for direct PDF generation
     const params = new URLSearchParams();
-    
+
     // Add grade level - use selected grade or 'All' if students are selected
-    if (selectedGrade.value) {
-        params.append('grade_level', selectedGrade.value.replace('Grade ', ''));
+    if (selectedGrade && selectedGrade !== 'All' && typeof selectedGrade === 'string') {
+        params.append('grade_level', selectedGrade.replace('Grade ', ''));
     } else if (checkedStudents.length > 0) {
         params.append('grade_level', 'All');
+    } else {
+        params.append('grade_level', 'All');
     }
-    
+
     // Add school year
-    params.append('school_year', checkedStudents.length > 0 ? '2024-2025' : getSchoolYearForGrade(selectedGrade.value));
-    
+    params.append('school_year', checkedStudents.length > 0 ? '2024-2025' : (selectedGrade && typeof selectedGrade === 'string' ? getSchoolYearForGrade(selectedGrade) : '2024-2025'));
+
     // Add section if specified
-    if (section.value) {
-        params.append('section', section.value);
+    if (formData.value.section && formData.value.section !== 'All') {
+        params.append('section', formData.value.section);
     }
-    
+
     // Add selected students (send only IDs)
     if (checkedStudents.length > 0) {
         checkedStudents.forEach((student, index) => {
             params.append(`selected_students[${index}]`, student.id);
         });
     }
-    
+
     // Add basic student fields (always include these)
     const basicFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
     basicFields.forEach((field, index) => {
         params.append(`fields[${index}]`, field);
     });
-    
+
     // Add health exam fields
     if (selectedHealthFields.value && selectedHealthFields.value.length > 0) {
         selectedHealthFields.value.forEach((field, index) => {
             params.append(`health_exam_fields[${index}]`, field);
         });
     }
-    
+
     // Add filters
     if (genderFilter.value && genderFilter.value !== 'All') {
         params.append('gender_filter', genderFilter.value);
@@ -838,13 +927,13 @@ const generateReport = async () => {
     if (sortBy.value) {
         params.append('sort_by', sortBy.value);
     }
-    
+
     console.log('Opening PDF with parameters:', params.toString());
-    
+
     // Open PDF directly (server-side generation)
     const url = `/health-report/export-pdf?${params.toString()}`;
     window.open(url, '_blank');
-    
+
     // Clear saved form data after successful generation
     onSubmitSuccess();
 };
@@ -876,7 +965,7 @@ const generatePrintHTML = () => {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Health Report - ${selectedGrade.value} (${schoolYear.value})</title>
+            <title>Health Report - ${selectedGrade} (${schoolYear.value})</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
@@ -892,9 +981,9 @@ const generatePrintHTML = () => {
         </head>
         <body>
             <div class="header">
-                <h1>Health Report - ${selectedGrade.value} (${schoolYear.value})</h1>
+                <h1>Health Report - ${selectedGrade} (${schoolYear.value})</h1>
                 <div class="report-info">
-                    <p><strong>Grade Level:</strong> ${selectedGrade.value}</p>
+                    <p><strong>Grade Level:</strong> ${selectedGrade}</p>
                     <p><strong>School Year:</strong> ${schoolYear.value}</p>
                     <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
                     <p><strong>Total Students:</strong> ${reportData.value.length}</p>

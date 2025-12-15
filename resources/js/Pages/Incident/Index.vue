@@ -42,7 +42,15 @@
                     <h2 class="text-lg font-semibold text-gray-800">Students with Incidents</h2>
                 </div>
                 
-                <div v-if="filteredStudents.length === 0" class="p-8 text-center text-gray-500">
+                <!-- Skeleton Loader -->
+                <SkeletonLoader 
+                    v-if="isLoading" 
+                    type="list" 
+                    :items="8"
+                    class="p-6"
+                />
+
+                <div v-else-if="filteredStudents.length === 0" class="p-8 text-center text-gray-500">
                     No students found.
                 </div>
                 
@@ -74,11 +82,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import SkeletonLoader from '@/Components/SkeletonLoader.vue'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
@@ -96,6 +105,13 @@ const props = defineProps({
 })
 
 const searchQuery = ref('')
+const isLoading = ref(true)
+
+onMounted(() => {
+    setTimeout(() => {
+        isLoading.value = false;
+    }, 500);
+});
 
 const filteredStudents = computed(() => {
     if (!searchQuery.value) return props.students

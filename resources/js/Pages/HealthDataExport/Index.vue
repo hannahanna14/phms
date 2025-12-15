@@ -8,12 +8,23 @@
                     <i class="pi pi-download mr-2 text-green-600"></i>
                     Health Data Export
                 </h1>
-                
+                <div class="flex items-center gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-700">School Year</label>
+                        <Select
+                            v-model="selectedSchoolYear"
+                            :options="schoolYearOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            class="w-48"
+                        />
+                    </div>
+                </div>
             </div>
 
             <!-- Export Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
+
                 <!-- Health Examinations Export -->
                 <div class="bg-white rounded-lg shadow-md">
                     <div class="bg-blue-600 text-white p-4 rounded-t-lg">
@@ -28,7 +39,7 @@
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                                <Select 
+                                <Select
                                     v-model="healthExamFilters.grade_level"
                                     :options="gradeOptions"
                                     optionLabel="label"
@@ -41,7 +52,7 @@
                             <!-- Sort By -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <Select 
+                                <Select
                                     v-model="healthExamFilters.sort_by"
                                     :options="sortOptions"
                                     optionLabel="label"
@@ -53,8 +64,8 @@
 
                             <!-- Include Personal Info -->
                             <div class="flex items-center">
-                                <Checkbox 
-                                    v-model="healthExamFilters.include_personal_info" 
+                                <Checkbox
+                                    v-model="healthExamFilters.include_personal_info"
                                     inputId="health_personal_info"
                                     :binary="true"
                                 />
@@ -65,8 +76,8 @@
 
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-2">
-                                <Button 
-                                    label="Export CSV" 
+                                <Button
+                                    label="Export CSV"
                                     icon="pi pi-file"
                                     @click="exportHealthExaminations('csv')"
                                     :loading="loading.healthExam"
@@ -91,7 +102,7 @@
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                                <Select 
+                                <Select
                                     v-model="oralHealthExamFilters.grade_level"
                                     :options="gradeOptions"
                                     optionLabel="label"
@@ -104,7 +115,7 @@
                             <!-- Sort By -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <Select 
+                                <Select
                                     v-model="oralHealthExamFilters.sort_by"
                                     :options="sortOptions"
                                     optionLabel="label"
@@ -116,8 +127,8 @@
 
                             <!-- Include Personal Info -->
                             <div class="flex items-center">
-                                <Checkbox 
-                                    v-model="oralHealthExamFilters.include_personal_info" 
+                                <Checkbox
+                                    v-model="oralHealthExamFilters.include_personal_info"
                                     inputId="oral_personal_info"
                                     :binary="true"
                                 />
@@ -128,8 +139,8 @@
 
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-2">
-                                <Button 
-                                    label="Export CSV" 
+                                <Button
+                                    label="Export CSV"
                                     icon="pi pi-file"
                                     @click="exportOralHealthExaminations('csv')"
                                     :loading="loading.oralHealthExam"
@@ -154,7 +165,7 @@
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                                <Select 
+                                <Select
                                     v-model="healthTreatmentFilters.grade_level"
                                     :options="gradeOptions"
                                     optionLabel="label"
@@ -167,7 +178,7 @@
                             <!-- Sort By -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <Select 
+                                <Select
                                     v-model="healthTreatmentFilters.sort_by"
                                     :options="sortOptions"
                                     optionLabel="label"
@@ -179,8 +190,8 @@
 
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
-                                <Button 
-                                    label="Export CSV" 
+                                <Button
+                                    label="Export CSV"
                                     icon="pi pi-file"
                                     @click="exportHealthTreatments('csv')"
                                     :loading="loading.healthTreatment"
@@ -205,7 +216,7 @@
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                                <Select 
+                                <Select
                                     v-model="oralHealthTreatmentFilters.grade_level"
                                     :options="gradeOptions"
                                     optionLabel="label"
@@ -218,7 +229,7 @@
                             <!-- Sort By -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <Select 
+                                <Select
                                     v-model="oralHealthTreatmentFilters.sort_by"
                                     :options="sortOptions"
                                     optionLabel="label"
@@ -230,8 +241,8 @@
 
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
-                                <Button 
-                                    label="Export CSV" 
+                                <Button
+                                    label="Export CSV"
                                     icon="pi pi-file"
                                     @click="exportOralHealthTreatments('csv')"
                                     :loading="loading.oralHealthTreatment"
@@ -256,7 +267,7 @@
                             <!-- Grade Level -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
-                                <Select 
+                                <Select
                                     v-model="incidentFilters.grade_level"
                                     :options="gradeOptions"
                                     optionLabel="label"
@@ -269,7 +280,7 @@
                             <!-- Sort By -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                                <Select 
+                                <Select
                                     v-model="incidentFilters.sort_by"
                                     :options="sortOptions"
                                     optionLabel="label"
@@ -281,8 +292,8 @@
 
                             <!-- Export Buttons -->
                             <div class="flex gap-2 pt-4">
-                                <Button 
-                                    label="Export CSV" 
+                                <Button
+                                    label="Export CSV"
                                     icon="pi pi-file"
                                     @click="exportIncidents('csv')"
                                     :loading="loading.incident"
@@ -300,18 +311,24 @@
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
+import { useToastStore } from '@/Stores/toastStore'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
 import '../../../css/pages/HealthDataExport/Index.css'
 
+// Toast store
+const { showSuccess, showError } = useToastStore();
+
 const props = defineProps({
-    schoolSettings: Object
+    schoolSettings: Object,
+    availableSchoolYears: Array,
+    currentSchoolYear: String
 })
 
 // Grade level options
@@ -374,6 +391,19 @@ const oralHealthTreatmentFilters = ref({
     sort_by: 'name_asc'
 })
 
+// School year selection (defaults to current school year)
+const selectedSchoolYear = ref(props.currentSchoolYear || 'all')
+
+const schoolYearOptions = computed(() => {
+    const years = props.availableSchoolYears || []
+    const options = [
+        { label: `Current: ${props.currentSchoolYear}`, value: props.currentSchoolYear },
+        { label: 'All Years', value: 'all' },
+        ...years.map(y => ({ label: y, value: y }))
+    ]
+    return options
+})
+
 const incidentFilters = ref({
     date_from: null,
     grade_level: 'all',
@@ -386,20 +416,20 @@ const exportHealthExaminations = async (format) => {
     try {
         const params = new URLSearchParams({
             format,
-            ...prepareFilters(healthExamFilters.value)
+            ...prepareFilters({ ...healthExamFilters.value, school_year: selectedSchoolYear.value })
         })
-        
+
         // Direct navigation to trigger download
         window.location.href = `/health-data-export/health-examinations?${params}`
-        
+
         // Show success message after a short delay
         setTimeout(() => {
-            alert(`✅ Health Examinations export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+            showSuccess('Export Started', `Health Examinations export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
         }, 2000)
-        
+
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         setTimeout(() => {
             loading.value.healthExam = false
@@ -412,20 +442,20 @@ const exportOralHealthExaminations = async (format) => {
     try {
         const params = new URLSearchParams({
             format,
-            ...prepareFilters(oralHealthExamFilters.value)
+            ...prepareFilters({ ...oralHealthExamFilters.value, school_year: selectedSchoolYear.value })
         })
-        
+
         // Direct navigation to trigger download
         window.location.href = `/health-data-export/oral-health-examinations?${params}`
-        
+
         // Show success message after a short delay
         setTimeout(() => {
-            alert(`✅ Oral Health Examinations export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+            showSuccess('Export Started', `Oral Health Examinations export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
         }, 2000)
-        
+
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         setTimeout(() => {
             loading.value.oralHealthExam = false
@@ -438,20 +468,20 @@ const exportHealthTreatments = async (format) => {
     try {
         const params = new URLSearchParams({
             format,
-            ...prepareFilters(healthTreatmentFilters.value)
+            ...prepareFilters({ ...healthTreatmentFilters.value, school_year: selectedSchoolYear.value })
         })
-        
+
         // Direct navigation to trigger download
         window.location.href = `/health-data-export/health-treatments?${params}`
-        
+
         // Show success message after a short delay
         setTimeout(() => {
-            alert(`✅ Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+            showSuccess('Export Started', `Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
         }, 2000)
-        
+
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         setTimeout(() => {
             loading.value.healthTreatment = false
@@ -464,20 +494,20 @@ const exportOralHealthTreatments = async (format) => {
     try {
         const params = new URLSearchParams({
             format,
-            ...prepareFilters(oralHealthTreatmentFilters.value)
+            ...prepareFilters({ ...oralHealthTreatmentFilters.value, school_year: selectedSchoolYear.value })
         })
-        
+
         // Direct navigation to trigger download
         window.location.href = `/health-data-export/oral-health-treatments?${params}`
-        
+
         // Show success message after a short delay
         setTimeout(() => {
-            alert(`✅ Oral Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+            showSuccess('Export Started', `Oral Health Treatments export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
         }, 2000)
-        
+
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         setTimeout(() => {
             loading.value.oralHealthTreatment = false
@@ -490,20 +520,20 @@ const exportIncidents = async (format) => {
     try {
         const params = new URLSearchParams({
             format,
-            ...prepareFilters(incidentFilters.value)
+            ...prepareFilters({ ...incidentFilters.value, school_year: selectedSchoolYear.value })
         })
-        
+
         // Direct navigation to trigger download
         window.location.href = `/health-data-export/incidents?${params}`
-        
+
         // Show success message after a short delay
         setTimeout(() => {
-            alert(`✅ Incidents export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
+            showSuccess('Export Started', `Incidents export started! Check your Downloads folder for the ${format.toUpperCase()} file.`)
         }, 2000)
-        
+
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         setTimeout(() => {
             loading.value.incident = false
@@ -520,11 +550,11 @@ const exportAllData = async () => {
         await exportHealthTreatments('csv')
         await exportOralHealthTreatments('csv')
         await exportIncidents('csv')
-        
-        alert('✅ All data exports started! Check your Downloads folder for the CSV files.')
+
+        showSuccess('Bulk Export Started', 'All data exports started! Check your Downloads folder for the CSV files.')
     } catch (error) {
         console.error('Export failed:', error)
-        alert('❌ Export failed. Please try again.')
+        showError('Export Failed', 'Export failed. Please try again.')
     } finally {
         loading.value.all = false
     }
@@ -533,7 +563,7 @@ const exportAllData = async () => {
 // Helper function to prepare filters for URL
 const prepareFilters = (filters) => {
     const prepared = {}
-    
+
     Object.keys(filters).forEach(key => {
         if (filters[key] !== null && filters[key] !== undefined) {
             if (filters[key] instanceof Date) {
@@ -541,11 +571,11 @@ const prepareFilters = (filters) => {
             } else if (typeof filters[key] === 'boolean') {
                 prepared[key] = filters[key] ? '1' : '0'
             } else {
-                filtered[key] = filters[key]
+                prepared[key] = filters[key]
             }
         }
     })
-    
+
     return prepared
 }
 </script>

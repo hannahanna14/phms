@@ -47,7 +47,16 @@ class StudentController extends Controller
         $user = auth()->user();
         $selectedGradeLevel = $request->get('grade_level', 'All');
         $selectedSection = $request->get('section', 'All');
-        
+
+        // Compute current school year (school year starts in June)
+        $nowYear = date('Y');
+        $nowMonth = date('n');
+        if ($nowMonth >= 6) {
+            $currentSchoolYear = $nowYear . '-' . ($nowYear + 1);
+        } else {
+            $currentSchoolYear = ($nowYear - 1) . '-' . $nowYear;
+        }
+
         // Filter students based on user role
         if ($user->role === 'teacher') {
             // Teachers can only see their assigned students (current grade/section)
@@ -57,7 +66,7 @@ class StudentController extends Controller
                 'user_role' => $user->role,
                 'assigned_student_ids' => $assignedStudentIds->toArray()
             ]);
-            
+
             if ($assignedStudentIds->isEmpty()) {
                 // No assigned students
                 $totalStudents = 0;
@@ -79,7 +88,7 @@ class StudentController extends Controller
                 $earsNormal = 0; $earsAbnormal = 0;
                 $noseNormal = 0; $noseAbnormal = 0;
                 $mouthNormal = 0; $mouthAbnormal = 0;
-                
+
                 // Initialize empty collections for examination stats
                 $skinStats = collect();
                 $scalpStats = collect();
@@ -103,17 +112,18 @@ class StudentController extends Controller
             } else {
                 // Build student query with grade/section filters - ONLY ACTIVE STUDENTS
                 $studentsQuery = Student::whereIn('id', $assignedStudentIds)
-                    ->where('is_active', true);
-                
+                    ->where('is_active', true)
+                    ->where('school_year', $currentSchoolYear);
+
                 if ($selectedGradeLevel !== 'All') {
                     $studentsQuery->where('grade_level', $selectedGradeLevel);
                 }
                 if ($selectedSection !== 'All') {
                     $studentsQuery->where('section', $selectedSection);
                 }
-                
+
                 $filteredStudentIds = $studentsQuery->pluck('id');
-                
+
                 // Filter by current active students
                 $totalStudents = $filteredStudentIds->count();
                 $femaleStudents = Student::whereIn('id', $filteredStudentIds)->where('sex', 'Female')->count();
@@ -124,7 +134,7 @@ class StudentController extends Controller
                     ->selectRaw('MAX(id) as id')
                     ->groupBy('student_id')
                     ->pluck('id');
-                
+
                 $baseQuery = HealthExamination::whereIn('id', $latestExamIds);
 
                 // Nutritional Status BMI Distribution for assigned students
@@ -172,20 +182,20 @@ class StudentController extends Controller
                 $throatStats = (clone $baseQuery)->whereNotNull('throat')->selectRaw('throat, COUNT(*) as count')->groupBy('throat')->get();
                 $neckStats = (clone $baseQuery)->whereNotNull('neck')->selectRaw('neck, COUNT(*) as count')->groupBy('neck')->get();
                 $abdomenStats = (clone $baseQuery)->whereNotNull('abdomen')->selectRaw('abdomen, COUNT(*) as count')->groupBy('abdomen')->get();
-                
+
                 // Handle lungs and heart with fallback to lungs_heart
                 $lungsStats = (clone $baseQuery)->where(function($q) {
                     $q->whereNotNull('lungs')->orWhereNotNull('lungs_heart');
                 })->selectRaw('COALESCE(lungs, lungs_heart) as lungs_value, COUNT(*) as count')->groupBy('lungs_value')->get();
-                
+
                 $heartStats = (clone $baseQuery)->where(function($q) {
                     $q->whereNotNull('heart')->orWhereNotNull('lungs_heart');
                 })->selectRaw('COALESCE(heart, lungs_heart) as heart_value, COUNT(*) as count')->groupBy('heart_value')->get();
-                
+
                 // Oral Health Examination stats for assigned students
                 $oralHealthExaminations = \App\Models\OralHealthExamination::whereIn('student_id', $assignedStudentIds)->count();
                 $oralHealthTreatments = \App\Models\OralHealthTreatment::whereIn('student_id', $assignedStudentIds)->count();
-                
+
                 // Oral Health Conditions stats for assigned students
                 $oralHealthConditions = \App\Models\OralHealthExamination::whereIn('student_id', $assignedStudentIds)
                     ->whereNotNull('conditions')
@@ -195,7 +205,7 @@ class StudentController extends Controller
                         if ($exam->conditions) {
                             // Handle both array and string conditions
                             $conditionsData = is_string($exam->conditions) ? json_decode($exam->conditions, true) : $exam->conditions;
-                            
+
                             if (is_array($conditionsData)) {
                                 foreach ($conditionsData as $conditionKey => $value) {
                                     // Handle simple key-value pairs (from seeder)
@@ -224,17 +234,18 @@ class StudentController extends Controller
             }
         } else {
             // Admins/Nurses can see all students with grade/section filters - ONLY ACTIVE STUDENTS
-            $studentsQuery = Student::where('is_active', true);
-            
+            $studentsQuery = Student::where('is_active', true)
+                ->where('school_year', $currentSchoolYear);
+
             if ($selectedGradeLevel !== 'All') {
                 $studentsQuery->where('grade_level', $selectedGradeLevel);
             }
             if ($selectedSection !== 'All') {
                 $studentsQuery->where('section', $selectedSection);
             }
-            
+
             $filteredStudentIds = $studentsQuery->pluck('id');
-            
+
             $totalStudents = $filteredStudentIds->count();
             $femaleStudents = Student::whereIn('id', $filteredStudentIds)->where('sex', 'Female')->count();
             $maleStudents = Student::whereIn('id', $filteredStudentIds)->where('sex', 'Male')->count();
@@ -244,7 +255,7 @@ class StudentController extends Controller
                 ->selectRaw('MAX(id) as id')
                 ->groupBy('student_id')
                 ->pluck('id');
-            
+
             $baseQuery = HealthExamination::whereIn('id', $latestExamIds);
 
             // Nutritional Status BMI Distribution
@@ -283,20 +294,20 @@ class StudentController extends Controller
             $throatStats = (clone $baseQuery)->whereNotNull('throat')->selectRaw('throat, COUNT(*) as count')->groupBy('throat')->get();
             $neckStats = (clone $baseQuery)->whereNotNull('neck')->selectRaw('neck, COUNT(*) as count')->groupBy('neck')->get();
             $abdomenStats = (clone $baseQuery)->whereNotNull('abdomen')->selectRaw('abdomen, COUNT(*) as count')->groupBy('abdomen')->get();
-            
+
             // Handle lungs and heart with fallback to lungs_heart
             $lungsStats = (clone $baseQuery)->where(function($q) {
                 $q->whereNotNull('lungs')->orWhereNotNull('lungs_heart');
             })->selectRaw('COALESCE(lungs, lungs_heart) as lungs_value, COUNT(*) as count')->groupBy('lungs_value')->get();
-            
+
             $heartStats = (clone $baseQuery)->where(function($q) {
                 $q->whereNotNull('heart')->orWhereNotNull('lungs_heart');
             })->selectRaw('COALESCE(heart, lungs_heart) as heart_value, COUNT(*) as count')->groupBy('heart_value')->get();
-            
+
             // Oral Health Examination stats for all students
             $oralHealthExaminations = \App\Models\OralHealthExamination::count();
             $oralHealthTreatments = \App\Models\OralHealthTreatment::count();
-            
+
             // Oral Health Conditions stats for all students
             $oralHealthConditions = \App\Models\OralHealthExamination::whereNotNull('conditions')
                 ->get()
@@ -305,7 +316,7 @@ class StudentController extends Controller
                     if ($exam->conditions) {
                         // Handle both array and string conditions
                         $conditionsData = is_string($exam->conditions) ? json_decode($exam->conditions, true) : $exam->conditions;
-                        
+
                         if (is_array($conditionsData)) {
                             foreach ($conditionsData as $conditionKey => $value) {
                                 // Handle simple key-value pairs (from our seeder)
@@ -338,6 +349,71 @@ class StudentController extends Controller
             'female_students' => $femaleStudents,
             'male_students' => $maleStudents
         ]);
+
+        // Determine current school year using the June boundary logic
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        if ($currentMonth >= 6) {
+            $currentSchoolYear = $currentYear . '-' . ($currentYear + 1);
+        } else {
+            $currentSchoolYear = ($currentYear - 1) . '-' . $currentYear;
+        }
+
+        // Get health completion rates for each grade level
+        $gradeLevels = ['Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Non-Graded'];
+        $healthCompletionByGrade = [];
+        $gradeLabels = [];
+
+        foreach ($gradeLevels as $grade) {
+            // Get students in this grade for the current school year (filtered by assigned students for teachers)
+            $gradeStudentsQuery = $user->role === 'teacher'
+                ? Student::whereIn('id', $assignedStudentIds)
+                          ->where('grade_level', $grade)
+                          ->where('is_active', true)
+                          ->where('school_year', $currentSchoolYear)
+                : Student::where('grade_level', $grade)
+                          ->where('is_active', true)
+                          ->where('school_year', $currentSchoolYear);
+
+            if ($selectedGradeLevel !== 'All') {
+                $gradeStudentsQuery->where('grade_level', $selectedGradeLevel);
+            }
+            if ($selectedSection !== 'All') {
+                $gradeStudentsQuery->where('section', $selectedSection);
+            }
+
+            $gradeStudents = $gradeStudentsQuery->pluck('id');
+            $totalGradeStudents = $gradeStudents->count();
+
+            if ($totalGradeStudents > 0) {
+                // Count students with health examinations in current school year
+                $studentsWithHealthExam = HealthExamination::whereIn('student_id', $gradeStudents)
+                    ->where('school_year', $currentSchoolYear)
+                    ->distinct('student_id')
+                    ->count('student_id');
+
+                $completionRate = round(($studentsWithHealthExam / $totalGradeStudents) * 100, 1);
+                $healthCompletionByGrade[] = $completionRate;
+                $gradeLabels[] = $grade;
+            } else {
+                // For teachers, skip grades they don't have students in
+                if ($user->role === 'teacher') {
+                    continue;
+                }
+                // For admins, include grades with 0 students as 0%
+                $healthCompletionByGrade[] = 0;
+                $gradeLabels[] = $grade;
+            }
+        }
+
+        // Calculate overall health completion rate
+            $overallCompletionRate = $totalStudents > 0
+            ? round((HealthExamination::whereIn('student_id', $filteredStudentIds)
+                ->where('school_year', $currentSchoolYear)
+                ->distinct('student_id')
+                ->count('student_id') / $totalStudents) * 100, 1)
+            : 0;
+
 
         $dashboardData = [
             'totalStudents' => $totalStudents,
@@ -376,7 +452,11 @@ class StudentController extends Controller
                 'examinations' => $oralHealthExaminations,
                 'treatments' => $oralHealthTreatments,
                 'conditions' => $oralHealthConditions
-            ]
+            ],
+            'healthCompletionByGrade' => $healthCompletionByGrade,
+            'healthCompletionGradeLabels' => $gradeLabels,
+            'overallCompletionRate' => $overallCompletionRate,
+            'schoolYear' => $currentSchoolYear
         ];
 
         // Return JSON for AJAX requests
@@ -388,9 +468,9 @@ class StudentController extends Controller
         }
 
         // Get available grade levels and sections
-        $gradeLevels = ['All', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'];
+        $gradeLevels = ['All', 'Kinder 2', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Non-Graded'];
         $sections = ['All', 'A', 'B', 'C'];
-        
+
         // Return Inertia view for regular requests
         return Inertia::render('Home', [
             'dashboardData' => $dashboardData,
@@ -399,6 +479,207 @@ class StudentController extends Controller
             'sections' => $sections,
             'selectedGradeLevel' => $selectedGradeLevel,
             'selectedSection' => $selectedSection
+        ]);
+    }
+
+    public function getStudentsByCriteria(Request $request)
+    {
+        $user = auth()->user();
+        $type = $request->get('type');
+        $value = $request->get('value');
+        $selectedGradeLevel = $request->get('grade_level', 'All');
+        $selectedSection = $request->get('section', 'All');
+
+        // Filter students based on user role
+        if ($user->role === 'teacher') {
+            $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
+            $studentsQuery = Student::whereIn('id', $assignedStudentIds)->where('is_active', true);
+        } else {
+            $studentsQuery = Student::where('is_active', true);
+        }
+
+        // Apply grade and section filters
+        if ($selectedGradeLevel !== 'All') {
+            $studentsQuery->where('grade_level', $selectedGradeLevel);
+        }
+        if ($selectedSection !== 'All') {
+            $studentsQuery->where('section', $selectedSection);
+        }
+
+        $filteredStudentIds = $studentsQuery->pluck('id');
+
+        \Log::info('getStudentsByCriteria debug', [
+            'type' => $type,
+            'value' => $value,
+            'filtered_students_count' => $filteredStudentIds->count(),
+            'user_role' => $user->role
+        ]);
+
+        // Get students based on criteria
+        $students = collect();
+
+        // Get latest health examination IDs for each student (same logic as dashboard)
+        $latestExamIds = HealthExamination::whereIn('student_id', $filteredStudentIds)
+            ->selectRaw('MAX(id) as id')
+            ->groupBy('student_id')
+            ->pluck('id');
+
+        $baseQuery = HealthExamination::whereIn('id', $latestExamIds);
+
+        switch ($type) {
+            case 'deworming':
+                if ($value === 'dewormed') {
+                    $studentIds = (clone $baseQuery)
+                        ->where('deworming_status', 'dewormed')
+                        ->pluck('student_id');
+                } elseif ($value === 'not_dewormed') {
+                    $studentIds = (clone $baseQuery)
+                        ->where(function($q) {
+                            $q->where('deworming_status', 'not_dewormed')
+                              ->orWhereNull('deworming_status');
+                        })
+                        ->pluck('student_id');
+                }
+                break;
+
+            case 'bmi':
+                if ($value === 'normal') {
+                    $studentIds = (clone $baseQuery)
+                        ->where(function($q) {
+                            $q->where('nutritional_status_bmi', 'Normal')
+                              ->orWhere('nutritional_status_bmi', 'normal')
+                              ->orWhere('nutritional_status_bmi', 'like', '%Normal%');
+                        })
+                        ->pluck('student_id');
+                    \Log::info('BMI Normal query result count: ' . $studentIds->count());
+                } elseif ($value === 'underweight') {
+                    $studentIds = (clone $baseQuery)
+                        ->where(function($q) {
+                            $q->whereIn('nutritional_status_bmi', ['Underweight', 'Severely Underweight', 'underweight', 'severely_underweight'])
+                              ->orWhere('nutritional_status_bmi', 'like', '%Underweight%');
+                        })
+                        ->pluck('student_id');
+                    \Log::info('BMI Underweight query result count: ' . $studentIds->count());
+                } elseif ($value === 'overweight_obese') {
+                    $studentIds = (clone $baseQuery)
+                        ->where(function($q) {
+                            $q->whereIn('nutritional_status_bmi', ['Overweight', 'Obese', 'overweight', 'obese'])
+                              ->orWhere('nutritional_status_bmi', 'like', '%Overweight%')
+                              ->orWhere('nutritional_status_bmi', 'like', '%Obese%');
+                        })
+                        ->pluck('student_id');
+                    \Log::info('BMI Overweight/Obese query result count: ' . $studentIds->count());
+                }
+                break;
+
+            case 'nutritionalHeight':
+                if ($value === 'normal') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('nutritional_status_height', ['Normal', 'normal', 'Normal for age'])
+                        ->pluck('student_id');
+                } elseif ($value === 'mild_stunting') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('nutritional_status_height', ['Mild Stunting', 'mild_stunting'])
+                        ->pluck('student_id');
+                } elseif ($value === 'severe_stunting') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('nutritional_status_height', ['Severe Stunting', 'severe_stunting'])
+                        ->pluck('student_id');
+                }
+                break;
+
+            case 'ironSupplement':
+                if ($value === 'positive') {
+                    $studentIds = (clone $baseQuery)
+                        ->where('iron_supplementation', 'positive')
+                        ->pluck('student_id');
+                } elseif ($value === 'negative') {
+                    $studentIds = (clone $baseQuery)
+                        ->where(function($q) {
+                            $q->where('iron_supplementation', 'negative')
+                              ->orWhereNull('iron_supplementation');
+                        })
+                        ->pluck('student_id');
+                }
+                break;
+
+            case 'visionScreening':
+                if ($value === 'normal') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('vision_screening', ['Passed', 'passed', 'Normal', 'normal'])
+                        ->pluck('student_id');
+                } elseif ($value === 'abnormal') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('vision_screening', ['Failed', 'failed'])
+                        ->pluck('student_id');
+                }
+                break;
+
+            case 'auditoryScreening':
+                if ($value === 'normal') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('auditory_screening', ['Passed', 'passed', 'Normal', 'normal'])
+                        ->pluck('student_id');
+                } elseif ($value === 'abnormal') {
+                    $studentIds = (clone $baseQuery)
+                        ->whereIn('auditory_screening', ['Failed', 'failed'])
+                        ->pluck('student_id');
+                }
+                break;
+
+            default:
+                // For other examination types, get students with specific findings
+                $fieldMapping = [
+                    'skinExamination' => 'skin',
+                    'scalpExamination' => 'scalp',
+                    'eyesExamination' => 'eye',
+                    'earsExamination' => 'ear',
+                    'noseExamination' => 'nose',
+                    'mouthExamination' => 'mouth',
+                    'throatExamination' => 'throat',
+                    'neckExamination' => 'neck',
+                    'lungsExamination' => 'lungs',
+                    'heartExamination' => 'heart',
+                    'abdomen' => 'abdomen',
+                    'deformities' => 'deformities'
+                ];
+
+                if (isset($fieldMapping[$type])) {
+                    $field = $fieldMapping[$type];
+
+                    if ($value === 'normal' || $value === 'none') {
+                        $studentIds = (clone $baseQuery)
+                            ->where(function($q) use ($field) {
+                                $q->whereIn($field, ['Normal', 'normal', 'Clear', 'clear', 'None', 'none'])
+                                  ->orWhereNull($field);
+                            })
+                            ->pluck('student_id');
+                    } elseif ($value === 'abnormal' || $value === 'has_deformities') {
+                        $studentIds = (clone $baseQuery)
+                            ->whereNotNull($field)
+                            ->whereNotIn($field, ['Normal', 'normal', 'Clear', 'clear', 'None', 'none'])
+                            ->pluck('student_id');
+                    }
+                }
+                break;
+        }
+
+        // Get students based on the filtered IDs
+        if (isset($studentIds)) {
+            $students = Student::whereIn('id', $studentIds)
+                ->select('id', 'full_name', 'lrn', 'grade_level', 'section', 'sex', 'age')
+                ->orderBy('full_name')
+                ->get();
+
+            \Log::info('Final students returned count: ' . $students->count());
+        } else {
+            \Log::info('No studentIds found for criteria', ['type' => $type, 'value' => $value]);
+            $students = collect();
+        }
+
+        return response()->json([
+            'students' => $students ?? collect(),
+            'total' => ($students ?? collect())->count()
         ]);
     }
 
@@ -428,7 +709,7 @@ class StudentController extends Controller
         ]);
 
         $validated['examination_date'] = now();
-        
+
         $healthExamination->update($validated);
 
         return redirect()->route('health-examination.show', $healthExamination->student_id)
@@ -479,10 +760,10 @@ class StudentController extends Controller
     public function pupilHealth()
     {
         $user = auth()->user();
-        
+
         // Filter students based on user role
         if ($user->role === 'teacher') {
-            // Teachers can only see their assigned students
+            // Teachers can only see their assigned students (including inactive from past years)
             $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
             \Log::info('Teacher filtering in StudentController:', [
                 'user_id' => $user->id,
@@ -490,18 +771,18 @@ class StudentController extends Controller
                 'assigned_student_ids' => $assignedStudentIds->toArray(),
                 'assignments_count' => $user->assignedStudents()->count()
             ]);
-            
+
             if ($assignedStudentIds->isEmpty()) {
-                $studentsQuery = Student::whereRaw('1 = 0'); // Return no students if none assigned
+                $studentsQuery = Student::withoutGlobalScopes()->whereRaw('1 = 0'); // Return no students if none assigned
             } else {
-                $studentsQuery = Student::whereIn('id', $assignedStudentIds)
-                    ->where('is_active', true); // Only show active students
+                $studentsQuery = Student::withoutGlobalScopes()
+                    ->whereIn('id', $assignedStudentIds); // Include all assigned students (active and inactive)
             }
         } else {
-            // Admins can see all active students
-            $studentsQuery = Student::where('is_active', true);
+            // Admins can see all students (active and inactive, all school years)
+            $studentsQuery = Student::withoutGlobalScopes(); // Get all students without any filters
         }
-        
+
         $students = $studentsQuery->with(['healthExaminations'])
             ->select('id', 'full_name', 'lrn', 'age', 'sex', 'grade_level', 'section', 'school_year')
             ->get()
@@ -571,12 +852,12 @@ class StudentController extends Controller
                 abort(403, 'Access denied. You can only view your assigned students.');
             }
         }
-        
+
         $grade = $request->query('grade', $student->grade_level);
-        
+
         // Get school year based on grade level
         $schoolYear = $this->getSchoolYearForGrade($grade);
-        
+
         $incidents = Incident::where('student_id', $student->id)
             ->where('grade_level', $grade)
             ->where('school_year', $schoolYear)
@@ -622,7 +903,7 @@ class StudentController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can create incidents.');
         }
-        
+
         return Inertia::render('Incident/Create', [
             'student' => $student
         ]);
@@ -634,7 +915,7 @@ class StudentController extends Controller
         if (auth()->user()->role !== 'nurse') {
             abort(403, 'Access denied. Only nurses can store incidents.');
         }
-        
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',
@@ -644,7 +925,7 @@ class StudentController extends Controller
 
         // Get student to determine grade level and school year
         $student = Student::findOrFail($validated['student_id']);
-        
+
         // Set default values
         $validated['status'] = 'pending';
         $validated['timer_status'] = 'not_started';
@@ -731,7 +1012,7 @@ class StudentController extends Controller
         ]);
 
         $incident = Incident::findOrFail($id);
-        
+
         // Check if user has permission to update this incident
         $user = auth()->user();
         if ($user->role === 'teacher') {
@@ -754,7 +1035,7 @@ class StudentController extends Controller
     public function getIncidentsByStudent(Request $request, $studentId)
     {
         $user = auth()->user();
-        
+
         // Check if user has access to this student
         if ($user->role === 'teacher') {
             $assignedStudentIds = $user->assignedStudents()->pluck('student_id');
@@ -765,7 +1046,7 @@ class StudentController extends Controller
 
         $student = Student::findOrFail($studentId);
         $grade = $request->query('grade', $student->grade_level);
-        
+
         // Get school year based on grade level
         $schoolYear = $this->getSchoolYearForGrade($grade);
 
@@ -806,7 +1087,7 @@ class StudentController extends Controller
     {
         // Map grade levels to school years
         $gradeToYear = [
-            'Kinder 2' => '2023-2024', 
+            'Kinder 2' => '2023-2024',
             'Grade 1' => '2024-2025',
             'Grade 2' => '2023-2024',
             'Grade 3' => '2022-2023',
@@ -814,7 +1095,7 @@ class StudentController extends Controller
             'Grade 5' => '2020-2021',
             'Grade 6' => '2019-2020'
         ];
-        
+
         return $gradeToYear[$grade] ?? '2024-2025';
     }
 
@@ -824,7 +1105,7 @@ class StudentController extends Controller
     public function startIncidentTimer(Incident $incident)
     {
         $incident->startTimer();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Incident timer started successfully',
@@ -840,7 +1121,7 @@ class StudentController extends Controller
     {
         $incident->timer_status = 'paused';
         $incident->save();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Incident timer paused successfully',
@@ -855,7 +1136,7 @@ class StudentController extends Controller
     {
         $incident->timer_status = 'active';
         $incident->save();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Incident timer resumed successfully',
@@ -872,7 +1153,7 @@ class StudentController extends Controller
         $incident->timer_status = 'completed';
         $incident->status = 'resolved';
         $incident->save();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Incident timer completed successfully',
@@ -886,7 +1167,7 @@ class StudentController extends Controller
     public function getIncidentTimerStatus($id)
     {
         $incident = Incident::findOrFail($id);
-        
+
         return response()->json([
             'timer_status' => $incident->timer_status,
             'remaining_minutes' => $incident->getRemainingMinutes(),

@@ -71,7 +71,7 @@ export const integrateWithHealthTreatmentTimer = () => {
         onTimer30MinWarning: (studentName, treatmentType, remainingTime) => {
             const { addNotification } = useNotificationStore()
             const { showWarning } = useToastStore()
-            
+
             addNotification({
                 type: 'treatment',
                 title: 'Health Treatment Timer Warning',
@@ -79,7 +79,7 @@ export const integrateWithHealthTreatmentTimer = () => {
                 source: 'health',
                 priority: 'medium'
             })
-            
+
             showWarning(
                 'Timer Warning - 30 Minutes Left',
                 `${treatmentType} for ${studentName} expires soon`,
@@ -110,14 +110,14 @@ export const integrateWithHealthTreatmentTimer = () => {
         onTimerExpired: (studentName, treatmentType) => {
             const { addNotification, createTimerExpiryNotification } = useNotificationStore()
             const { showError } = useToastStore()
-            
+
             addNotification({
                 ...createTimerExpiryNotification(studentName, treatmentType),
                 title: 'Health Treatment Timer Expired',
                 message: `Health treatment "${treatmentType}" expired for ${studentName}`,
                 source: 'health'
             })
-            
+
             showError('Health Timer Expired', `${treatmentType} timer expired for ${studentName}`)
         }
     }

@@ -1,64 +1,156 @@
 /* Pupil Health Index Page Styles */
 
 .pupil-health-container {
-    @apply p-4 bg-gray-50 rounded-lg;
+    @apply space-y-6;
 }
 
 /* Search and Filters Section */
 .filters-card {
-    @apply p-4 border-2 border-gray-300 rounded-lg bg-white mb-6;
+    @apply p-4 bg-white rounded-lg border border-gray-200 shadow-sm;
 }
 
 .filters-row {
-    @apply flex gap-3 items-end flex-wrap;
+    @apply flex flex-col lg:flex-row gap-4 items-stretch lg:items-end;
 }
 
+/* Responsive field containers */
 .search-field-container {
-    width: 300px;
+    @apply w-full lg:w-80;
 }
 
 .filter-field-container {
-    width: 180px;
+    @apply w-full sm:w-48;
 }
 
 .field-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-gray-700 mb-2;
 }
 
 .search-button {
-    @apply !bg-blue-600 !border-blue-600 hover:!bg-blue-700;
-}
-
-.flex-spacer {
-    @apply flex-grow;
+    @apply w-full sm:w-auto !bg-blue-600 !border-blue-600 hover:!bg-blue-700;
 }
 
 /* Student List Header */
 .student-list-header {
-    @apply mb-4;
+    @apply mb-6;
 }
 
 .student-list-title {
-    @apply text-2xl font-bold text-gray-800 flex items-center;
+    @apply text-xl sm:text-2xl font-bold text-gray-800 flex flex-col sm:flex-row sm:items-center gap-2;
 }
 
 .student-count {
-    @apply ml-3 text-sm text-gray-500 font-normal;
+    @apply text-sm text-gray-500 font-normal;
 }
 
 /* DataTable */
 .pupil-table {
-    @apply shadow-md rounded-lg;
+    @apply shadow-sm border border-gray-200 rounded-lg overflow-hidden;
+}
+
+/* Sticky Header for Scrollable DataTable */
+.pupil-table .p-datatable-wrapper {
+    @apply overflow-auto;
+}
+
+.pupil-table .p-datatable-thead > tr > th {
+    @apply sticky top-0 z-10 bg-white border-b border-gray-300 shadow-sm;
+    backdrop-filter: blur(8px);
+}
+
+.pupil-table .p-datatable-tbody > tr:last-child {
+    @apply border-b-0;
+}
+
+/* Enhanced pagination styling for top position */
+.pupil-table .p-paginator.p-paginator-top {
+    @apply border-b border-gray-200 bg-gray-50/80 backdrop-blur-sm px-6 py-4 rounded-t-lg;
+}
+
+.pupil-table .p-paginator.p-paginator-top .p-paginator-pages .p-paginator-page {
+    @apply hover:bg-gray-200 hover:text-gray-800 transition-all duration-150 rounded-md;
+}
+
+.pupil-table .p-paginator.p-paginator-top .p-paginator-pages .p-paginator-page.p-highlight {
+    @apply bg-blue-600 text-white shadow-sm;
+}
+
+.pupil-table .p-paginator.p-paginator-top .p-paginator-current {
+    @apply text-gray-600 font-medium;
+}
+
+/* Ensure table body has proper scrolling */
+.pupil-table .p-datatable-wrapper .p-datatable-scrollable-wrapper {
+    @apply max-h-[500px];
 }
 
 .name-column {
     @apply font-semibold;
 }
 
+/* Responsive record select and buttons */
 .record-select {
-    @apply w-60;
+    @apply w-full sm:w-48;
 }
 
 .view-button {
-    @apply text-sm;
+    @apply text-sm w-full sm:w-auto;
+}
+
+/* Enhanced action button styling */
+.pupil-table .p-button.p-button-outlined.p-button-info {
+    @apply hover:bg-blue-50 transition-all duration-200 border-blue-300 hover:border-blue-400;
+}
+
+.pupil-table .p-button .p-button-label {
+    @apply font-medium;
+}
+
+/* Responsive action button */
+@media (max-width: 640px) {
+    .pupil-table .p-button {
+        @apply px-2 py-1 text-xs;
+    }
+
+    .pupil-table .p-button .p-button-label {
+        @apply hidden sm:inline;
+    }
+
+    .pupil-table .p-button .p-button-icon {
+        @apply mr-0;
+    }
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+    .filters-card {
+        @apply p-3;
+    }
+
+    .filters-row {
+        @apply gap-3;
+    }
+
+    .student-list-title {
+        @apply text-lg;
+    }
+
+    .pupil-table {
+        @apply text-xs;
+    }
+
+    .record-select {
+        @apply text-sm;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .search-field-container {
+        @apply lg:w-64;
+    }
+
+    .filter-field-container {
+        @apply sm:w-40;
+    }
 }

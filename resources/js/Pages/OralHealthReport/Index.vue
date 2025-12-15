@@ -11,7 +11,7 @@
                     </h1>
                     <p class="text-gray-600">Generate comprehensive oral health reports for students</p>
                 </div>
-                
+
                 <!-- Step-by-step Guide -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                     <h3 class="font-semibold text-blue-900 mb-2 flex items-center">
@@ -56,7 +56,7 @@
                             <i class="pi pi-search mr-2 text-blue-600"></i>
                             Option A: Search Specific Pupils
                         </h3>
-                        
+
                         <InputText
                             v-model="searchQuery"
                             placeholder="Type name or LRN to search..."
@@ -115,7 +115,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <small class="text-blue-600 mt-2 block text-xs">
                             <i class="pi pi-info-circle mr-1"></i>
                             Search and click to add pupils individually
@@ -128,7 +128,7 @@
                             <i class="pi pi-filter mr-2 text-gray-600"></i>
                             Option B: Filter by Grade/Section
                         </h3>
-                        
+
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
@@ -145,10 +145,10 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Section (Optional)</label>
                                 <Dropdown
                                     v-model="form.section"
-                                    :options="sectionOptions"
+                                    :options="availableSections"
                                     placeholder="All sections"
+                                    :disabled="form.grade_level === 'All' || selectedStudents.length > 0"
                                     class="w-full"
-                                    :disabled="selectedStudents.length > 0"
                                 />
                             </div>
 
@@ -163,7 +163,7 @@
                                 />
                             </div>
                         </div>
-                        
+
                         <small class="text-gray-600 mt-2 block text-xs">
                             <i class="pi pi-info-circle mr-1"></i>
                             Report will include all pupils matching these filters
@@ -197,8 +197,8 @@
                             <i class="pi pi-users mr-1"></i>
                             <strong>Teacher:</strong> Generate report for all your assigned pupils
                         </span>
-                        <Button 
-                            label="Select All My Pupils" 
+                        <Button
+                            label="Select All My Pupils"
                             icon="pi pi-check"
                             size="small"
                             @click="selectAllAssignedStudents"
@@ -244,18 +244,18 @@
                     <!-- Permanent Teeth Tab -->
                     <TabPanel header="Permanent Teeth">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div v-for="field in permanentTeethFields" :key="field.key" 
+                            <div v-for="field in permanentTeethFields" :key="field.key"
                                 class="border-2 rounded-lg p-4 transition-all duration-200"
                                 :class="form.selectedFields[field.key] ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white hover:border-blue-300'">
                                 <div class="mb-3 flex items-center justify-between">
                                     <label class="text-sm font-medium text-gray-700">{{ field.label }}</label>
-                                    <Checkbox 
-                                        v-model="form.selectedFields[field.key]" 
+                                    <Checkbox
+                                        v-model="form.selectedFields[field.key]"
                                         :binary="true"
                                         class="ml-2"
                                     />
                                 </div>
-                                
+
                                 <!-- Range Slider -->
                                 <div v-if="form.selectedFields[field.key]" class="space-y-3">
                                     <div class="flex justify-between text-xs text-gray-500">
@@ -263,9 +263,9 @@
                                         <span>Max: {{ form.maxValues[field.key] || 32 }}</span>
                                     </div>
                                     <div class="px-2">
-                                        <Slider 
+                                        <Slider
                                             v-model="form.rangeValues[field.key]"
-                                            :min="0" 
+                                            :min="0"
                                             :max="32"
                                             :range="true"
                                             class="w-full"
@@ -280,22 +280,22 @@
                             </div>
                         </div>
                     </TabPanel>
-                    
+
                     <!-- Temporary Teeth Tab -->
                     <TabPanel header="Temporary Teeth">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div v-for="field in temporaryTeethFields" :key="field.key" 
+                            <div v-for="field in temporaryTeethFields" :key="field.key"
                                 class="border-2 rounded-lg p-4 transition-all duration-200"
                                 :class="form.selectedFields[field.key] ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white hover:border-blue-300'">
                                 <div class="mb-3 flex items-center justify-between">
                                     <label class="text-sm font-medium text-gray-700">{{ field.label }}</label>
-                                    <Checkbox 
-                                        v-model="form.selectedFields[field.key]" 
+                                    <Checkbox
+                                        v-model="form.selectedFields[field.key]"
                                         :binary="true"
                                         class="ml-2"
                                     />
                                 </div>
-                                
+
                                 <!-- Range Slider -->
                                 <div v-if="form.selectedFields[field.key]" class="space-y-3">
                                     <div class="flex justify-between text-xs text-gray-500">
@@ -303,9 +303,9 @@
                                         <span>Max: {{ form.maxValues[field.key] || 20 }}</span>
                                     </div>
                                     <div class="px-2">
-                                        <Slider 
+                                        <Slider
                                             v-model="form.rangeValues[field.key]"
-                                            :min="0" 
+                                            :min="0"
                                             :max="20"
                                             :range="true"
                                             class="w-full"
@@ -329,19 +329,19 @@
                         <i class="pi pi-check-circle"></i>
                         <span><strong>Maximum Reached!</strong> All 10 fields selected</span>
                     </div>
-                    
+
                     <!-- Good Range -->
                     <div v-else-if="selectedFieldsCount >= 5 && selectedFieldsCount < 10" class="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
                         <i class="pi pi-info-circle"></i>
                         <span>{{ selectedFieldsCount }} fields selected - You can add {{ 10 - selectedFieldsCount }} more</span>
                     </div>
-                    
+
                     <!-- Few Fields -->
                     <div v-else-if="selectedFieldsCount > 0 && selectedFieldsCount < 5" class="flex items-center gap-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-md">
                         <i class="pi pi-exclamation-triangle"></i>
                         <span>{{ selectedFieldsCount }} fields selected - Consider adding more for a comprehensive report</span>
                     </div>
-                    
+
                     <!-- No Fields -->
                     <div v-else-if="selectedFieldsCount === 0" class="text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-md">
                         <i class="pi pi-info-circle mr-1"></i>
@@ -407,7 +407,7 @@
                     <div class="flex items-center text-sm text-yellow-800">
                         <i class="pi pi-exclamation-triangle mr-2"></i>
                         <span>
-                            <strong>Action Required:</strong> 
+                            <strong>Action Required:</strong>
                             {{ selectedStudents.length === 0 && !form.grade_level ? 'Please select pupils or choose a grade level' : 'Please check at least one pupil from your selection' }}
                         </span>
                     </div>
@@ -421,6 +421,7 @@
 import { Head } from '@inertiajs/vue3';
 import { useForm } from '@inertiajs/vue3';
 import { ref, onMounted, computed, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css';
 import Dropdown from 'primevue/dropdown';
@@ -432,7 +433,11 @@ import Button from 'primevue/button'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import { useFormPersistence } from '@/composables/useFormPersistence';
+import { useToastStore } from '@/Stores/toastStore';
 import axios from 'axios';
+
+// Toast store
+const { showError, showWarning } = useToastStore();
 
 const props = defineProps({
     gradeLevels: Array,
@@ -558,7 +563,84 @@ const temporaryTeethFields = [
     { key: 'temporary_for_filling', label: 'For Filling' }
 ];
 
-const sectionOptions = ['All', 'A', 'B', 'C', 'D', 'E', 'F'];
+// Sections organized by grade level
+const sectionsByGrade = ref({
+    'All': ['All'],
+    'Kinder 2': [
+        'Generous AM',
+        'Generous PM',
+        'Good AM',
+        'Good PM',
+        'SNED – Kindergarten (DHH) (SPED)'
+    ],
+    'Grade 1': [
+        'Admirable',
+        'Adorable',
+        'Affectionate',
+        'Alert',
+        'Amazing'
+    ],
+    'Grade 2': [
+        'Beloved',
+        'Beneficent',
+        'Benevolent',
+        'Blessed',
+        'Blissful',
+        'Blossom',
+        'SNED – Grade 2 (DHH) (SPED)'
+    ],
+    'Grade 3': [
+        'Calm',
+        'Candor',
+        'Charitable',
+        'Cheerful',
+        'Clever',
+        'Curious'
+    ],
+    'Grade 4': [
+        'Dainty',
+        'Dedicated',
+        'Demure',
+        'Devoted',
+        'Dynamic',
+        'SNED (Graded) (SPED)'
+    ],
+    'Grade 5': [
+        'Effective',
+        'Efficient',
+        'Endurance',
+        'Energetic',
+        'Everlasting'
+    ],
+    'Grade 6': [
+        'Fair',
+        'Faithful',
+        'Flexible',
+        'Forbearance',
+        'Fortitude',
+        'Friendly'
+    ],
+    'Non-Graded': [
+        'Gracious (SPED)',
+        'Grateful (SPED)'
+    ]
+});
+
+// Available sections based on selected grade
+const availableSections = computed(() => {
+    if (form.grade_level === 'All') {
+        return ['All'];
+    }
+    const gradeSections = sectionsByGrade.value[form.grade_level] || [];
+    return ['All', ...gradeSections];
+});
+
+// Update section when grade changes
+watch(() => form.grade_level, (newGrade) => {
+    if (newGrade !== form.section) {
+        form.section = 'All';
+    }
+});
 
 const genderOptions = ['All', 'Male', 'Female'];
 const sortOptions = ['Name (A-Z)', 'Name (Z-A)', 'Age (Youngest First)', 'Age (Oldest First)'];
@@ -581,7 +663,7 @@ const selectEssentialOralFields = () => {
     form.selectedFields.permanent_teeth_decayed = true;
     form.selectedFields.permanent_teeth_filled = true;
     form.selectedFields.permanent_for_filling = true;
-    
+
     // Select key temporary teeth fields
     form.selectedFields.temporary_teeth_decayed = true;
     form.selectedFields.temporary_teeth_filled = true;
@@ -594,13 +676,13 @@ const isGenerateDisabled = computed(() => {
         console.log('Oral Health - Computing button state...');
         console.log('Oral Health - Form processing:', form.processing);
         console.log('Oral Health - User role:', props.userRole);
-        
+
         if (form.processing) return true;
-        
+
         // Force reactivity by accessing the length property
         const studentsCount = selectedStudents.value?.length || 0;
         console.log('Oral Health - Students count:', studentsCount);
-        
+
         // If students are selected, check if any are checked
         if (studentsCount > 0) {
             const checkedStudents = selectedStudents.value.filter(s => s && s.checked === true);
@@ -611,13 +693,13 @@ const isGenerateDisabled = computed(() => {
             console.log('Oral Health - Button should be enabled:', shouldEnable);
             return !shouldEnable; // Return opposite because this is "disabled"
         }
-        
+
         // For teachers, if no students are selected, they can still generate reports for all their assigned students
         if (props.userRole === 'teacher') {
             console.log('Oral Health - Teacher with no students selected, enabling button');
             return false; // Enable button for teachers even without grade level or gender filter
         }
-        
+
         // For non-teachers, require grade level if no students selected
         const hasGradeLevel = !!form.grade_level;
         console.log('Oral Health - No students selected, grade level:', form.grade_level);
@@ -633,13 +715,13 @@ const isGenerateDisabled = computed(() => {
 // Function to update button state
 const updateButtonState = () => {
     console.log('Oral Health - Updating button state...');
-    
+
     if (form.processing) {
         buttonDisabled.value = true;
         console.log('Oral Health - Button disabled: form processing');
         return;
     }
-    
+
     if (selectedStudents.value.length > 0) {
         const checkedCount = selectedStudents.value.filter(s => s.checked === true).length;
         buttonDisabled.value = checkedCount === 0;
@@ -723,6 +805,14 @@ const addStudent = (student) => {
     const currentStudents = selectedStudents.value || [];
     const exists = currentStudents.find(s => s.id === student.id);
     if (!exists) {
+        const page = usePage();
+        const currentSchoolYear = page.props.currentSchoolYear;
+
+        // Prevent adding students from a different school year
+        if (student.school_year && currentSchoolYear && student.school_year !== currentSchoolYear) {
+            showWarning('Inactive Student', 'This pupil is not in the current school year and will not be included in the report.');
+            return;
+        }
         const newStudent = {
             ...student,
             checked: true
@@ -731,10 +821,10 @@ const addStudent = (student) => {
         selectedStudents.value = [...currentStudents, newStudent];
         console.log('Oral Health - Added student:', newStudent);
         console.log('Oral Health - All selected students:', selectedStudents.value);
-        
+
         // Update button state immediately
         updateButtonState();
-        
+
         // Clear search after adding
         searchQuery.value = '';
         studentOptions.value = [];
@@ -755,7 +845,7 @@ const removeStudent = (student) => {
 // Function to select all assigned students for teachers
 const selectAllAssignedStudents = async () => {
     if (props.userRole !== 'teacher') return;
-    
+
     try {
         // Get all assigned students by searching with empty query
         const response = await axios.get('/api/oral-health-report/students/search', {
@@ -771,17 +861,17 @@ const selectAllAssignedStudents = async () => {
             ...student,
             checked: true
         }));
-        
+
         selectedStudents.value = assignedStudents;
-        
+
         // Clear search
         searchQuery.value = '';
         studentOptions.value = [];
-        
+
         console.log('Selected all assigned students:', assignedStudents.length);
     } catch (error) {
         console.error('Error loading assigned students:', error);
-        alert('Failed to load assigned students.');
+        showError('Loading Failed', 'Failed to load assigned students.');
     }
 };
 
@@ -815,10 +905,10 @@ const generateReport = () => {
 
     // Validate required fields first
     if (!form.grade_level && checkedStudents.length === 0) {
-        alert('Please select a grade level or check at least one student');
+        showError('Selection Required', 'Please select a grade level or check at least one student');
         return;
     }
-    
+
     // Update form with selected students
     form.selected_students = checkedStudents.map(s => ({
         id: s.id,
@@ -827,7 +917,7 @@ const generateReport = () => {
         grade_level: s.grade_level,
         section: s.section
     }));
-    
+
     // Add oral exam fields that are selected (checked)
     const oralExamFields = [];
     Object.keys(form.selectedFields).forEach(fieldKey => {
@@ -836,38 +926,38 @@ const generateReport = () => {
         }
     });
     form.oral_exam_fields = oralExamFields;
-    
+
     // Generate PDF directly like health examination (no Results page needed)
     const params = new URLSearchParams();
-    
+
     // Add grade level if selected
     if (form.grade_level) {
         params.append('grade_level', form.grade_level);
     }
-    
+
     // Add section if specified
     if (form.section) {
         params.append('section', form.section);
     }
-    
+
     // Add selected students (send only IDs)
     if (checkedStudents.length > 0) {
         checkedStudents.forEach((student, index) => {
             params.append(`selected_students[${index}]`, student.id);
         });
     }
-    
+
     // Add basic student fields (always include these)
     const basicFields = ['name', 'lrn', 'grade_level', 'section', 'gender', 'age'];
     basicFields.forEach((field, index) => {
         params.append(`fields[${index}]`, field);
     });
-    
+
     // Add oral exam fields
     oralExamFields.forEach((field, index) => {
         params.append(`oral_exam_fields[${index}]`, field);
     });
-    
+
     // Add optional filters
     if (form.gender_filter) {
         params.append('gender_filter', form.gender_filter);
@@ -878,18 +968,18 @@ const generateReport = () => {
     if (form.max_age) {
         params.append('max_age', form.max_age);
     }
-    
+
     // Add sort_by parameter
     if (form.sort_by) {
         params.append('sort_by', form.sort_by);
     }
-    
+
     console.log('Opening PDF with parameters:', params.toString());
-    
+
     // Open PDF directly (server-side generation, works offline)
     const url = `/oral-health-report/export-pdf?${params.toString()}`;
     window.open(url, '_blank');
-    
+
     // Clear saved form data after successful generation
     onSubmitSuccess();
 };
@@ -910,11 +1000,11 @@ onMounted(() => {
     // Initialize form persistence
     initializeForm();
     setupAutoSave();
-    
+
     // Reset form processing state on mount
     form.processing = false;
     console.log('Oral Health - Reset form processing state');
-    
+
     // Initial button state update
     updateButtonState();
     }

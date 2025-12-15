@@ -47,7 +47,7 @@ class HealthTreatmentController extends Controller
         \Log::info('Health Treatment Store - Validated Data:', $validated);
 
         $treatment = HealthTreatment::create($validated);
-        
+
         // Start the timer automatically when treatment is created
         $treatment->startTimer();
 

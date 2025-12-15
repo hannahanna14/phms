@@ -21,9 +21,47 @@ class HealthDataExportController extends Controller
 
         $schoolSettings = SchoolSettings::getInstance();
 
+        // Collect available school years from relevant models
+        $models = [
+            \App\Models\HealthExamination::class,
+            \App\Models\HealthTreatment::class,
+            \App\Models\OralHealthExamination::class,
+            \App\Models\OralHealthTreatment::class,
+            \App\Models\Incident::class,
+        ];
+
+        $years = collect();
+        foreach ($models as $model) {
+            try {
+                $distinct = $model::whereNotNull('school_year')->distinct()->pluck('school_year')->toArray();
+                $years = $years->merge($distinct);
+            } catch (\Throwable $e) {
+                // If a model/table does not exist or has no school_years, ignore
+            }
+        }
+
+        $availableSchoolYears = $years->unique()->filter()->sortDesc()->values()->toArray();
+        $currentSchoolYear = $this->getCurrentSchoolYear();
+
         return Inertia::render('HealthDataExport/Index', [
-            'schoolSettings' => $schoolSettings
+            'schoolSettings' => $schoolSettings,
+            'availableSchoolYears' => $availableSchoolYears,
+            'currentSchoolYear' => $currentSchoolYear,
         ]);
+    }
+
+    /**
+     * Determine the current school year using June boundary
+     */
+    private function getCurrentSchoolYear()
+    {
+        $currentYear = (int) date('Y');
+        $currentMonth = (int) date('n');
+        if ($currentMonth >= 6) {
+            return $currentYear . '-' . ($currentYear + 1);
+        }
+
+        return ($currentYear - 1) . '-' . $currentYear;
     }
 
     /**
@@ -43,7 +81,8 @@ class HealthDataExportController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
             'sort_by' => 'nullable|string|in:name_asc,name_desc,lrn_asc,lrn_desc,date_desc,date_asc,grade_date',
-            'include_personal_info' => 'boolean'
+            'include_personal_info' => 'boolean',
+            'school_year' => 'nullable|string'
         ]);
 
         // Get health examinations data
@@ -68,9 +107,17 @@ class HealthDataExportController extends Controller
             });
         }
 
+        // Determine school year filter (default to current school year if not provided)
+        $schoolYearToUse = $validated['school_year'] ?? $this->getCurrentSchoolYear();
+        $filterBySchoolYear = isset($validated['school_year']) ? ($validated['school_year'] !== 'all') : true;
+
+        if ($filterBySchoolYear) {
+            $query->where('health_examinations.school_year', $schoolYearToUse);
+        }
+
         // Apply sorting
         $sortBy = $validated['sort_by'] ?? 'name_asc';
-        
+
         if ($sortBy === 'name_desc') {
             $examinations = $query->join('students', 'health_examinations.student_id', '=', 'students.id')
                 ->orderBy('students.full_name', 'desc')
@@ -79,7 +126,7 @@ class HealthDataExportController extends Controller
         } elseif ($sortBy === 'grade_date') {
             $examinations = $query->join('students', 'health_examinations.student_id', '=', 'students.id')
                 ->orderByRaw("
-                    CASE 
+                    CASE
                         WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
                         WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
                         WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
@@ -116,7 +163,7 @@ class HealthDataExportController extends Controller
 
         // Create CSV content
         $filename = 'health-examinations-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -124,7 +171,7 @@ class HealthDataExportController extends Controller
 
         $callback = function() use ($examinations, $validated) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             $csvHeaders = [];
             if ($validated['include_personal_info'] ?? true) {
@@ -140,13 +187,13 @@ class HealthDataExportController extends Controller
                 'Lungs', 'Heart', 'Abdomen', 'Deformities', 'Iron Supplementation', 'Deworming Status',
                 'SBFP Beneficiary', '4Ps Beneficiary', 'Remarks'
             ]);
-            
+
             fputcsv($file, $csvHeaders);
 
             // Add data rows
             foreach ($examinations as $examination) {
                 $row = [];
-                
+
                 if ($validated['include_personal_info'] ?? true) {
                     $row = array_merge($row, [
                         $examination->student->full_name ?? 'N/A',
@@ -157,35 +204,35 @@ class HealthDataExportController extends Controller
                         $examination->student->date_of_birth ? $examination->student->date_of_birth->format('Y-m-d') : 'N/A',
                     ]);
                 }
-                
+
                 // Helper function to get field value with specify support
                 $getFieldValue = function($field, $specifyField) use ($examination) {
                     $value = $examination->$field ?? '';
-                    
+
                     // Check if value is "Others (specify)" or similar variations
                     if (stripos($value, 'others') !== false && stripos($value, 'specify') !== false) {
                         if (!empty($examination->$specifyField)) {
                             return $examination->$specifyField;
                         }
                     }
-                    
+
                     return $value ?: 'N/A';
                 };
-                
+
                 // Get lungs value (separate from heart)
                 $lungsValue = $examination->lungs ?? '';
                 if (stripos($lungsValue, 'others') !== false && stripos($lungsValue, 'specify') !== false) {
                     $lungsValue = $examination->lungs_specify ?? $examination->lungs_other_specify ?? $lungsValue;
                 }
                 $lungsValue = $lungsValue ?: 'N/A';
-                
+
                 // Get heart value (separate from lungs)
                 $heartValue = $examination->heart ?? '';
                 if (stripos($heartValue, 'others') !== false && stripos($heartValue, 'specify') !== false) {
                     $heartValue = $examination->heart_specify ?? $examination->heart_other_specify ?? $heartValue;
                 }
                 $heartValue = $heartValue ?: 'N/A';
-                
+
                 $row = array_merge($row, [
                     $examination->examination_date ? $examination->examination_date->format('Y-m-d') : 'N/A',
                     $examination->school_year ?? 'N/A',
@@ -215,10 +262,10 @@ class HealthDataExportController extends Controller
                     $examination->four_ps_beneficiary ? 'Yes' : 'No',
                     $examination->remarks ?? 'N/A',
                 ]);
-                
+
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 
@@ -241,7 +288,8 @@ class HealthDataExportController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
             'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date',
-            'include_personal_info' => 'boolean'
+            'include_personal_info' => 'boolean',
+            'school_year' => 'nullable|string'
         ]);
 
         // Get oral health examinations data
@@ -265,9 +313,17 @@ class HealthDataExportController extends Controller
             });
         }
 
+        // Determine school year filter (default to current school year if not provided)
+        $schoolYearToUse = $validated['school_year'] ?? $this->getCurrentSchoolYear();
+        $filterBySchoolYear = isset($validated['school_year']) ? ($validated['school_year'] !== 'all') : true;
+
+        if ($filterBySchoolYear) {
+            $query->where('oral_health_examinations.school_year', $schoolYearToUse);
+        }
+
         // Apply sorting
         $sortBy = $validated['sort_by'] ?? 'name_asc';
-        
+
         if ($sortBy === 'name_desc') {
             $examinations = $query->join('students', 'oral_health_examinations.student_id', '=', 'students.id')
                 ->orderBy('students.full_name', 'desc')
@@ -276,7 +332,7 @@ class HealthDataExportController extends Controller
         } elseif ($sortBy === 'grade_date') {
             $examinations = $query->join('students', 'oral_health_examinations.student_id', '=', 'students.id')
                 ->orderByRaw("
-                    CASE 
+                    CASE
                         WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
                         WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
                         WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
@@ -313,7 +369,7 @@ class HealthDataExportController extends Controller
 
         // Create CSV content
         $filename = 'oral-health-examinations-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -321,7 +377,7 @@ class HealthDataExportController extends Controller
 
         $callback = function() use ($examinations, $validated) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             $csvHeaders = [];
             if ($validated['include_personal_info'] ?? true) {
@@ -340,13 +396,13 @@ class HealthDataExportController extends Controller
                 // Tooth Symbols and Conditions
                 'Tooth Symbols', 'Oral Health Conditions', 'Remarks'
             ]);
-            
+
             fputcsv($file, $csvHeaders);
 
             // Add data rows
             foreach ($examinations as $examination) {
                 $row = [];
-                
+
                 if ($validated['include_personal_info'] ?? true) {
                     $row = array_merge($row, [
                         $examination->student->full_name ?? 'N/A',
@@ -357,7 +413,7 @@ class HealthDataExportController extends Controller
                         $examination->student->date_of_birth ? $examination->student->date_of_birth->format('Y-m-d') : 'N/A',
                     ]);
                 }
-                
+
                 // Format tooth symbols for export
                 $toothSymbols = 'N/A';
                 if ($examination->tooth_symbols && is_array($examination->tooth_symbols)) {
@@ -381,7 +437,7 @@ class HealthDataExportController extends Controller
                     }
                     $conditions = implode(' | ', $conditionList);
                 }
-                
+
                 $row = array_merge($row, [
                     $examination->examination_date ? $examination->examination_date->format('Y-m-d') : 'N/A',
                     $examination->school_year ?? 'N/A',
@@ -406,10 +462,10 @@ class HealthDataExportController extends Controller
                     $conditions,
                     $examination->remarks ?? 'N/A',
                 ]);
-                
+
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 
@@ -430,7 +486,8 @@ class HealthDataExportController extends Controller
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
-            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date'
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date',
+            'school_year' => 'nullable|string'
         ]);
 
         // Get health treatments data
@@ -454,9 +511,17 @@ class HealthDataExportController extends Controller
             });
         }
 
+        // Determine school year filter (default to current school year if not provided)
+        $schoolYearToUse = $validated['school_year'] ?? $this->getCurrentSchoolYear();
+        $filterBySchoolYear = isset($validated['school_year']) ? ($validated['school_year'] !== 'all') : true;
+
+        if ($filterBySchoolYear) {
+            $query->where('health_treatments.school_year', $schoolYearToUse);
+        }
+
         // Apply sorting
         $sortBy = $validated['sort_by'] ?? 'name_asc';
-        
+
         if ($sortBy === 'name_desc') {
             $treatments = $query->join('students', 'health_treatments.student_id', '=', 'students.id')
                 ->orderBy('students.full_name', 'desc')
@@ -465,7 +530,7 @@ class HealthDataExportController extends Controller
         } elseif ($sortBy === 'grade_date') {
             $treatments = $query->join('students', 'health_treatments.student_id', '=', 'students.id')
                 ->orderByRaw("
-                    CASE 
+                    CASE
                         WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
                         WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
                         WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
@@ -502,7 +567,7 @@ class HealthDataExportController extends Controller
 
         // Create CSV content
         $filename = 'health-treatments-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -510,13 +575,13 @@ class HealthDataExportController extends Controller
 
         $callback = function() use ($treatments) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             $csvHeaders = [
                 'Student Name', 'LRN', 'Grade Level', 'Section', 'Treatment Date', 'School Year',
                 'Title', 'Chief Complaint', 'Treatment', 'Status', 'Remarks'
             ];
-            
+
             fputcsv($file, $csvHeaders);
 
             // Add data rows
@@ -534,10 +599,10 @@ class HealthDataExportController extends Controller
                     $treatment->status ?? 'N/A',
                     $treatment->remarks ?? 'N/A',
                 ];
-                
+
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 
@@ -558,7 +623,8 @@ class HealthDataExportController extends Controller
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'grade_level' => 'nullable|string',
-            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date'
+            'sort_by' => 'nullable|string|in:name_asc,name_desc,grade_date',
+            'school_year' => 'nullable|string'
         ]);
 
         // Get oral health treatments data
@@ -582,9 +648,17 @@ class HealthDataExportController extends Controller
             });
         }
 
+        // Determine school year filter (default to current school year if not provided)
+        $schoolYearToUse = $validated['school_year'] ?? $this->getCurrentSchoolYear();
+        $filterBySchoolYear = isset($validated['school_year']) ? ($validated['school_year'] !== 'all') : true;
+
+        if ($filterBySchoolYear) {
+            $query->where('oral_health_treatments.school_year', $schoolYearToUse);
+        }
+
         // Apply sorting
         $sortBy = $validated['sort_by'] ?? 'name_asc';
-        
+
         if ($sortBy === 'name_desc') {
             $treatments = $query->join('students', 'oral_health_treatments.student_id', '=', 'students.id')
                 ->orderBy('students.full_name', 'desc')
@@ -593,7 +667,7 @@ class HealthDataExportController extends Controller
         } elseif ($sortBy === 'grade_date') {
             $treatments = $query->join('students', 'oral_health_treatments.student_id', '=', 'students.id')
                 ->orderByRaw("
-                    CASE 
+                    CASE
                         WHEN students.grade_level = 'Kinder 2' OR students.grade_level LIKE 'Kinder%' THEN 1
                         WHEN students.grade_level = 'Grade 1' OR students.grade_level = '1' THEN 2
                         WHEN students.grade_level = 'Grade 2' OR students.grade_level = '2' THEN 3
@@ -630,7 +704,7 @@ class HealthDataExportController extends Controller
 
         // Create CSV content
         $filename = 'oral-health-treatments-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -638,13 +712,13 @@ class HealthDataExportController extends Controller
 
         $callback = function() use ($treatments) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             $csvHeaders = [
                 'Student Name', 'LRN', 'Grade Level', 'Section', 'Treatment Date', 'School Year',
                 'Title', 'Chief Complaint', 'Treatment', 'Remarks', 'Timer Status'
             ];
-            
+
             fputcsv($file, $csvHeaders);
 
             // Add data rows
@@ -662,10 +736,10 @@ class HealthDataExportController extends Controller
                     $treatment->remarks ?? 'N/A',
                     $treatment->timer_status ?? 'N/A',
                 ];
-                
+
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 
@@ -685,7 +759,8 @@ class HealthDataExportController extends Controller
             'format' => 'required|in:csv',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
-            'grade_level' => 'nullable|string'
+            'grade_level' => 'nullable|string',
+            'school_year' => 'nullable|string'
         ]);
 
         // Get incidents data
@@ -710,6 +785,14 @@ class HealthDataExportController extends Controller
             });
         }
 
+        // Determine school year filter (default to current school year if not provided)
+        $schoolYearToUse = $validated['school_year'] ?? $this->getCurrentSchoolYear();
+        $filterBySchoolYear = isset($validated['school_year']) ? ($validated['school_year'] !== 'all') : true;
+
+        if ($filterBySchoolYear) {
+            $query->where('incidents.school_year', $schoolYearToUse);
+        }
+
         $incidents = $query->get();
 
         // Log the export activity
@@ -727,7 +810,7 @@ class HealthDataExportController extends Controller
 
         // Create CSV content
         $filename = 'incidents-' . date('Y-m-d-H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -735,13 +818,13 @@ class HealthDataExportController extends Controller
 
         $callback = function() use ($incidents) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             $csvHeaders = [
                 'Student Name', 'LRN', 'Grade Level', 'Section', 'Incident Date', 'School Year',
                 'Complaint', 'Actions Taken', 'Status', 'Timer Status', 'Started At', 'Expires At', 'Is Expired'
             ];
-            
+
             fputcsv($file, $csvHeaders);
 
             // Add data rows
@@ -761,10 +844,10 @@ class HealthDataExportController extends Controller
                     $incident->expires_at ? $incident->expires_at->format('Y-m-d H:i:s') : 'N/A',
                     $incident->is_expired ? 'Yes' : 'No',
                 ];
-                
+
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 

@@ -1,46 +1,108 @@
 <template>
     <Head title="Incident Report" />
-    <div class="min-h-screen bg-gray-50 p-6">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
         <div class="max-w-7xl mx-auto">
-            <!-- Header with Back Button -->
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
-                    <i class="pi pi-exclamation-triangle mr-2 text-red-600"></i>
-                    Incident Report
-                </h1>
-                <Link href="/pupil-health" class="no-underline">
-                    <Button label="Back" icon="pi pi-arrow-left" outlined severity="secondary" class="text-sm" />
-                </Link>
+            <!-- Enhanced Header -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 mb-8 backdrop-blur-sm">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="pi pi-exclamation-triangle text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">Incident Report</h1>
+                            <p class="text-slate-600 font-medium">Comprehensive incident documentation and records</p>
+                        </div>
+                    </div>
+                    <Link href="/pupil-health" class="no-underline">
+                        <Button
+                            label="Back to List"
+                            icon="pi pi-arrow-left"
+                            class="p-button-outlined p-button-lg shadow-sm hover:shadow-md transition-all duration-300"
+                            style="border: 2px solid #e5e7eb; color: #374151; font-weight: 600; border-radius: 12px;"
+                        />
+                    </Link>
+                </div>
             </div>
 
             <!-- Main Layout: Left and Right Columns -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <!-- Left Column: Student Details -->
                 <div class="lg:col-span-2 space-y-4">
-                    <!-- Student Details Card -->
-                    <div class="border rounded-lg bg-white shadow p-4">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Pupil Details</h2>
-                        <div class="space-y-2 text-sm">
-                            <div><strong>Name:</strong> {{ student.full_name }}</div>
-                            <div><strong>LRN:</strong> {{ student.lrn || '12345678901' }}</div>
-                            <div><strong>Grade Level:</strong> {{ student.grade_level }}</div>
-                            <div><strong>School Year:</strong> {{ student.school_year || '2024-2025' }}</div>
+                    <!-- Enhanced Student Details Card -->
+                    <SkeletonLoader
+                        v-if="isLoading"
+                        type="card"
+                        :lines="8"
+                        class="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden backdrop-blur-sm"
+                    />
+
+                    <div v-else class="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden backdrop-blur-sm">
+                        <div class="bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-600 p-5">
+                            <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                                <i class="pi pi-user text-white/90"></i>
+                                Pupil Details
+                            </h2>
                         </div>
-                        
-                        <h3 class="text-md font-semibold text-gray-700 mt-4 mb-2">Personal Info</h3>
-                        <div class="space-y-2 text-sm">
-                            <div><strong>Age:</strong> {{ student.age }} years</div>
-                            <div><strong>Sex:</strong> {{ student.sex }}</div>
-                            <div><strong>Section:</strong> {{ student.section || 'Not Assigned' }}</div>
-                            <div><strong>Status:</strong> <span class="text-green-600 font-semibold">Active</span></div>
+                        <div class="p-8">
+                            <div class="space-y-4 text-sm">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Name</div>
+                                        <div class="font-bold text-slate-900 text-lg">{{ student.full_name }}</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">LRN</div>
+                                        <div class="font-mono text-slate-900 text-lg font-bold">{{ student.lrn || '12345678901' }}</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Grade</div>
+                                        <div class="text-slate-900 text-lg font-bold">{{ student.grade_level }}</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">School Year</div>
+                                        <div class="text-slate-900 text-lg font-bold">{{ student.school_year || '2024-2025' }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-6">
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Age</div>
+                                        <div class="text-slate-900 text-lg font-bold">{{ student.age }} years</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Sex</div>
+                                        <div class="text-slate-900 text-lg font-bold">{{ student.sex }}</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Section</div>
+                                        <div class="text-slate-900 text-lg font-bold">{{ student.section || 'Not Assigned' }}</div>
+                                    </div>
+                                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                                        <div class="text-slate-600 font-semibold mb-2 text-sm uppercase tracking-wide">Status</div>
+                                        <div>
+                                            <span v-if="student.is_active && student.school_year === usePage().props.currentSchoolYear" class="text-green-600 text-lg font-bold">Active</span>
+                                            <span v-else class="text-red-600 text-lg font-bold">Inactive</span>
+                                            <div class="text-xs text-gray-500 mt-1">Last Year: {{ student.school_year || 'N/A' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Grade Level Selector -->
-                    <div class="border rounded-lg bg-white shadow p-4">
+                    <SkeletonLoader
+                        v-if="isLoading"
+                        type="form"
+                        :fields="1"
+                        class="border rounded-lg bg-white shadow p-4"
+                    />
+
+                    <div v-else class="border rounded-lg bg-white shadow p-4">
                         <h3 class="text-md font-semibold text-gray-700 mb-3">Select Grade Level</h3>
-                        <Select 
-                            v-model="selectedGrade" 
+                        <Select
+                            v-model="selectedGrade"
                             :options="gradeLevels"
                             placeholder="Select Grade Level"
                             class="w-full"
@@ -51,14 +113,29 @@
 
                 <!-- Right Column: Incident Details -->
                 <div class="lg:col-span-3">
-                    <div class="border rounded-lg bg-white shadow">
-                        <div class="bg-red-700 text-white p-3 text-sm flex justify-between items-center">
-                            <span>Incident Reports</span>
-                            <Button 
+                    <SkeletonLoader
+                        v-if="isLoading"
+                        type="card"
+                        :lines="8"
+                        class="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden backdrop-blur-sm"
+                    />
+
+                    <div v-else class="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden backdrop-blur-sm">
+                        <div class="bg-gradient-to-r from-red-500 via-orange-500 to-amber-600 p-6 flex justify-between items-center">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                                    <i class="pi pi-exclamation-triangle text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white mb-1">Incident Reports</h2>
+                                    <p class="text-red-100 font-medium">Safety incident documentation</p>
+                                </div>
+                            </div>
+                            <Button
                                 v-if="userRole === 'nurse'"
-                                label="Add Incident" 
-                                icon="pi pi-plus" 
-                                class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700" 
+                                label="Add Incident"
+                                icon="pi pi-plus"
+                                class="p-button-sm !bg-green-600 !text-white !border-green-600 hover:!bg-green-700"
                                 @click="$inertia.visit(`/pupil-health/incident/${student.id}/create`)"
                             />
                         </div>
@@ -90,9 +167,9 @@
                                         </td>
                                         <td class="py-2">
                                             <div class="flex gap-1">
-                                                <Button 
+                                                <Button
                                                     label="View"
-                                                    icon="pi pi-eye" 
+                                                    icon="pi pi-eye"
                                                     size="small"
                                                     severity="info"
                                                     outlined
@@ -100,9 +177,9 @@
                                                     class="!p-1 !text-xs"
                                                     title="View Incident"
                                                 />
-                                                <Button 
+                                                <Button
                                                     v-if="userRole === 'nurse'"
-                                                    icon="pi pi-pencil" 
+                                                    icon="pi pi-pencil"
                                                     size="small"
                                                     severity="warning"
                                                     @click="editIncident(incident)"
@@ -144,6 +221,7 @@ import axios from 'axios'
 import { useTimerNotifications } from '@/Utils/timerMixin.js'
 import { integrateIncidentNotifications } from '@/Utils/notificationIntegration.js'
 import IncidentViewModal from '@/Components/Modals/IncidentViewModal.vue'
+import SkeletonLoader from '@/Components/SkeletonLoader.vue'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
@@ -167,6 +245,7 @@ const props = defineProps({
 })
 
 const incidents = ref([])
+const isLoading = ref(true)
 
 // Modal state
 const showIncidentModal = ref(false)
@@ -206,12 +285,12 @@ const getInitialGrade = () => {
         const formattedGrade = isNaN(urlGrade) ? urlGrade : `Grade ${urlGrade}`;
         return formattedGrade;
     }
-    
+
     // Use current grade prop if available
     if (currentGrade) {
         return isNaN(currentGrade) ? currentGrade : `Grade ${currentGrade}`;
     }
-    
+
     // Default to student's current grade level
     return isNaN(student.grade_level) ? student.grade_level : `Grade ${student.grade_level}`;
 };
@@ -232,18 +311,23 @@ const fetchIncidents = async () => {
     } catch (error) {
         console.error('Error fetching incidents:', error);
         incidents.value = [];
+    } finally {
+        isLoading.value = false;
     }
 };
 
-const onGradeChange = () => {
+const onGradeChange = async () => {
     // Update URL without page reload
     const gradeForUrl = selectedGrade.value.replace('Grade ', '');
     const newUrl = new URL(window.location);
     newUrl.searchParams.set('grade', gradeForUrl);
     window.history.replaceState({}, '', newUrl);
-    
+
+    // Show skeleton loaders when switching grades
+    isLoading.value = true;
+
     // Fetch incidents for new grade
-    fetchIncidents();
+    await fetchIncidents();
 };
 
 // Watch for grade changes
@@ -300,12 +384,12 @@ const startIncidentTimer = async (incident) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         });
-        
+
         if (response.ok) {
             // Start monitoring this incident timer
             startTimerMonitoring(student, incident, 120) // 2 hours = 120 minutes
             activeTimers.value.set(incident.id, true)
-            
+
             // Refresh incidents to show updated timer status
             await fetchIncidents()
         }
@@ -323,7 +407,7 @@ const pauseIncidentTimer = async (incident) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         });
-        
+
         if (response.ok) {
             // Stop monitoring when paused
             if (activeTimers.value.has(incident.id)) {
@@ -346,7 +430,7 @@ const resumeIncidentTimer = async (incident) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         });
-        
+
         if (response.ok) {
             // Resume monitoring
             startTimerMonitoring(student, incident, incident.remaining_minutes || 120)
@@ -367,12 +451,12 @@ const completeIncidentTimer = async (incident) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         });
-        
+
         if (response.ok) {
             // Trigger completion notification
             const integration = integrateIncidentNotifications()
             integration.handleTimerStatusUpdate('completed', student, incident)
-            
+
             // Stop monitoring
             if (activeTimers.value.has(incident.id)) {
                 stopTimerMonitoring()
@@ -415,7 +499,7 @@ const viewIncident = async (incident) => {
                 'Accept': 'application/json'
             }
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             selectedIncident.value = incident;
@@ -455,7 +539,7 @@ const refreshIncidentData = async () => {
                 'Accept': 'application/json'
             }
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             // Update the incidents data

@@ -1,29 +1,43 @@
 <template>
     <Head title="Create Oral Health Examination" />
-    <div class="min-h-screen bg-gray-50 p-4">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
         <div class="max-w-6xl mx-auto">
-            <div class="bg-white shadow rounded-lg p-6">
-                <!-- Student Information Header -->
-                <div class="text-center mb-6">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-2">Pupil Oral Health Examination</h1>
-                    <p class="text-gray-600">Naawan Central School</p>
+            <!-- Enhanced Header -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 mb-8 backdrop-blur-sm">
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="pi pi-plus text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">Create Oral Health Examination</h1>
+                            <p class="text-slate-600 font-medium">Add new dental assessment for {{ student.full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 border border-slate-200/50">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-slate-600 font-semibold">Student:</span>
+                                <div class="font-bold text-slate-900">{{ student.full_name }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Grade:</span>
+                                <div class="font-bold text-slate-900">{{ gradeLevel }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">LRN:</span>
+                                <div class="font-mono font-bold text-slate-900">{{ student.lrn || 'Not Available' }}</div>
+                            </div>
+                            <div>
+                                <span class="text-slate-600 font-semibold">Section:</span>
+                                <div class="font-bold text-slate-900">{{ student.section || 'Not Assigned' }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Student Details -->
-                <div class="bg-gray-50 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4">
-                    <div>
-                        <span class="font-semibold text-gray-700">Student:</span> {{ student.full_name }}
-                    </div>
-                    <div>
-                        <span class="font-semibold text-gray-700">Grade Level:</span> {{ gradeLevel }}
-                    </div>
-                    <div>
-                        <span class="font-semibold text-gray-700">LRN:</span> {{ student.lrn || '10000000001' }}
-                    </div>
-                    <div>
-                        <span class="font-semibold text-gray-700">Section:</span> {{ student.section || 'Not Assigned' }}
-                    </div>
-                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8 backdrop-blur-sm">
 
                 <!-- Draft Restored Notification -->
                 <div v-if="showDraftNotification" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -389,14 +403,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Confirmation Dialog -->
+    <ConfirmDialog />
 </template>
 
 <script setup>
 import { Head, useForm, usePage, router } from '@inertiajs/vue3'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from 'primevue/useconfirm'
 import { computed, ref, onMounted, nextTick } from 'vue'
 import { useFormPersistence } from '@/composables/useFormPersistence'
+import { useToastStore } from '@/Stores/toastStore'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import dental chart styles
@@ -482,6 +502,10 @@ const initializeConditions = () => {
     })
     return conditions
 }
+
+// Initialize composables
+const confirm = useConfirm()
+const { showSuccess, showError } = useToastStore()
 
 const form = useForm({
     student_id: props.student.id,
@@ -857,23 +881,45 @@ const validateForm = () => {
 const errors = ref({})
 
 const submit = () => {
+    // Show confirmation dialog
+    confirm.require({
+        message: 'Are you sure you want to create this oral health examination record?',
+        header: 'Confirm Creation',
+        icon: 'pi pi-exclamation-triangle',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Create Record',
+            severity: 'success'
+        },
+        accept: () => {
+            // Proceed with form submission
+            submitForm()
+        }
+    })
+}
+
+const submitForm = () => {
     updateFormData()
-    
+
     // Convert conditions to database format
     const dbConditions = {}
     oralHealthConditions.forEach(condition => {
         if (form.conditions[condition.key + '_present']) {
             let conditionValue = form.conditions[condition.key + '_date'] || new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: '2-digit'})
-            
+
             // For "others_specify", append the specification text
             if (condition.key === 'others_specify' && form.conditions[condition.key + '_specification']) {
                 conditionValue += ` - ${form.conditions[condition.key + '_specification']}`
             }
-            
+
             dbConditions[condition.key] = conditionValue
         }
     })
-    
+
     // Update conditions in database format
     form.conditions = dbConditions
 
@@ -883,6 +929,7 @@ const submit = () => {
 
     if (Object.keys(validationErrors).length > 0) {
         console.log('Form validation failed:', validationErrors)
+        showError('Validation Error', 'Please fix the validation errors before submitting.')
         return
     }
 
@@ -892,6 +939,7 @@ const submit = () => {
         preserveScroll: true,
         onSuccess: () => {
             console.log('Form submitted successfully')
+            showSuccess('Success', 'Oral health examination record created successfully!')
             // Clear saved form data on successful submission
             onSubmitSuccess()
             errors.value = {} // Clear validation errors on success
@@ -899,6 +947,7 @@ const submit = () => {
         },
         onError: (serverErrors) => {
             console.error('Form submission errors:', serverErrors)
+            showError('Submission Error', 'Failed to create oral health examination record. Please try again.')
             // Merge server errors with client validation errors
             errors.value = { ...errors.value, ...serverErrors }
         }

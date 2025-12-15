@@ -228,8 +228,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Avatar from 'primevue/avatar'
-import { useToast } from 'primevue/usetoast'
-import Toast from 'primevue/toast'
+import { useToastStore } from '@/Stores/toastStore'
 // Import shared CRUD form styles
 import '../../../css/pages/shared/CrudForm.css'
 // Import page-specific styles
@@ -243,6 +242,9 @@ const props = defineProps({
 })
 
 const page = usePage()
+
+// Toast store
+const { showSuccess, showError } = useToastStore()
 
 // Reactive data
 const searchQuery = ref('')

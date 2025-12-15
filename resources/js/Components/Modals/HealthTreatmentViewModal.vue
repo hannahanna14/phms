@@ -114,14 +114,12 @@ try {
 // Watch for visibility changes to start/stop timer monitoring
 watch(() => props.visible, (newVisible) => {
     if (newVisible && props.timerStatus?.status === 'active' && props.remainingMinutes > 0 && startTimerMonitoring) {
-        console.log('✅ Starting timer monitoring for health treatment modal:', props.treatment?.title);
         try {
             startTimerMonitoring(props.student, props.treatment, props.remainingMinutes);
         } catch (error) {
-            console.error('❌ Failed to start timer monitoring:', error);
+            console.error('Failed to start timer monitoring:', error);
         }
     } else if (!newVisible && stopTimerMonitoring) {
-        console.log('🛑 Stopping timer monitoring for health treatment modal');
         try {
             stopTimerMonitoring();
         } catch (error) {

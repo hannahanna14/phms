@@ -5,9 +5,12 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import ProgressBar from 'primevue/progressbar'
 import Badge from 'primevue/badge'
-import Timeline from 'primevue/timeline'
 import Dropdown from 'primevue/dropdown'
+import Dialog from 'primevue/dialog'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 import { usePage, router } from '@inertiajs/vue3'
+import SkeletonLoader from '@/Components/SkeletonLoader.vue'
 
 const page = usePage()
 
@@ -134,6 +137,12 @@ const summaryStats = ref([
     { label: 'Dewormed', value: 0, color: 'blue' },
     { label: 'Not Dewormed', value: 0, color: 'red' }
 ])
+
+// Student list modal
+const showStudentModal = ref(false)
+const modalTitle = ref('')
+const studentList = ref([])
+const loadingStudents = ref(false)
 
 // Helper functions for dynamic chart colors
 const generateColors = (count) => {
@@ -609,6 +618,115 @@ const onFilterChange = () => {
     refreshDashboardData()
 }
 
+// Handle summary stat click to show student list
+const onStatClick = async (stat) => {
+    loadingStudents.value = true
+    showStudentModal.value = true
+
+    let value = stat.label.toLowerCase().replace(/[/\s]/g, '_')
+
+    // Map values based on the current graph type
+    switch (selectedGraphType.value) {
+        case 'deworming':
+            if (value === 'dewormed') {
+                value = 'dewormed'
+            } else if (value === 'not_dewormed') {
+                value = 'not_dewormed'
+            }
+            break
+
+        case 'bmi':
+            if (value === 'normal_bmi') {
+                value = 'normal'
+            } else if (value === 'underweight') {
+                value = 'underweight'
+            } else if (value === 'overweight/obese') {
+                value = 'overweight_obese'
+            }
+            break
+
+        case 'nutritionalHeight':
+            if (value === 'normal_height') {
+                value = 'normal'
+            } else if (value === 'mild_stunting') {
+                value = 'mild_stunting'
+            } else if (value === 'severe_stunting') {
+                value = 'severe_stunting'
+            }
+            break
+
+        case 'ironSupplement':
+            if (value === 'positive') {
+                value = 'positive'
+            } else if (value === 'negative') {
+                value = 'negative'
+            }
+            break
+
+        case 'deformities':
+            if (value === 'none') {
+                value = 'none'
+            } else {
+                value = 'has_deformities'
+            }
+            break
+
+        default:
+            // For examination metrics (skin, eyes, ears, etc.)
+            const label = stat.label.toLowerCase()
+            if (['normal', 'clear', 'none', 'passed'].includes(label)) {
+                value = 'normal'
+            } else {
+                value = 'abnormal'
+            }
+            break
+    }
+
+    let criteria = {
+        type: selectedGraphType.value,
+        value: value,
+        grade_level: selectedGradeLevel.value,
+        section: selectedSection.value
+    }
+
+    // Set modal title
+    modalTitle.value = `${stat.label} Students - ${availableGraphs.value.find(g => g.value === selectedGraphType.value)?.label || 'Health Metric'}`
+
+    try {
+        // Fetch student list from API
+        const response = await fetch(`/api/dashboard/students-by-criteria?${new URLSearchParams(criteria)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+
+        if (response.ok) {
+            const data = await response.json()
+            studentList.value = data.students || []
+        } else {
+            console.error('Failed to fetch student list')
+            studentList.value = []
+        }
+    } catch (error) {
+        console.error('Error fetching student list:', error)
+        studentList.value = []
+    } finally {
+        loadingStudents.value = false
+    }
+}
+
+const closeStudentModal = () => {
+    showStudentModal.value = false
+    studentList.value = []
+}
+
+const onStudentClick = (event) => {
+    // Navigate to the student's health examination page
+    const student = event.data
+    window.location.href = `/pupil-health/health-examination/${student.id}`
+}
+
 // Function to refresh dashboard data based on selected year
 const refreshDashboardData = async () => {
     try {
@@ -660,26 +778,41 @@ onMounted(() => {
         // Update Health Examination Completion by Grade
         if (dashboardData.value.healthCompletionByGrade) {
             healthCompletionData.value.datasets[0].data = dashboardData.value.healthCompletionByGrade
+            // Update labels if provided (for teachers with limited grade access)
+            if (dashboardData.value.healthCompletionGradeLabels && dashboardData.value.healthCompletionGradeLabels.length > 0) {
+                healthCompletionData.value.labels = dashboardData.value.healthCompletionGradeLabels.map(label => {
+                    return label.replace('Grade ', '').replace('Kinder ', 'Kinder')
+                })
+            }
         } else {
-            // Sample data - replace with actual calculation
-            healthCompletionData.value.datasets[0].data = [85, 92, 78, 88, 95, 82, 90]
+            // Default data if no data available
+            healthCompletionData.value.datasets[0].data = [0, 0, 0, 0, 0, 0, 0]
         }
 
-        // Update Health Issues Distribution
-        if (dashboardData.value.healthIssues) {
+        // Update Health Issues Distribution with actual data
+        const oralHealthConditionsCount = dashboardData.value.oralHealth?.conditions?.length || 0
+        const notDewormedCount = dashboardData.value.deworming?.notDewormed || 0
+        const ironNegativeCount = dashboardData.value.ironSupplement?.negative || 0
+        const deformitiesCount = (dashboardData.value.deformities?.congenital || 0) +
+                                (dashboardData.value.deformities?.acquired || 0) +
+                                (dashboardData.value.deformities?.other || 0)
+
+        // Calculate students with abnormal examination findings
+        const abnormalEyes = Object.entries(dashboardData.value.examinations?.eyes || {})
+            .filter(([key]) => !['Normal', 'normal', 'Clear', 'clear'].includes(key))
+            .reduce((sum, [, count]) => sum + count, 0)
+        const abnormalEars = Object.entries(dashboardData.value.examinations?.ears || {})
+            .filter(([key]) => !['Normal', 'normal', 'Clear', 'clear'].includes(key))
+            .reduce((sum, [, count]) => sum + count, 0)
+
             healthIssuesData.value.datasets[0].data = [
-                dashboardData.value.healthIssues.dental || 12,
-                dashboardData.value.healthIssues.bmi || 8,
-                dashboardData.value.healthIssues.vision || 5,
-                dashboardData.value.healthIssues.incidents || 3,
-                dashboardData.value.oralHealth?.conditions?.length || 15,
-                dashboardData.value.healthIssues.nutritional || 7
-            ]
-        } else {
-            // Use actual oral health data or sample data
-            const oralHealthConditionsCount = dashboardData.value.oralHealth?.conditions?.length || 15
-            healthIssuesData.value.datasets[0].data = [12, 8, 5, 3, oralHealthConditionsCount, 7]
-        }
+            oralHealthConditionsCount, // Dental Issues
+            notDewormedCount, // BMI Concerns (using deworming as proxy)
+            abnormalEyes, // Vision Problems
+            deformitiesCount, // Deformities
+            ironNegativeCount, // Iron Supplementation issues
+            abnormalEars // Hearing issues
+        ]
 
         // Initialize with default chart (deworming)
         safeUpdateChart('deworming')
@@ -739,6 +872,12 @@ onMounted(() => {
 
         healthAlerts.value = alerts
         
+
+        // Update school year
+        if (dashboardData.value.schoolYear) {
+            schoolYear.value = dashboardData.value.schoolYear
+        }
+
         // Update Health Metrics from database
         if (dashboardData.value.healthMetrics) {
             healthMetrics.value = dashboardData.value.healthMetrics
@@ -747,6 +886,16 @@ onMounted(() => {
             const metrics = []
             
             if (totalStudents.value > 0) {
+                // Overall Health Completion Rate
+                const overallCompletion = dashboardData.value.overallCompletionRate || 0
+                metrics.push({
+                    label: 'Health Exam Completion',
+                    value: overallCompletion,
+                    target: 100,
+                    icon: 'pi pi-check-circle',
+                    color: overallCompletion >= 90 ? 'success' : overallCompletion >= 70 ? 'warning' : 'danger'
+                })
+
                 // Deworming coverage
                 const dewormingCoverage = Math.round(((dashboardData.value.deworming?.dewormed || 0) / totalStudents.value) * 100)
                 metrics.push({
@@ -765,16 +914,6 @@ onMounted(() => {
                     target: 100,
                     icon: 'pi pi-heart',
                     color: ironCoverage >= 80 ? 'success' : ironCoverage >= 60 ? 'warning' : 'danger'
-                })
-
-                // Health records completion
-                const healthRecordsCompletion = Math.round((dewormingTotal / totalStudents.value) * 100)
-                metrics.push({
-                    label: 'Health Records',
-                    value: healthRecordsCompletion,
-                    target: 100,
-                    icon: 'pi pi-file',
-                    color: healthRecordsCompletion >= 95 ? 'success' : healthRecordsCompletion >= 80 ? 'warning' : 'danger'
                 })
             }
 
@@ -812,37 +951,7 @@ const healthAlerts = ref([])
 // Health program progress (will be populated from database)
 const healthMetrics = ref([])
 
-// Recent Activities Timeline
-const recentActivities = ref([
-    {
-        date: new Date(),
-        icon: 'pi pi-user-plus',
-        color: 'green',
-        title: 'New Health Record Added',
-        description: 'Health examination completed for John Smith (Grade 5)'
-    },
-    {
-        date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        icon: 'pi pi-file',
-        color: 'blue',
-        title: 'Health Report Generated',
-        description: 'Monthly health report generated for Grade 4 students'
-    },
-    {
-        date: new Date(Date.now() - 4 * 60 * 60 * 1000),
-        icon: 'pi pi-heart',
-        color: 'pink',
-        title: 'Oral Health Screening',
-        description: 'Dental examination completed for 12 students'
-    },
-    {
-        date: new Date(Date.now() - 6 * 60 * 60 * 1000),
-        icon: 'pi pi-shield',
-        color: 'orange',
-        title: 'Vaccination Updated',
-        description: 'COVID-19 booster records updated for Grade 6'
-    }
-])
+// Recent Activities Timeline (will be populated from backend)
 
 
 // Computed properties for dynamic content
@@ -856,7 +965,7 @@ const urgentAlertsCount = computed(() => {
     return healthAlerts.value.filter(alert => alert.type === 'danger').length
 })
 
-// Format time for timeline
+
 const handleAlertClick = (alert) => {
     switch (alert.type) {
         case 'danger':
@@ -871,6 +980,59 @@ const handleAlertClick = (alert) => {
     }
 }
 </script>
+
+<style scoped>
+.custom-timeline .p-timeline-event-opposite {
+    display: none;
+}
+
+.custom-timeline .p-timeline-event-content {
+    padding-left: 0;
+}
+
+.custom-timeline .p-card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb;
+}
+
+.custom-timeline .p-card .p-card-content {
+    padding: 1rem;
+}
+
+/* Progress bar custom colors */
+.progress-success :deep(.p-progressbar-value) {
+    background-color: #10b981 !important;
+}
+
+.progress-warning :deep(.p-progressbar-value) {
+    background-color: #f59e0b !important;
+}
+
+.progress-danger :deep(.p-progressbar-value) {
+    background-color: #ef4444 !important;
+}
+
+/* Student list modal styling */
+:deep(.p-datatable .p-datatable-thead > tr > th) {
+    background-color: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 600;
+    color: #374151;
+}
+
+:deep(.p-datatable .p-datatable-tbody > tr:nth-child(even)) {
+    background-color: #f9fafb;
+}
+
+:deep(.p-datatable .p-datatable-tbody > tr:hover) {
+    background-color: #f3f4f6;
+}
+
+:deep(.p-paginator) {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+</style>
 
 <template>
     <!-- Header with Welcome Message and Demographics -->
@@ -898,6 +1060,86 @@ const handleAlertClick = (alert) => {
         </div>
     </div>
 
+    <!-- Health Completion Rate Overview -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        <!-- Health Completion Chart -->
+        <div class="xl:col-span-2">
+            <Card class="shadow-md">
+                <template #title>
+                    <div class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="pi pi-chart-line mr-2 text-blue-500"></i>
+                        Health Examination Completion Rate by Grade Level
+                        <Badge :value="`SY ${schoolYear}`" severity="info" class="ml-2" />
+                    </div>
+                </template>
+                <template #content>
+                    <div v-if="isLoading" class="p-8">
+                        <SkeletonLoader type="card" :lines="5" />
+                    </div>
+                    <div v-else>
+                        <Chart
+                            type="line"
+                            :data="healthCompletionData"
+                            :options="healthCompletionOptions"
+                            class="h-64"
+                        />
+                        <div class="mt-4 text-center">
+                            <p class="text-sm text-gray-600">
+                                Overall Completion Rate:
+                                <span class="font-semibold text-lg" :class="dashboardData.overallCompletionRate >= 80 ? 'text-green-600' : dashboardData.overallCompletionRate >= 60 ? 'text-yellow-600' : 'text-red-600'">
+                                    {{ dashboardData.overallCompletionRate || 0 }}%
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </template>
+            </Card>
+        </div>
+
+        <!-- Health Metrics Overview -->
+        <div class="xl:col-span-1">
+            <Card class="shadow-md">
+                <template #title>
+                    <div class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="pi pi-trophy mr-2 text-green-500"></i>
+                        Health Program Progress
+                    </div>
+                </template>
+                <template #content>
+                    <div v-if="isLoading" class="space-y-4">
+                        <SkeletonLoader type="list" :items="3" />
+                    </div>
+                    <div v-else class="space-y-4">
+                        <div v-for="metric in healthMetrics" :key="metric.label" class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-2">
+                                    <i :class="metric.icon" class="text-lg"></i>
+                                    <span class="text-sm font-medium text-gray-700">{{ metric.label }}</span>
+                                </div>
+                                <span class="text-sm font-bold" :class="{
+                                    'text-green-600': metric.color === 'success',
+                                    'text-yellow-600': metric.color === 'warning',
+                                    'text-red-600': metric.color === 'danger'
+                                }">
+                                    {{ metric.value }}%
+                                </span>
+                            </div>
+                            <ProgressBar
+                                :value="metric.value"
+                                :showValue="false"
+                                :class="{
+                                    'progress-success': metric.color === 'success',
+                                    'progress-warning': metric.color === 'warning',
+                                    'progress-danger': metric.color === 'danger'
+                                }"
+                            />
+                        </div>
+                    </div>
+                </template>
+            </Card>
+        </div>
+    </div>
+
     <!-- Interactive Dashboard Section -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <!-- Left Side: Health Metric Selector -->
@@ -909,9 +1151,8 @@ const handleAlertClick = (alert) => {
                 </div>
             </template>
             <template #content>
-                <div v-if="isLoading" class="flex justify-center items-center p-8">
-                    <i class="pi pi-spin pi-spinner text-2xl text-blue-500"></i>
-                    <span class="ml-2 text-gray-600">Loading health metrics...</span>
+                <div v-if="isLoading" class="p-4">
+                    <SkeletonLoader type="list" :items="8" />
                 </div>
                 <div v-else-if="hasError" class="text-center p-8">
                     <i class="pi pi-exclamation-triangle text-2xl text-red-500 mb-2"></i>
@@ -940,38 +1181,16 @@ const handleAlertClick = (alert) => {
         <div class="xl:col-span-2">
             <Card class="shadow-md">
                 <template #title>
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                         <div class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
                             <i class="pi pi-chart-pie mr-2 text-green-500"></i>
                             <span class="truncate">{{ availableGraphs.find(g => g.value === selectedGraphType)?.label || 'Health Metric' }}</span>
-                        </div>
-                        <!-- Grade Level and Section Filters (Hidden for Teachers) -->
-                        <div v-if="userRole !== 'teacher'" class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                            <div class="flex items-center space-x-2 w-full sm:w-auto">
-                                <label class="text-sm text-gray-600 whitespace-nowrap">Grade:</label>
-                                <Dropdown 
-                                    v-model="selectedGradeLevel" 
-                                    :options="availableGradeLevels" 
-                                    @change="onFilterChange"
-                                    class="w-full sm:w-32 text-sm"
-                                    placeholder="Select Grade"
-                                />
-                            </div>
-                            <div class="flex items-center space-x-2 w-full sm:w-auto">
-                                <label class="text-sm text-gray-600 whitespace-nowrap">Section:</label>
-                                <Dropdown 
-                                    v-model="selectedSection" 
-                                    :options="availableSections" 
-                                    @change="onFilterChange"
-                                    class="w-full sm:w-24 text-sm"
-                                    placeholder="Select Section"
-                                />
-                            </div>
-                        </div>
                     </div>
                 </template>
                 <template #content>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div v-if="isLoading" class="p-8">
+                        <SkeletonLoader type="card" :lines="5" />
+                    </div>
+                    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- Chart -->
                         <div class="flex flex-col items-center">
                             <Chart 
@@ -982,34 +1201,102 @@ const handleAlertClick = (alert) => {
                             />
                         </div>
                         
-                        <!-- Summary Stats -->
-                        <div class="space-y-4">
+                        <!-- Summary Stats with Click Functionality -->
+                        <div class="mt-6">
                             <h4 class="font-semibold text-gray-800 mb-4 text-lg">Summary Statistics</h4>
+                            <div class="space-y-3">
+                                <!-- Two-column grid for stats -->
+                                <div v-if="summaryStats.length <= 2" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div 
                                 v-for="stat in summaryStats" 
                                 :key="stat.label"
-                                class="flex items-center justify-between p-4 rounded-lg border-l-4 bg-gray-50"
+                                        @click="onStatClick(stat)"
+                                        class="flex items-center justify-between p-4 rounded-lg border-l-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-all duration-200"
                                 :class="{
-                                    'border-l-green-500 bg-green-50': stat.color === 'green',
-                                    'border-l-red-500 bg-red-50': stat.color === 'red',
-                                    'border-l-orange-500 bg-orange-50': stat.color === 'orange',
-                                    'border-l-blue-500 bg-blue-50': stat.color === 'blue'
+                                            'border-l-green-500 bg-green-50 hover:bg-green-100': stat.color === 'green',
+                                            'border-l-red-500 bg-red-50 hover:bg-red-100': stat.color === 'red',
+                                            'border-l-blue-500 bg-blue-50 hover:bg-blue-100': stat.color === 'blue',
+                                            'border-l-orange-500 bg-orange-50 hover:bg-orange-100': stat.color === 'orange'
+                                        }"
+                                    >
+                                        <div class="flex-1">
+                                            <span class="font-medium text-gray-700 text-sm block">{{ stat.label }}</span>
+                                            <span class="text-xs text-gray-500">Click to view students</span>
+                                        </div>
+                                        <span
+                                            class="text-2xl font-bold ml-3"
+                                            :class="{
+                                                'text-green-600': stat.color === 'green',
+                                                'text-red-600': stat.color === 'red',
+                                                'text-blue-600': stat.color === 'blue',
+                                                'text-orange-600': stat.color === 'orange'
+                                            }"
+                                        >
+                                            {{ stat.value }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- Three-column grid for stats -->
+                                <div v-else-if="summaryStats.length === 3" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div
+                                        v-for="stat in summaryStats"
+                                        :key="stat.label"
+                                        @click="onStatClick(stat)"
+                                        class="flex flex-col items-center justify-center p-4 rounded-lg border-l-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-all duration-200"
+                                        :class="{
+                                            'border-l-green-500 bg-green-50 hover:bg-green-100': stat.color === 'green',
+                                            'border-l-red-500 bg-red-50 hover:bg-red-100': stat.color === 'red',
+                                            'border-l-blue-500 bg-blue-50 hover:bg-blue-100': stat.color === 'blue',
+                                            'border-l-orange-500 bg-orange-50 hover:bg-orange-100': stat.color === 'orange'
                                 }"
                             >
-                                <div>
+                                        <span
+                                            class="text-3xl font-bold mb-1"
+                                            :class="{
+                                                'text-green-600': stat.color === 'green',
+                                                'text-red-600': stat.color === 'red',
+                                                'text-blue-600': stat.color === 'blue',
+                                                'text-orange-600': stat.color === 'orange'
+                                            }"
+                                        >
+                                            {{ stat.value }}
+                                        </span>
+                                        <span class="font-medium text-gray-700 text-xs text-center">{{ stat.label }}</span>
+                                        <span class="text-xs text-gray-500 mt-1">Click to view</span>
+                                    </div>
+                                </div>
+                                <!-- Single column for more than 3 stats -->
+                                <div v-else class="space-y-2">
+                                    <div
+                                        v-for="stat in summaryStats"
+                                        :key="stat.label"
+                                        @click="onStatClick(stat)"
+                                        class="flex items-center justify-between p-3 rounded-lg border-l-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-all duration-200"
+                                        :class="{
+                                            'border-l-green-500 bg-green-50 hover:bg-green-100': stat.color === 'green',
+                                            'border-l-red-500 bg-red-50 hover:bg-red-100': stat.color === 'red',
+                                            'border-l-blue-500 bg-blue-50 hover:bg-blue-100': stat.color === 'blue',
+                                            'border-l-orange-500 bg-orange-50 hover:bg-orange-100': stat.color === 'orange'
+                                        }"
+                                    >
+                                        <div class="flex-1">
                                     <span class="font-medium text-gray-700 text-sm">{{ stat.label }}</span>
+                                            <span class="text-xs text-gray-500 block">Click to view students</span>
                                 </div>
                                 <span 
-                                    class="text-2xl font-bold"
+                                            class="text-xl font-bold ml-3"
                                     :class="{
                                         'text-green-600': stat.color === 'green',
                                         'text-red-600': stat.color === 'red',
-                                        'text-orange-600': stat.color === 'orange',
-                                        'text-blue-600': stat.color === 'blue'
+                                                'text-blue-600': stat.color === 'blue',
+                                                'text-orange-600': stat.color === 'orange'
                                     }"
                                 >
                                     {{ stat.value }}
                                 </span>
+                                    </div>
+                                </div>
+                            </div>
                             </div>
                             
                             <!-- Additional Health Insights -->
@@ -1092,11 +1379,73 @@ const handleAlertClick = (alert) => {
                                     {{ Math.round((summaryStats[0]?.value || 0) / ((summaryStats[0]?.value || 0) + (summaryStats[1]?.value || 0)) * 100) }}% of students have no deformities.
                                     <span v-if="(summaryStats[1]?.value || 0) > 0" class="font-medium">{{ summaryStats[1]?.value }} students have deformities (congenital or acquired).</span>
                                 </p>
-                            </div>
                         </div>
                     </div>
                 </template>
             </Card>
         </div>
     </div>
+
+
+    <!-- Student List Modal -->
+    <Dialog
+        v-model:visible="showStudentModal"
+        :header="modalTitle"
+        modal
+        :style="{ width: '800px', maxHeight: '80vh' }"
+        :closable="!loadingStudents"
+        @hide="closeStudentModal"
+    >
+        <div v-if="loadingStudents" class="flex justify-center items-center py-8">
+            <i class="pi pi-spin pi-spinner text-2xl text-blue-500 mr-2"></i>
+            <span class="text-gray-600">Loading students...</span>
+        </div>
+
+        <div v-else-if="studentList.length === 0" class="text-center py-8">
+            <i class="pi pi-info-circle text-3xl text-gray-400 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Students Found</h3>
+            <p class="text-gray-500">No students match the selected criteria.</p>
+        </div>
+
+        <div v-else>
+            <DataTable
+                :value="studentList"
+                :paginator="studentList.length > 10"
+                :rows="10"
+                :rowsPerPageOptions="[5, 10, 25]"
+                class="p-datatable-sm"
+                stripedRows
+                showGridlines
+                responsiveLayout="scroll"
+                @row-click="onStudentClick"
+                selectionMode="single"
+                tableClass="cursor-pointer hover:bg-blue-50"
+            >
+                <Column field="lrn" header="LRN" style="width: 120px"></Column>
+                <Column field="full_name" header="Student Name" style="min-width: 200px"></Column>
+                <Column field="grade_level" header="Grade" style="width: 100px"></Column>
+                <Column field="section" header="Section" style="width: 80px"></Column>
+                <Column field="sex" header="Gender" style="width: 80px"></Column>
+                <Column field="age" header="Age" style="width: 60px"></Column>
+                <template #empty>
+                    <div class="text-center py-4">
+                        <i class="pi pi-info-circle text-gray-400 mb-2"></i>
+                        <p class="text-gray-500">No students found</p>
+    </div>
+</template>
+            </DataTable>
+        </div>
+
+        <template #footer>
+            <div class="flex justify-end">
+                <Button
+                    label="Close"
+                    icon="pi pi-times"
+                    class="p-button-text"
+                    @click="closeStudentModal"
+                    :disabled="loadingStudents"
+                />
+            </div>
+        </template>
+    </Dialog>
 </template>

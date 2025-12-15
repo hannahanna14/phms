@@ -24,8 +24,8 @@
         </button>
 
         <!-- Dropdown Menu -->
-        <div 
-            v-if="isOpen"
+        <div
+            v-show="isOpen"
             class="notification-dropdown"
             @click.stop
         >
@@ -197,6 +197,7 @@ const unreadCount = computed(() => {
     return props.notifications.filter(n => !n.read).length
 })
 
+
 // Methods
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value
@@ -314,7 +315,7 @@ const formatTime = (timestamp) => {
 
 // Close dropdown when clicking outside
 const handleClickOutside = (event) => {
-    if (!event.target.closest('.relative')) {
+    if (!event.target.closest('.notification-container')) {
         closeDropdown()
     }
 }

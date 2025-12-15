@@ -12,6 +12,7 @@ import Chart from 'primevue/chart';
 import Aura from '@primevue/themes/aura';
 import 'primeicons/primeicons.css'
 import Tooltip from 'primevue/tooltip';
+import ConfirmationService from 'primevue/confirmationservice';
 
 import MainLayout from './Layouts/MainLayout.vue'
 
@@ -54,6 +55,7 @@ createInertiaApp({
             }
         }
       })
+      .use(ConfirmationService)
       .component('Head', Head)
       .component('Link', Link)
       .component('Chart', Chart)

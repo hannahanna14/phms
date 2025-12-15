@@ -131,6 +131,7 @@ import Menubar from 'primevue/menubar'
 import Avatar from 'primevue/avatar'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+import Badge from 'primevue/badge'
 import ToastNotification from '@/Components/ToastNotification.vue'
 // Import the logo
 import logoSrc from '@/assets/logo.png'
@@ -188,36 +189,23 @@ const {
     addNotification,
     removeNotification,
     clearAllNotifications,
-    clearNotificationsForRole
+    clearNotificationsForRole,
+    getFilteredNotifications
 } = useNotificationStore()
 
 // Computed property for role-based filtered notifications
 const filteredNotifications = computed(() => {
     const userRole = page.props.auth?.user?.role || 'teacher'
 
-    // Simple role-based filtering
-    if (userRole === 'teacher') {
-        return notifications.value.filter(notification => {
-            // Block timer-related notifications for teachers
-            if (notification.title && (
-                notification.title.includes('Timer Expired') ||
-                notification.title.includes('Timer Warning') ||
-                notification.title.includes('Treatment')
-            )) {
-                return false
-            }
-            return true
-        })
-    }
-
-    // For admin and nurse, show all notifications
-    return notifications.value
+    // Use the notification store's proper filtering method
+    return getFilteredNotifications(userRole)
 })
 
 // Notification methods
 const markNotificationAsRead = (notificationId) => {
     markAsRead(notificationId)
 }
+
 
 const markAllNotificationsAsRead = () => {
     const userId = page.props.auth?.user?.id
@@ -345,10 +333,10 @@ const sideBarItems = computed(() => {
             separator: true
         })
         //.push({
-        //    label: 'Pupil Management',
-        //    icon: 'pi pi-users',
-        //    route: '/student-management'
-        //})
+          //  label: 'Pupil Management',
+          //  icon: 'pi pi-users',
+          //  route: '/student-management'
+       // })
         baseItems.push({
             label: 'Export Data',
             icon: 'pi pi-download',
@@ -539,6 +527,7 @@ const stopGlobalTimerMonitoring = () => {
 onMounted(() => {
     const userId = page.props.auth?.user?.id
     initializeNotifications(userId)
+
 
     // Clear cached notifications based on current user role
     const userRole = page.props.auth?.user?.role
