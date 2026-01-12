@@ -35,7 +35,17 @@ class OralHealthReportController extends Controller
                 ->toArray();
             $studentsQuery = Student::whereIn('id', $studentIds);
         } else {
-            $studentsQuery = Student::query();
+            // Calculate current school year
+            $currentYear = date('Y');
+            $currentMonth = date('n');
+            if ($currentMonth >= 6) {
+                $currentSchoolYear = $currentYear . '-' . ($currentYear + 1);
+            } else {
+                $currentSchoolYear = ($currentYear - 1) . '-' . $currentYear;
+            }
+
+            $studentsQuery = Student::where('is_active', true)
+                ->where('school_year', $currentSchoolYear);
             $gradeLevel = $request->grade_level;
             if ($gradeLevel && $gradeLevel !== 'All') {
                 $studentsQuery->where('grade_level', $gradeLevel);

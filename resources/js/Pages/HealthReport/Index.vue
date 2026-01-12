@@ -867,9 +867,9 @@ const generateReport = async () => {
 
     console.log('Selected students:', formData.value.selectedStudents);
     console.log('Checked students:', checkedStudents);
-    console.log('Selected grade:', selectedGrade, 'Type:', typeof selectedGrade);
+    console.log('Selected grade:', selectedGrade.value, 'Type:', typeof selectedGrade.value);
 
-    if (!selectedGrade && checkedStudents.length === 0) {
+    if (!selectedGrade.value && checkedStudents.length === 0) {
         showError('Selection Required', 'Please select a grade level or check at least one student');
         return;
     }
@@ -878,16 +878,16 @@ const generateReport = async () => {
     const params = new URLSearchParams();
 
     // Add grade level - use selected grade or 'All' if students are selected
-    if (selectedGrade && selectedGrade !== 'All' && typeof selectedGrade === 'string') {
-        params.append('grade_level', selectedGrade.replace('Grade ', ''));
+    if (selectedGrade.value && selectedGrade.value !== 'All') {
+        params.append('grade_level', selectedGrade.value.replace('Grade ', ''));
     } else if (checkedStudents.length > 0) {
         params.append('grade_level', 'All');
     } else {
         params.append('grade_level', 'All');
     }
 
-    // Add school year
-    params.append('school_year', checkedStudents.length > 0 ? '2024-2025' : (selectedGrade && typeof selectedGrade === 'string' ? getSchoolYearForGrade(selectedGrade) : '2024-2025'));
+    // Add school year - use current school year
+    params.append('school_year', usePage().props.currentSchoolYear || '2024-2025');
 
     // Add section if specified
     if (formData.value.section && formData.value.section !== 'All') {
@@ -932,7 +932,7 @@ const generateReport = async () => {
 
     // Open PDF directly (server-side generation)
     const url = `/health-report/export-pdf?${params.toString()}`;
-    window.open(url, '_blank');
+    window.location.href = url;
 
     // Clear saved form data after successful generation
     onSubmitSuccess();

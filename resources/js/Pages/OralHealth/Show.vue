@@ -157,17 +157,17 @@
                                     </tr>
                                     <tr v-for="treatment in oralTreatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2" style="max-width: 150px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.title">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.title">
                                                 {{ treatment.title }}
                                             </div>
                                         </td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.chief_complaint">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.chief_complaint">
                                                 {{ treatment.chief_complaint }}
                                             </div>
                                         </td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.treatment">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.treatment">
                                                 {{ treatment.treatment }}
                                             </div>
                                         </td>
@@ -181,7 +181,7 @@
                                                     severity="info"
                                                     @click="editOralTreatment(treatment)"
                                                     class="!p-1 !text-xs"
-                                                    title="Edit Treatment"
+                                                    v-tooltip.top="'Edit Treatment'"
                                                 />
                                                 <Button
                                                     label="View"
@@ -191,7 +191,7 @@
                                                     outlined
                                                     @click="viewOralTreatment(treatment)"
                                                     class="!p-1 !text-xs"
-                                                    title="View Treatment"
+                                                    v-tooltip.top="'View Treatment'"
                                                 />
                                             </div>
                                         </td>

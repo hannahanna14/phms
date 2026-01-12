@@ -110,7 +110,17 @@ class HealthReportController extends Controller
                 $studentsQuery = Student::whereIn('id', $assignedStudentIds);
             } else {
                 // Admins can see all students
-                $studentsQuery = Student::query();
+                // Calculate current school year
+                $currentYear = date('Y');
+                $currentMonth = date('n');
+                if ($currentMonth >= 6) {
+                    $currentSchoolYear = $currentYear . '-' . ($currentYear + 1);
+                } else {
+                    $currentSchoolYear = ($currentYear - 1) . '-' . $currentYear;
+                }
+
+                $studentsQuery = Student::where('is_active', true)
+                    ->where('school_year', $currentSchoolYear);
             }
 
             // Apply grade level filter (skip if "All" is selected)
@@ -319,7 +329,17 @@ class HealthReportController extends Controller
                     $studentsQuery = Student::whereIn('id', $assignedStudentIds);
                 } else {
                     // Admins can see all students
-                    $studentsQuery = Student::query();
+                    // Calculate current school year
+                    $currentYear = date('Y');
+                    $currentMonth = date('n');
+                    if ($currentMonth >= 6) {
+                        $currentSchoolYear = $currentYear . '-' . ($currentYear + 1);
+                    } else {
+                        $currentSchoolYear = ($currentYear - 1) . '-' . $currentYear;
+                    }
+
+                    $studentsQuery = Student::where('is_active', true)
+                        ->where('school_year', $currentSchoolYear);
                 }
 
                 // Apply grade level filter (skip if "All" is selected)
@@ -507,7 +527,7 @@ class HealthReportController extends Controller
             }
 
             $filename = 'health-report-grade-' . ($gradeLevel ?: 'selected') . '.pdf';
-            return $pdf->stream($filename);
+            return $pdf->download($filename);
 
         } catch (\Exception $e) {
             Log::error('PDF Export failed: ' . $e->getMessage());

@@ -156,12 +156,12 @@
                                     <tr v-for="incident in incidents" :key="incident.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2">{{ formatDate(incident.date) }}</td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="incident.complaint">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="incident.complaint">
                                                 {{ incident.complaint }}
                                             </div>
                                         </td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="incident.actions_taken">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="incident.actions_taken">
                                                 {{ incident.actions_taken }}
                                             </div>
                                         </td>
@@ -175,7 +175,7 @@
                                                     outlined
                                                     @click="viewIncident(incident)"
                                                     class="!p-1 !text-xs"
-                                                    title="View Incident"
+                                                    v-tooltip.top="'View Incident'"
                                                 />
                                                 <Button
                                                     v-if="userRole === 'nurse'"
@@ -184,7 +184,7 @@
                                                     severity="warning"
                                                     @click="editIncident(incident)"
                                                     class="!p-1 !text-xs"
-                                                    title="Edit Incident"
+                                                    v-tooltip.top="'Edit Incident'"
                                                 />
                                             </div>
                                         </td>
@@ -299,9 +299,8 @@ const selectedGrade = ref(getInitialGrade());
 
 const fetchIncidents = async () => {
     try {
-        // Extract grade number for API call
-        const gradeForApi = selectedGrade.value.replace('Grade ', '');
-        const response = await axios.get(`/api/incidents/student/${student.id}?grade=${gradeForApi}`, {
+        // Use full grade string for API call to match database format
+        const response = await axios.get(`/api/incidents/student/${student.id}?grade=${selectedGrade.value}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -318,9 +317,8 @@ const fetchIncidents = async () => {
 
 const onGradeChange = async () => {
     // Update URL without page reload
-    const gradeForUrl = selectedGrade.value.replace('Grade ', '');
     const newUrl = new URL(window.location);
-    newUrl.searchParams.set('grade', gradeForUrl);
+    newUrl.searchParams.set('grade', selectedGrade.value);
     window.history.replaceState({}, '', newUrl);
 
     // Show skeleton loaders when switching grades

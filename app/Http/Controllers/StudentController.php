@@ -1085,18 +1085,15 @@ class StudentController extends Controller
 
     private function getSchoolYearForGrade($grade)
     {
-        // Map grade levels to school years
-        $gradeToYear = [
-            'Kinder 2' => '2023-2024',
-            'Grade 1' => '2024-2025',
-            'Grade 2' => '2023-2024',
-            'Grade 3' => '2022-2023',
-            'Grade 4' => '2021-2022',
-            'Grade 5' => '2020-2021',
-            'Grade 6' => '2019-2020'
-        ];
-
-        return $gradeToYear[$grade] ?? '2024-2025';
+        // Compute current school year dynamically (school year starts in June)
+        $nowYear = date('Y');
+        $nowMonth = date('n');
+        
+        if ($nowMonth >= 6) {
+            return $nowYear . '-' . ($nowYear + 1);
+        } else {
+            return ($nowYear - 1) . '-' . $nowYear;
+        }
     }
 
     /**

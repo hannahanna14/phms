@@ -455,17 +455,17 @@ onMounted(() => {
                                     </tr>
                                     <tr v-for="treatment in treatmentRecords" :key="treatment.id" class="border-b hover:bg-gray-50">
                                         <td class="py-2" style="max-width: 150px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.title">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.title">
                                                 {{ treatment.title }}
                                             </div>
                                         </td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.chief_complaint">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.chief_complaint">
                                                 {{ treatment.chief_complaint }}
                                             </div>
                                         </td>
                                         <td class="py-2" style="max-width: 200px; word-break: break-all;">
-                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" :title="treatment.treatment">
+                                            <div class="overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-clamp: 2;" v-tooltip.top="treatment.treatment">
                                                 {{ treatment.treatment }}
                                             </div>
                                         </td>
@@ -479,7 +479,7 @@ onMounted(() => {
                                                     severity="info"
                                                     @click="editTreatment(treatment)"
                                                     class="!p-1 !text-xs"
-                                                    title="Edit Treatment"
+                                                    v-tooltip.top="'Edit Treatment'"
                                                 />
                                                 <Button
                                                     label="View"
@@ -489,7 +489,7 @@ onMounted(() => {
                                                     outlined
                                                     @click="viewTreatment(treatment)"
                                                     class="!p-1 !text-xs"
-                                                    title="View Treatment"
+                                                    v-tooltip.top="'View Treatment'"
                                                 />
                                             </div>
                                         </td>
@@ -571,7 +571,7 @@ onMounted(() => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Skin:</span>
-                                        <span class="font-medium" :title="currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify ? currentRecord.skin_specify : (currentRecord.skin || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify ? currentRecord.skin_specify : (currentRecord.skin || 'Not examined')">
                                             {{
                                                 (currentRecord.skin === 'Others (specify)' && currentRecord.skin_specify
                                                     ? currentRecord.skin_specify
@@ -584,7 +584,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Scalp:</span>
-                                        <span class="font-medium" :title="currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify ? currentRecord.scalp_specify : (currentRecord.scalp || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify ? currentRecord.scalp_specify : (currentRecord.scalp || 'Not examined')">
                                             {{
                                                 (currentRecord.scalp === 'Others (specify)' && currentRecord.scalp_specify
                                                     ? currentRecord.scalp_specify
@@ -597,7 +597,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Eyes:</span>
-                                        <span class="font-medium" :title="currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify ? currentRecord.eye_specify : (currentRecord.eye || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify ? currentRecord.eye_specify : (currentRecord.eye || 'Not examined')">
                                             {{
                                                 (currentRecord.eye === 'Others (specify)' && currentRecord.eye_specify
                                                     ? currentRecord.eye_specify
@@ -610,7 +610,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Ears:</span>
-                                        <span class="font-medium" :title="currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify ? currentRecord.ear_specify : (currentRecord.ear || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify ? currentRecord.ear_specify : (currentRecord.ear || 'Not examined')">
                                             {{
                                                 (currentRecord.ear === 'Others (specify)' && currentRecord.ear_specify
                                                     ? currentRecord.ear_specify
@@ -623,7 +623,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Nose:</span>
-                                        <span class="font-medium" :title="currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify ? currentRecord.nose_specify : (currentRecord.nose || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify ? currentRecord.nose_specify : (currentRecord.nose || 'Not examined')">
                                             {{
                                                 (currentRecord.nose === 'Others (specify)' && currentRecord.nose_specify
                                                     ? currentRecord.nose_specify
@@ -636,7 +636,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Mouth:</span>
-                                        <span class="font-medium" :title="currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify ? currentRecord.mouth_specify : (currentRecord.mouth || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify ? currentRecord.mouth_specify : (currentRecord.mouth || 'Not examined')">
                                             {{
                                                 (currentRecord.mouth === 'Others (specify)' && currentRecord.mouth_specify
                                                     ? currentRecord.mouth_specify
@@ -649,7 +649,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Throat:</span>
-                                        <span class="font-medium" :title="currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify ? currentRecord.throat_specify : (currentRecord.throat || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify ? currentRecord.throat_specify : (currentRecord.throat || 'Not examined')">
                                             {{
                                                 (currentRecord.throat === 'Others (specify)' && currentRecord.throat_specify
                                                     ? currentRecord.throat_specify
@@ -662,7 +662,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Neck:</span>
-                                        <span class="font-medium" :title="currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify ? currentRecord.neck_specify : (currentRecord.neck || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify ? currentRecord.neck_specify : (currentRecord.neck || 'Not examined')">
                                             {{
                                                 (currentRecord.neck === 'Others (specify)' && currentRecord.neck_specify
                                                     ? currentRecord.neck_specify
@@ -675,7 +675,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Lungs:</span>
-                                        <span class="font-medium" :title="currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify ? currentRecord.lungs_specify : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify ? currentRecord.lungs_other_specify : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify ? currentRecord.lungs_specify : currentRecord.lungs === 'Other specify' && currentRecord.lungs_other_specify ? currentRecord.lungs_other_specify : (currentRecord.lungs || currentRecord.lungs_heart || 'Not examined')">
                                             {{
                                                 (currentRecord.lungs === 'Others (specify)' && currentRecord.lungs_specify
                                                     ? currentRecord.lungs_specify
@@ -692,7 +692,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Heart:</span>
-                                        <span class="font-medium" :title="currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify ? currentRecord.heart_specify : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify ? currentRecord.heart_other_specify : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify ? currentRecord.heart_specify : currentRecord.heart === 'Other specify' && currentRecord.heart_other_specify ? currentRecord.heart_other_specify : (currentRecord.heart || currentRecord.lungs_heart || 'Not examined')">
                                             {{
                                                 (currentRecord.heart === 'Others (specify)' && currentRecord.heart_specify
                                                     ? currentRecord.heart_specify
@@ -709,7 +709,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Abdomen:</span>
-                                        <span class="font-medium" :title="currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify ? currentRecord.abdomen_specify : (currentRecord.abdomen || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify ? currentRecord.abdomen_specify : (currentRecord.abdomen || 'Not examined')">
                                             {{
                                                 (currentRecord.abdomen === 'Others (specify)' && currentRecord.abdomen_specify
                                                     ? currentRecord.abdomen_specify
@@ -722,7 +722,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Deformities:</span>
-                                        <span class="font-medium" :title="currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify ? currentRecord.deformities_specify : (currentRecord.deformities || 'Not examined')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify ? currentRecord.deformities_specify : (currentRecord.deformities || 'Not examined')">
                                             {{
                                                 (currentRecord.deformities === 'Others (specify)' && currentRecord.deformities_specify
                                                     ? currentRecord.deformities_specify
@@ -763,7 +763,7 @@ onMounted(() => {
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div class="flex justify-between">
                                         <span>Vision Screening:</span>
-                                        <span class="font-medium" :title="currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify ? currentRecord.vision_screening_specify : (currentRecord.vision_screening || 'Not tested')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify ? currentRecord.vision_screening_specify : (currentRecord.vision_screening || 'Not tested')">
                                             {{
                                                 (currentRecord.vision_screening === 'Others (specify)' && currentRecord.vision_screening_specify
                                                     ? currentRecord.vision_screening_specify
@@ -776,7 +776,7 @@ onMounted(() => {
                                     </div>
                                     <div class="flex justify-between">
                                         <span>Auditory Screening:</span>
-                                        <span class="font-medium" :title="currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify ? currentRecord.auditory_screening_specify : (currentRecord.auditory_screening || 'Not tested')">
+                                        <span class="font-medium" v-tooltip.top="currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify ? currentRecord.auditory_screening_specify : (currentRecord.auditory_screening || 'Not tested')">
                                             {{
                                                 (currentRecord.auditory_screening === 'Others (specify)' && currentRecord.auditory_screening_specify
                                                     ? currentRecord.auditory_screening_specify

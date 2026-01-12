@@ -360,39 +360,39 @@
                 <div class="symbol-group">
                     <h4>Conditions</h4>
                     <div class="symbol-buttons">
-                        <button class="symbol-btn" data-symbol="X" title="Carious tooth indicated for extraction" type="button">X</button>
-                        <button class="symbol-btn" data-symbol="D" title="Carious tooth indicated for filling" type="button">D</button>
-                        <button class="symbol-btn" data-symbol="RF" title="Root fragment" type="button">RF</button>
-                        <button class="symbol-btn" data-symbol="M" title="Missing tooth" type="button">M</button>
+                        <button class="symbol-btn" data-symbol="X" v-tooltip.top="'Carious tooth indicated for extraction'" type="button">X</button>
+                        <button class="symbol-btn" data-symbol="D" v-tooltip.top="'Carious tooth indicated for filling'" type="button">D</button>
+                        <button class="symbol-btn" data-symbol="RF" v-tooltip.top="'Root fragment'" type="button">RF</button>
+                        <button class="symbol-btn" data-symbol="M" v-tooltip.top="'Missing tooth'" type="button">M</button>
                     </div>
                 </div>
 
                 <div class="symbol-group">
                     <h4>Treatments</h4>
                     <div class="symbol-buttons">
-                        <button class="symbol-btn" data-symbol="F2" title="Permanent filled tooth with recurrence of decay" type="button">F2</button>
-                        <button class="symbol-btn" data-symbol="√" title="Sound/erupted Permanent tooth" type="button">√</button>
-                        <button class="symbol-btn" data-symbol="PFS" title="Pit and Fissure Sealant" type="button">PFS</button>
-                        <button class="symbol-btn" data-symbol="JC" title="Jacket Crown" type="button">JC</button>
+                        <button class="symbol-btn" data-symbol="F2" v-tooltip.top="'Permanent filled tooth with recurrence of decay'" type="button">F2</button>
+                        <button class="symbol-btn" data-symbol="√" v-tooltip.top="'Sound/erupted Permanent tooth'" type="button">√</button>
+                        <button class="symbol-btn" data-symbol="PFS" v-tooltip.top="'Pit and Fissure Sealant'" type="button">PFS</button>
+                        <button class="symbol-btn" data-symbol="JC" v-tooltip.top="'Jacket Crown'" type="button">JC</button>
                     </div>
                 </div>
 
                 <div class="symbol-group">
                     <h4>Prosthetics</h4>
                     <div class="symbol-buttons">
-                        <button class="symbol-btn" data-symbol="P" title="Pontic" type="button">P</button>
-                        <button class="symbol-btn" data-symbol="RPD" title="Removable Partial Denture" type="button">RPD</button>
-                        <button class="symbol-btn" data-symbol="FB" title="Fixed Bridge" type="button">FB</button>
-                        <button class="symbol-btn" data-symbol="CD" title="Complete Denture" type="button">CD</button>
+                        <button class="symbol-btn" data-symbol="P" v-tooltip.top="'Pontic'" type="button">P</button>
+                        <button class="symbol-btn" data-symbol="RPD" v-tooltip.top="'Removable Partial Denture'" type="button">RPD</button>
+                        <button class="symbol-btn" data-symbol="FB" v-tooltip.top="'Fixed Bridge'" type="button">FB</button>
+                        <button class="symbol-btn" data-symbol="CD" v-tooltip.top="'Complete Denture'" type="button">CD</button>
                     </div>
                 </div>
 
                 <div class="symbol-group">
                     <h4>Restorations</h4>
                     <div class="symbol-buttons">
-                        <button class="symbol-btn" data-symbol="GI" title="Glass Ionomer" type="button">GI</button>
-                        <button class="symbol-btn" data-symbol="CO" title="Composite" type="button">CO</button>
-                        <button class="symbol-btn" data-symbol="AM" title="Amalgam" type="button">AM</button>
+                        <button class="symbol-btn" data-symbol="GI" v-tooltip.top="'Glass Ionomer'" type="button">GI</button>
+                        <button class="symbol-btn" data-symbol="CO" v-tooltip.top="'Composite'" type="button">CO</button>
+                        <button class="symbol-btn" data-symbol="AM" v-tooltip.top="'Amalgam'" type="button">AM</button>
                     </div>
                 </div>
             </div>
