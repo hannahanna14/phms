@@ -259,6 +259,3 @@ All responses are in JSON format:
 
 ## Rate Limiting
 API requests may be rate limited. Check response headers for rate limit information.
-
-## Support
-For API support, contact: [your-email@domain.com]

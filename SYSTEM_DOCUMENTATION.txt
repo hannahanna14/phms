@@ -19,10 +19,11 @@ SYSTEM ARCHITECTURE
 USER ROLES & PERMISSIONS
 ------------------------
 1. ADMIN
-   - Full system access
-   - User management
-   - All CRUD operations
-   - System configuration
+   - View-only access
+   - Exporting
+   - Logs Viewing
+   - Report Generation
+   - Schedule creation and editing
 
 2. NURSE
    - Health record management
@@ -232,9 +233,7 @@ SYSTEM WORKFLOW
 --------------
 
 1. STUDENT REGISTRATION
-   - Admin creates student profiles
-   - Teacher assignments established
-   - Initial health baseline recorded
+   - From other system
 
 2. HEALTH MONITORING
    - Regular health examinations
@@ -255,7 +254,6 @@ SYSTEM WORKFLOW
    - Parent communication
 
 5. ADMINISTRATIVE TASKS
-   - User management
    - Schedule coordination
    - System maintenance
    - Data backup
@@ -281,6 +279,6 @@ This system represents a comprehensive solution for elementary school health
 management, providing healthcare professionals with the tools needed to monitor, 
 document, and improve student health outcomes throughout their elementary education.
 
-Last Updated: October 8, 2025
+Last Updated: January 12, 2026
 System Version: 1.0
-Documentation Prepared for: Medport Elementary School PHMS
+Documentation Prepared for: Naawan Central School
