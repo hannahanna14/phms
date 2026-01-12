@@ -67,12 +67,12 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call([
-            StudentSeeder::class,
-            HealthExaminationSeeder::class,
-            HealthTreatmentSeeder::class,
-            OralHealthExaminationSeeder::class,
-            OralHealthTreatmentSeeder::class,
-            StudentTeacherAssignmentSeeder::class,
+            //StudentSeeder::class,
+            //HealthExaminationSeeder::class,
+            //HealthTreatmentSeeder::class,
+            //OralHealthExaminationSeeder::class,
+            //OralHealthTreatmentSeeder::class,
+            //StudentTeacherAssignmentSeeder::class,
         ]);
     }
 }
